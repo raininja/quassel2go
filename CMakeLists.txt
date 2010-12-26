@@ -382,13 +382,13 @@ endif(HAVE_INDICATEQT)
 
 # We need to create a version.gen
 # For this, we create our genversion binary and make sure it is run every time.
-add_executable(genversion ${CMAKE_SOURCE_DIR}/src/common/genversion.cpp)
-target_link_libraries(genversion ${QT_LIBRARIES} ${QT_CORE_LIB_DEPENDENCIES})
+# add_executable(genversion ${CMAKE_SOURCE_DIR}/src/common/genversion.cpp)
+# target_link_libraries(genversion ${QT_LIBRARIES} ${QT_CORE_LIB_DEPENDENCIES})
 
-get_target_property(GENVERSION_EXECUTABLE genversion LOCATION)
-add_custom_target(genversion_run ALL ${GENVERSION_EXECUTABLE}
-                  ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/src/version.gen)
-add_dependencies(genversion_run genversion)
+# get_target_property(GENVERSION_EXECUTABLE genversion LOCATION)
+# add_custom_target(genversion_run ALL ${GENVERSION_EXECUTABLE}
+#                   ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/src/version.gen)
+# add_dependencies(genversion_run genversion)
 
 # These variables will be added to the main targets (CORE, QTCLIENT, MONO)
 set(COMMON_DEPS ${RC_WIN32})

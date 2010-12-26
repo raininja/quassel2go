@@ -1,0 +1,146 @@
+<ui version="4.0" >
+ <class>HighlightSettingsPage</class>
+ <widget class="QWidget" name="HighlightSettingsPage" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>438</width>
+    <height>404</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" >
+   <item>
+    <widget class="QGroupBox" name="groupBox" >
+     <property name="title" >
+      <string>Custom Highlights</string>
+     </property>
+     <layout class="QGridLayout" >
+      <item rowspan="3" row="0" column="0" >
+       <widget class="QTableWidget" name="highlightTable" >
+        <property name="toolTip" >
+         <string/>
+        </property>
+        <property name="styleSheet" >
+         <string notr="true" />
+        </property>
+        <column>
+         <property name="text" >
+          <string>Highlight</string>
+         </property>
+        </column>
+        <column>
+         <property name="text" >
+          <string>RegEx</string>
+         </property>
+        </column>
+        <column>
+         <property name="text" >
+          <string>CS</string>
+         </property>
+        </column>
+        <column>
+         <property name="text" >
+          <string>Enable</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QPushButton" name="add" >
+        <property name="text" >
+         <string>Add</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="QPushButton" name="remove" >
+        <property name="text" >
+         <string>Remove</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <spacer>
+        <property name="orientation" >
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0" >
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2" >
+     <property name="title" >
+      <string>Highlight Nicks</string>
+     </property>
+     <layout class="QVBoxLayout" >
+      <item>
+       <widget class="QRadioButton" name="highlightAllNicks" >
+        <property name="text" >
+         <string>All nicks from identity</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="highlightCurrentNick" >
+        <property name="text" >
+         <string>Current nick</string>
+        </property>
+        <property name="checked" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="highlightNoNick" >
+        <property name="text" >
+         <string>None</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="nicksCaseSensitive" >
+        <property name="text" >
+         <string>Case sensitive</string>
+        </property>
+        <property name="checked" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>highlightNoNick</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>nicksCaseSensitive</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>64</x>
+     <y>350</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>69</x>
+     <y>381</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
