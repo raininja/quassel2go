@@ -62,8 +62,12 @@ void SettingsDlg::setItemState(QTreeWidgetItem *item) {
 }
 
 void SettingsDlg::registerSettingsPage(SettingsPage *sp) {
-  sp->setParent(ui.settingsStack);
-  ui.settingsStack->addWidget(sp);
+    QScrollArea *scrollArea = new QScrollArea(ui.settingsStack);
+
+    scrollArea->setWidget(sp);
+    scrollArea->setWidgetResizable(true);
+
+  ui.settingsStack->addWidget(scrollArea);
 
   connect(sp, SIGNAL(changed(bool)), this, SLOT(setButtonStates()));
 
@@ -84,7 +88,9 @@ void SettingsDlg::registerSettingsPage(SettingsPage *sp) {
     item = new QTreeWidgetItem(cat, QStringList(sp->title()));
 
   item->setData(0, SettingsPageRole, QVariant::fromValue<QObject *>(sp));
-  ui.settingsTree->setMinimumWidth(ui.settingsTree->header()->sectionSizeHint(0) + 5);
+  if(ui.settingsTree->header()) {
+      ui.settingsTree->setMinimumWidth(ui.settingsTree->header()->sectionSizeHint(0) + 5);
+  }
   pageIsLoaded[sp] = false;
   if(!ui.settingsTree->selectedItems().count())
     ui.settingsTree->setCurrentItem(item);
@@ -96,7 +102,7 @@ void SettingsDlg::selectPage(SettingsPage *sp) {
   if(!sp) {
     _currentPage = 0;
     ui.settingsStack->setCurrentIndex(0);
-    ui.pageTitle->setText(tr("Settings"));
+    // ui.pageTitle->setText(tr("Settings"));
     return;
   }
 
@@ -118,15 +124,22 @@ void SettingsDlg::selectPage(SettingsPage *sp) {
 
   if(sp != currentPage()) {
     if(sp->title().isEmpty()) {
-      ui.pageTitle->setText(sp->category());
+      // ui.pageTitle->setText(sp->category());
       setWindowTitle(tr("Configure %1").arg(sp->category()));
     }
     else {
-      ui.pageTitle->setText(sp->title());
+      // ui.pageTitle->setText(sp->title());
       setWindowTitle(tr("Configure %1").arg(sp->title()));
     }
 
-    ui.settingsStack->setCurrentWidget(sp);
+    for(int i = 0; i < ui.settingsStack->count(); ++i) {
+        QScrollArea *scrollArea = qobject_cast<QScrollArea*>(ui.settingsStack->widget(i));
+        if(scrollArea && sp == scrollArea->widget()) {
+            ui.settingsStack->setCurrentIndex(i);
+            break;
+        }
+    }
+
     _currentPage = sp;
   }
   setButtonStates();
@@ -143,7 +156,8 @@ void SettingsDlg::itemSelected() {
 
 void SettingsDlg::setButtonStates() {
   SettingsPage *sp = currentPage();
-  ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(sp && sp->hasChanged());
+  if(ui.buttonBox->button(QDialogButtonBox::Apply))
+    ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(sp && sp->hasChanged());
   ui.buttonBox->button(QDialogButtonBox::Reset)->setEnabled(sp && sp->hasChanged());
   ui.buttonBox->button(QDialogButtonBox::RestoreDefaults)->setEnabled(sp && sp->hasDefaults());
 }

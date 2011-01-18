@@ -32,6 +32,8 @@
 #include "qtuistyle.h"
 #include "clientignorelistmanager.h"
 
+#include "scrollareakineticscroller.h"
+
 #include "chatline.h"
 
 ChatView::ChatView(BufferId bufferId, QWidget *parent)
@@ -51,7 +53,13 @@ ChatView::ChatView(MessageFilter *filter, QWidget *parent)
   init(filter);
 }
 
+ChatView::~ChatView()
+{
+}
+
 void ChatView::init(MessageFilter *filter) {
+  _scroller = new ScrollAreaKineticScroller(this);
+
   _bufferContainer = 0;
   _currentScaleFactor = 1;
   _invalidateFilter = false;
@@ -84,6 +92,37 @@ void ChatView::init(MessageFilter *filter) {
   // only connect if client is synched with a core
   if(Client::isConnected())
     connect(Client::ignoreListManager(), SIGNAL(ignoreListChanged()), this, SLOT(invalidateFilter()));
+}
+
+bool ChatView::viewportEvent ( QEvent * event ) {
+  // QAbstractKineticScroller
+  bool res = false;
+  if (true) {
+    switch (event->type()) {
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseMove:
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseButtonDblClick: {
+      //qDebug() << "ChatView::viewportEvent()" << "handle:" << event;
+
+      // from QAbstractKineticScroller
+      res = _scroller->handleMouseEvent(static_cast<QMouseEvent *>(event));
+      break;
+    }
+    default:
+      break;
+    }
+  }
+  // prevent text selection and image dragging
+  if (event->type() == QEvent::MouseMove)
+    return true;
+  return res ? true : QGraphicsView::viewportEvent(event);
+}
+
+void ChatView::paintEvent ( QPaintEvent * event )
+{
+  QGraphicsView::paintEvent(event);
+  _scroller->paintEvent(event);
 }
 
 bool ChatView::event(QEvent *event) {
@@ -352,3 +391,25 @@ void ChatView::checkChatLineCaches() {
       ++iter;
   }
 }
+
+// QPoint ChatView::maximumScrollPosition() const
+// {
+//   return QPoint(0, verticalScrollBar()->maximum() );
+// }
+
+// QPoint ChatView::scrollPosition() const
+// {
+//   return QPoint(0, verticalScrollBar()->value() );
+// }
+
+// void ChatView::setScrollPosition( const QPoint & pos, const QPoint & overshoot )
+// {
+//   verticalScrollBar()->setValue(pos.y());
+// }
+
+// QSize ChatView::viewportSize() const
+// {
+//   return viewport()->size();
+// }
+
+

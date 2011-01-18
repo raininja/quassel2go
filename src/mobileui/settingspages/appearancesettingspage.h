@@ -50,7 +50,6 @@ private slots:
 
 private:
   bool testHasChanged();
-  void initStyleComboBox();
   void initLanguageComboBox();
   QLocale selectedLocale() const;
 

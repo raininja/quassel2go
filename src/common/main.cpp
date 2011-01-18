@@ -24,6 +24,8 @@
 #  include "coreapplication.h"
 #elif defined BUILD_QTUI
 #  include "qtuiapplication.h"
+#elif defined BUILD_MOBILEUI
+#  include "mobileuiapplication.h"
 #elif defined BUILD_MONO
 #  include "monoapplication.h"
 
@@ -86,7 +88,7 @@ int main(int argc, char **argv) {
   cliParser->addSwitch("debug",'d', "Enable debug output");
   cliParser->addSwitch("help",'h', "Display this help and exit");
   cliParser->addSwitch("version", 'v', "Display version information");
-#ifdef BUILD_QTUI
+#if defined BUILD_QTUI || defined BUILD_MOBILEUI
   cliParser->addOption("configdir <path>", 'c', "Specify the directory holding the client configuration");
 #else
   cliParser->addOption("configdir <path>", 'c', "Specify the directory holding configuration files, the SQlite database and the SSL certificate");
@@ -99,7 +101,7 @@ int main(int argc, char **argv) {
   cliParser->addSwitch("debugbufferswitches", 0, "Enables debugging for bufferswitches");
   cliParser->addSwitch("debugmodel", 0, "Enables debugging for models");
 #endif
-#ifndef BUILD_QTUI
+#if not defined BUILD_QTUI && not defined BUILD_MOBILEUI
   // put core-only arguments here
   cliParser->addOption("listen <address>[,<address[,...]]>", 0, "The address(es) quasselcore will listen on", "::,0.0.0.0");
   cliParser->addOption("port <port>",'p', "The port quasselcore will listen at", QString("4242"));
@@ -123,6 +125,8 @@ int main(int argc, char **argv) {
     CoreApplication app(argc, argv);
 #  elif defined BUILD_QTUI
     QtUiApplication app(argc, argv);
+#  elif defined BUILD_MOBILEUI
+    MobileUiApplication app(argc, argv);
 #  elif defined BUILD_MONO
     MonolithicApplication app(argc, argv);
 #  endif

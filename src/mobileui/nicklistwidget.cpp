@@ -65,14 +65,10 @@ void NickListWidget::showWidget(bool visible) {
 
   QModelIndex currentIndex = selectionModel()->currentIndex();
   if(currentIndex.data(NetworkModel::BufferTypeRole) == BufferInfo::ChannelBuffer) {
-    QDockWidget *dock_ = dock();
-    if(!dock_)
-      return;
-
     if(visible)
-      dock_->show();
+      show();
     else
-      dock_->close();
+      close();
   }
 }
 

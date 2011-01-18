@@ -23,6 +23,7 @@
 
 #include <QGraphicsView>
 #include <QTimer>
+#include <QAbstractKineticScroller>
 
 #include "abstractbuffercontainer.h"
 
@@ -40,6 +41,7 @@ class ChatView : public QGraphicsView, public AbstractChatView {
 public:
   ChatView(MessageFilter *, QWidget *parent = 0);
   ChatView(BufferId bufferId, QWidget *parent = 0);
+  virtual ~ChatView();
 
   virtual MsgId lastMsgId() const;
   virtual MsgId lastVisibleMsgId() const;
@@ -93,6 +95,10 @@ protected:
   virtual void resizeEvent(QResizeEvent *event);
   virtual void scrollContentsBy(int dx, int dy);
 
+  /* QAbstractKineticScroller */
+  bool viewportEvent ( QEvent * event );
+  void paintEvent ( QPaintEvent * event );
+
 protected slots:
   virtual void verticalScrollbarChanged(int);
 
@@ -116,6 +122,7 @@ private:
   int _scrollOffset;
   bool _invalidateFilter;
   QSet<ChatLine *> _linesWithCache;
+  class ScrollAreaKineticScroller *_scroller;
 };
 
 

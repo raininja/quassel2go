@@ -762,6 +762,7 @@ void ChatScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
 }
 
 void ChatScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+
   if(event->buttons() == Qt::LeftButton) {
     if(!_clickHandled && (event->scenePos() - _clickPos).toPoint().manhattanLength() >= QApplication::startDragDistance()) {
       if(_clickTimer.isActive())

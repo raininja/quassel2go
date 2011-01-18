@@ -38,11 +38,11 @@
 #include "aboutdlg.h"
 #include "awaylogfilter.h"
 #include "awaylogview.h"
-#include "action.h"
+#include "mobileaction.h"
 #include "actioncollection.h"
 #include "bufferhotlistfilter.h"
 #include "buffermodel.h"
-#include "bufferview.h"
+#include "mobilebufferview.h"
 #include "bufferviewoverlay.h"
 #include "bufferviewoverlayfilter.h"
 #include "bufferwidget.h"
@@ -73,7 +73,7 @@
 #include "legacysystemtray.h"
 #include "msgprocessorstatuswidget.h"
 #include "nicklistwidget.h"
-#include "qtuiapplication.h"
+#include "mobileuiapplication.h"
 #include "qtuimessageprocessor.h"
 #include "qtuisettings.h"
 #include "qtuistyle.h"
@@ -134,11 +134,20 @@ MainWin::MainWin(QWidget *parent)
     _msgProcessorStatusWidget(new MsgProcessorStatusWidget(this)),
     _coreConnectionStatusWidget(new CoreConnectionStatusWidget(Client::coreConnection(), this)),
     _titleSetter(this),
+    _bufferWidget(0),
+    _nickListWidget(0),
+    _inputWidget(0),
+    _chatMonitorView(0),
+    _topicWidget(0),
     _awayLog(0),
     _layoutLoaded(false),
     _activeBufferViewIndex(-1)
 {
   setAttribute(Qt::WA_DeleteOnClose, false);  // we delete the mainwin manually
+
+#ifdef Q_WS_MAEMO_5
+  setAttribute(Qt::WA_Maemo5StackedWindow);
+#endif
 
   QtUiSettings uiSettings;
   QString style = uiSettings.value("Style", QString()).toString();
@@ -187,10 +196,12 @@ void MainWin::init() {
   setupChatMonitor();
   setupViewMenuTail();
   setupStatusBar();
-  setupToolBars();
   setupSystray();
   setupTitleSetter();
   setupHotList();
+
+  // in mobile quassel, we want everything be locked.
+  setupLock();
 
 #ifndef HAVE_KDE
 #  ifdef HAVE_PHONON
@@ -200,7 +211,8 @@ void MainWin::init() {
   QtUi::registerNotificationBackend(new SystrayNotificationBackend(this));
 #  endif
 
-  QtUi::registerNotificationBackend(new TaskbarNotificationBackend(this));
+  // mobile quassel doesn't have taskbar for notifications
+  //QtUi::registerNotificationBackend(new TaskbarNotificationBackend(this));
 
 #else /* HAVE_KDE */
   QtUi::registerNotificationBackend(new KNotificationBackend(this));
@@ -225,9 +237,6 @@ void MainWin::init() {
   QtUiSettings s;
   restoreStateFromSettings(s);
 
-  // restore locked state of docks
-  QtUi::actionCollection("General")->action("LockLayout")->setChecked(s.value("LockLayout", false).toBool());
-
   CoreConnection *conn = Client::coreConnection();
   if(!conn->connectToCore()) {
     // No autoconnect selected (or no accounts)
@@ -236,7 +245,6 @@ void MainWin::init() {
 }
 
 MainWin::~MainWin() {
-
 }
 
 void MainWin::quit() {
@@ -277,7 +285,8 @@ void MainWin::restoreStateFromSettings(UiSettings &s) {
     move(_normalPos);
   }
 
-  restoreState(s.value("MainWinState").toByteArray());
+  // we don't allow mainwin layout customization for now
+  // restoreState(s.value("MainWinState").toByteArray());
 
 #else
   move(_normalPos);
@@ -312,88 +321,80 @@ void MainWin::updateIcon() {
 void MainWin::setupActions() {
   ActionCollection *coll = QtUi::actionCollection("General", tr("General"));
   // File
-  coll->addAction("ConnectCore", new Action(SmallIcon("network-connect"), tr("&Connect to Core..."), coll,
-                                             this, SLOT(showCoreConnectionDlg())));
-  coll->addAction("DisconnectCore", new Action(SmallIcon("network-disconnect"), tr("&Disconnect from Core"), coll,
-                                                Client::instance(), SLOT(disconnectFromCore())));
-  coll->addAction("CoreInfo", new Action(SmallIcon("help-about"), tr("Core &Info..."), coll,
-                                          this, SLOT(showCoreInfoDlg())));
-  coll->addAction("ConfigureNetworks", new Action(SmallIcon("configure"), tr("Configure &Networks..."), coll,
-                                              this, SLOT(on_actionConfigureNetworks_triggered())));
-  // FIXME: use QKeySequence::Quit once we depend on Qt 4.6
-  coll->addAction("Quit", new Action(SmallIcon("application-exit"), tr("&Quit"), coll,
-                                     this, SLOT(quit()), Qt::CTRL + Qt::Key_Q));
+
+  QAction *act = new MobileAction(SmallIcon("network-connect"), tr("&Connect Core"),
+                                  coll, this, SLOT(showCoreConnectionDlg()));
+  coll->addAction("ConnectCore", act);
+
+  act = new MobileAction(SmallIcon("network-disconnect"), tr("&Disconnect Core"), coll,
+                    Client::instance(), SLOT(disconnectFromCore()));
+  coll->addAction("DisconnectCore", act);
+
+  act = new MobileAction(SmallIcon("help-about"), tr("Core &Info"), coll,
+                    this, SLOT(showCoreInfoDlg()));
+  coll->addAction("CoreInfo", act);
+
+  act = new MobileAction(SmallIcon("configure"), tr("Configure &Networks"), coll,
+                    this, SLOT(on_actionConfigureNetworks_triggered()));
+  coll->addAction("ConfigureNetworks", act);
 
   // View
-  coll->addAction("ConfigureBufferViews", new Action(tr("&Configure Chat Lists..."), coll,
-                                             this, SLOT(on_actionConfigureViews_triggered())));
+  act = new MobileAction(SmallIcon("configure"), tr("&Configure Chat Lists"), coll,
+                    this, SLOT(on_actionConfigureViews_triggered()));
+  coll->addAction("ConfigureBufferViews", act);
 
-  QAction *lockAct = coll->addAction("LockLayout", new Action(tr("&Lock Layout"), coll));
-  lockAct->setCheckable(true);
-  connect(lockAct, SIGNAL(toggled(bool)), SLOT(on_actionLockLayout_toggled(bool)));
-
-  coll->addAction("ToggleSearchBar", new Action(SmallIcon("edit-find"), tr("Show &Search Bar"), coll,
+  coll->addAction("ToggleSearchBar", new MobileAction(SmallIcon("edit-find"), tr("Show &Search Bar"), coll,
                                                 0, 0, QKeySequence::Find))->setCheckable(true);
-  coll->addAction("ShowAwayLog", new Action(tr("Show Away Log"), coll,
+  coll->addAction("ShowAwayLog", new MobileAction(tr("Show Away Log"), coll,
                                             this, SLOT(showAwayLog())));
-  coll->addAction("ToggleMenuBar", new Action(SmallIcon("show-menu"), tr("Show &Menubar"), coll,
-                                                0, 0, QKeySequence(Qt::CTRL + Qt::Key_M)))->setCheckable(true);
 
-  coll->addAction("ToggleStatusBar", new Action(tr("Show Status &Bar"), coll,
+  coll->addAction("ToggleStatusBar", new MobileAction(tr("Show Status &Bar"), coll,
                                                 0, 0))->setCheckable(true);
 
 #ifdef HAVE_KDE
   QAction *fullScreenAct = KStandardAction::fullScreen(this, SLOT(toggleFullscreen()), this, coll);
 #else
-  QAction *fullScreenAct = new Action(SmallIcon("view-fullscreen"), tr("&Full Screen Mode"), coll,
+  QAction *fullScreenAct = new MobileAction(SmallIcon("view-fullscreen"), tr("&Full Screen Mode"), coll,
                              this, SLOT(toggleFullscreen()), QKeySequence(Qt::Key_F11));
   fullScreenAct->setCheckable(true);
 #endif
   coll->addAction("ToggleFullscreen", fullScreenAct);
 
   // Settings
-  QAction *configureShortcutsAct = new Action(SmallIcon("configure-shortcuts"), tr("Configure &Shortcuts..."), coll,
-					      this, SLOT(showShortcutsDlg()));
-  configureShortcutsAct->setMenuRole(QAction::NoRole);
-  coll->addAction("ConfigureShortcuts", configureShortcutsAct);
-
   #ifdef Q_WS_MAC
-  QAction *configureQuasselAct = new Action(SmallIcon("configure"), tr("&Configure Quassel..."), coll,
+  QAction *configureQuasselAct = new MobileAction(SmallIcon("configure"), tr("&Configure Quassel"), coll,
 					    this, SLOT(showSettingsDlg()));
   configureQuasselAct->setMenuRole(QAction::PreferencesRole);
   #else
-  QAction *configureQuasselAct = new Action(SmallIcon("configure"), tr("&Configure Quassel..."), coll,
+  QAction *configureQuasselAct = new MobileAction(SmallIcon("configure"), tr("&Configure Quassel"), coll,
                                             this, SLOT(showSettingsDlg()), QKeySequence(Qt::Key_F7));
   #endif
   coll->addAction("ConfigureQuassel", configureQuasselAct);
 
   // Help
-  QAction *aboutQuasselAct = new Action(SmallIcon("quassel"), tr("&About Quassel"), coll,
-					this, SLOT(showAboutDlg()));
-  aboutQuasselAct->setMenuRole(QAction::AboutRole);
-  coll->addAction("AboutQuassel", aboutQuasselAct);
+  QAction *aboutAct = new MobileAction(SmallIcon("quassel"), tr("&About"), coll,
+                                              this, SLOT(showAboutDlg()));
+  aboutAct->setMenuRole(QAction::AboutRole);
+  coll->addAction("About", aboutAct);
 
-  QAction *aboutQtAct = new Action(QIcon(":/pics/qt-logo.png"), tr("About &Qt"), coll,
-				   qApp, SLOT(aboutQt()));
-  aboutQtAct->setMenuRole(QAction::AboutQtRole);
-  coll->addAction("AboutQt", aboutQtAct);
-  coll->addAction("DebugNetworkModel", new Action(SmallIcon("tools-report-bug"), tr("Debug &NetworkModel"), coll,
+
+  coll->addAction("DebugNetworkModel", new MobileAction(SmallIcon("tools-report-bug"), tr("Debug &NetworkModel"), coll,
                                        this, SLOT(on_actionDebugNetworkModel_triggered())));
-  coll->addAction("DebugBufferViewOverlay", new Action(SmallIcon("tools-report-bug"), tr("Debug &BufferViewOverlay"), coll,
+  coll->addAction("DebugBufferViewOverlay", new MobileAction(SmallIcon("tools-report-bug"), tr("Debug &BufferViewOverlay"), coll,
                                        this, SLOT(on_actionDebugBufferViewOverlay_triggered())));
-  coll->addAction("DebugMessageModel", new Action(SmallIcon("tools-report-bug"), tr("Debug &MessageModel"), coll,
+  coll->addAction("DebugMessageModel", new MobileAction(SmallIcon("tools-report-bug"), tr("Debug &MessageModel"), coll,
                                        this, SLOT(on_actionDebugMessageModel_triggered())));
-  coll->addAction("DebugHotList", new Action(SmallIcon("tools-report-bug"), tr("Debug &HotList"), coll,
+  coll->addAction("DebugHotList", new MobileAction(SmallIcon("tools-report-bug"), tr("Debug &HotList"), coll,
                                        this, SLOT(on_actionDebugHotList_triggered())));
-  coll->addAction("DebugLog", new Action(SmallIcon("tools-report-bug"), tr("Debug &Log"), coll,
+  coll->addAction("DebugLog", new MobileAction(SmallIcon("tools-report-bug"), tr("Debug &Log"), coll,
                                        this, SLOT(on_actionDebugLog_triggered())));
-  coll->addAction("ReloadStyle", new Action(SmallIcon("view-refresh"), tr("Reload Stylesheet"), coll,
+  coll->addAction("ReloadStyle", new MobileAction(SmallIcon("view-refresh"), tr("Reload Stylesheet"), coll,
                                        QtUi::style(), SLOT(reload()), QKeySequence::Refresh));
 
   // Navigation
   coll = QtUi::actionCollection("Navigation", tr("Navigation"));
 
-  coll->addAction("JumpHotBuffer", new Action(tr("Jump to hot chat"), coll,
+  coll->addAction("JumpHotBuffer", new MobileAction(tr("Jump to hot chat"), coll,
                                               this, SLOT(on_jumpHotBuffer_triggered()), QKeySequence(Qt::META + Qt::Key_A)));
 
   // Jump keys
@@ -405,134 +406,89 @@ void MainWin::setupActions() {
   const int jumpModifier = Qt::AltModifier;
 #endif
 
-  coll->addAction("BindJumpKey0", new Action(tr("Set Quick Access #0"), coll, this, SLOT(bindJumpKey()),
+  coll->addAction("BindJumpKey0", new MobileAction(tr("Set Quick Access #0"), coll, this, SLOT(bindJumpKey()),
                                              QKeySequence(bindModifier + Qt::Key_0)))->setProperty("Index", 0);
-  coll->addAction("BindJumpKey1", new Action(tr("Set Quick Access #1"), coll, this, SLOT(bindJumpKey()),
+  coll->addAction("BindJumpKey1", new MobileAction(tr("Set Quick Access #1"), coll, this, SLOT(bindJumpKey()),
                                              QKeySequence(bindModifier + Qt::Key_1)))->setProperty("Index", 1);
-  coll->addAction("BindJumpKey2", new Action(tr("Set Quick Access #2"), coll, this, SLOT(bindJumpKey()),
+  coll->addAction("BindJumpKey2", new MobileAction(tr("Set Quick Access #2"), coll, this, SLOT(bindJumpKey()),
                                              QKeySequence(bindModifier + Qt::Key_2)))->setProperty("Index", 2);
-  coll->addAction("BindJumpKey3", new Action(tr("Set Quick Access #3"), coll, this, SLOT(bindJumpKey()),
+  coll->addAction("BindJumpKey3", new MobileAction(tr("Set Quick Access #3"), coll, this, SLOT(bindJumpKey()),
                                              QKeySequence(bindModifier + Qt::Key_3)))->setProperty("Index", 3);
-  coll->addAction("BindJumpKey4", new Action(tr("Set Quick Access #4"), coll, this, SLOT(bindJumpKey()),
+  coll->addAction("BindJumpKey4", new MobileAction(tr("Set Quick Access #4"), coll, this, SLOT(bindJumpKey()),
                                              QKeySequence(bindModifier + Qt::Key_4)))->setProperty("Index", 4);
-  coll->addAction("BindJumpKey5", new Action(tr("Set Quick Access #5"), coll, this, SLOT(bindJumpKey()),
+  coll->addAction("BindJumpKey5", new MobileAction(tr("Set Quick Access #5"), coll, this, SLOT(bindJumpKey()),
                                              QKeySequence(bindModifier + Qt::Key_5)))->setProperty("Index", 5);
-  coll->addAction("BindJumpKey6", new Action(tr("Set Quick Access #6"), coll, this, SLOT(bindJumpKey()),
+  coll->addAction("BindJumpKey6", new MobileAction(tr("Set Quick Access #6"), coll, this, SLOT(bindJumpKey()),
                                              QKeySequence(bindModifier + Qt::Key_6)))->setProperty("Index", 6);
-  coll->addAction("BindJumpKey7", new Action(tr("Set Quick Access #7"), coll, this, SLOT(bindJumpKey()),
+  coll->addAction("BindJumpKey7", new MobileAction(tr("Set Quick Access #7"), coll, this, SLOT(bindJumpKey()),
                                              QKeySequence(bindModifier + Qt::Key_7)))->setProperty("Index", 7);
-  coll->addAction("BindJumpKey8", new Action(tr("Set Quick Access #8"), coll, this, SLOT(bindJumpKey()),
+  coll->addAction("BindJumpKey8", new MobileAction(tr("Set Quick Access #8"), coll, this, SLOT(bindJumpKey()),
                                              QKeySequence(bindModifier + Qt::Key_8)))->setProperty("Index", 8);
-  coll->addAction("BindJumpKey9", new Action(tr("Set Quick Access #9"), coll, this, SLOT(bindJumpKey()),
+  coll->addAction("BindJumpKey9", new MobileAction(tr("Set Quick Access #9"), coll, this, SLOT(bindJumpKey()),
                                              QKeySequence(bindModifier + Qt::Key_9)))->setProperty("Index", 9);
 
-  coll->addAction("JumpKey0", new Action(tr("Quick Access #0"), coll, this, SLOT(onJumpKey()),
+  coll->addAction("JumpKey0", new MobileAction(tr("Quick Access #0"), coll, this, SLOT(onJumpKey()),
                                          QKeySequence(jumpModifier + Qt::Key_0)))->setProperty("Index", 0);
-  coll->addAction("JumpKey1", new Action(tr("Quick Access #1"), coll, this, SLOT(onJumpKey()),
+  coll->addAction("JumpKey1", new MobileAction(tr("Quick Access #1"), coll, this, SLOT(onJumpKey()),
                                          QKeySequence(jumpModifier + Qt::Key_1)))->setProperty("Index", 1);
-  coll->addAction("JumpKey2", new Action(tr("Quick Access #2"), coll, this, SLOT(onJumpKey()),
+  coll->addAction("JumpKey2", new MobileAction(tr("Quick Access #2"), coll, this, SLOT(onJumpKey()),
                                          QKeySequence(jumpModifier + Qt::Key_2)))->setProperty("Index", 2);
-  coll->addAction("JumpKey3", new Action(tr("Quick Access #3"), coll, this, SLOT(onJumpKey()),
+  coll->addAction("JumpKey3", new MobileAction(tr("Quick Access #3"), coll, this, SLOT(onJumpKey()),
                                          QKeySequence(jumpModifier + Qt::Key_3)))->setProperty("Index", 3);
-  coll->addAction("JumpKey4", new Action(tr("Quick Access #4"), coll, this, SLOT(onJumpKey()),
+  coll->addAction("JumpKey4", new MobileAction(tr("Quick Access #4"), coll, this, SLOT(onJumpKey()),
                                          QKeySequence(jumpModifier + Qt::Key_4)))->setProperty("Index", 4);
-  coll->addAction("JumpKey5", new Action(tr("Quick Access #5"), coll, this, SLOT(onJumpKey()),
+  coll->addAction("JumpKey5", new MobileAction(tr("Quick Access #5"), coll, this, SLOT(onJumpKey()),
                                          QKeySequence(jumpModifier + Qt::Key_5)))->setProperty("Index", 5);
-  coll->addAction("JumpKey6", new Action(tr("Quick Access #6"), coll, this, SLOT(onJumpKey()),
+  coll->addAction("JumpKey6", new MobileAction(tr("Quick Access #6"), coll, this, SLOT(onJumpKey()),
                                          QKeySequence(jumpModifier + Qt::Key_6)))->setProperty("Index", 6);
-  coll->addAction("JumpKey7", new Action(tr("Quick Access #7"), coll, this, SLOT(onJumpKey()),
+  coll->addAction("JumpKey7", new MobileAction(tr("Quick Access #7"), coll, this, SLOT(onJumpKey()),
                                          QKeySequence(jumpModifier + Qt::Key_7)))->setProperty("Index", 7);
-  coll->addAction("JumpKey8", new Action(tr("Quick Access #8"), coll, this, SLOT(onJumpKey()),
+  coll->addAction("JumpKey8", new MobileAction(tr("Quick Access #8"), coll, this, SLOT(onJumpKey()),
                                          QKeySequence(jumpModifier + Qt::Key_8)))->setProperty("Index", 8);
-  coll->addAction("JumpKey9", new Action(tr("Quick Access #9"), coll, this, SLOT(onJumpKey()),
+  coll->addAction("JumpKey9", new MobileAction(tr("Quick Access #9"), coll, this, SLOT(onJumpKey()),
                                          QKeySequence(jumpModifier + Qt::Key_9)))->setProperty("Index", 9);
 
   // Buffer navigation
-  coll->addAction("NextBufferView", new Action(SmallIcon("go-next-view"), tr("Activate Next Chat List"), coll,
+  coll->addAction("NextBufferView", new MobileAction(SmallIcon("go-next-view"), tr("Activate Next Chat List"), coll,
                                                this, SLOT(nextBufferView()), QKeySequence(QKeySequence::Forward)));
-  coll->addAction("PreviousBufferView", new Action(SmallIcon("go-previous-view"), tr("Activate Previous Chat List"), coll,
+  coll->addAction("PreviousBufferView", new MobileAction(SmallIcon("go-previous-view"), tr("Activate Previous Chat List"), coll,
                                                    this, SLOT(previousBufferView()), QKeySequence::Back));
-  coll->addAction("NextBuffer", new Action(SmallIcon("go-down"), tr("Go to Next Chat"), coll,
+  coll->addAction("NextBuffer", new MobileAction(SmallIcon("go-down"), tr("Go to Next Chat"), coll,
                                            this, SLOT(nextBuffer()), QKeySequence(Qt::ALT + Qt::Key_Down)));
-  coll->addAction("PreviousBuffer", new Action(SmallIcon("go-up"), tr("Go to Previous Chat"), coll,
+  coll->addAction("PreviousBuffer", new MobileAction(SmallIcon("go-up"), tr("Go to Previous Chat"), coll,
                                                this, SLOT(previousBuffer()), QKeySequence(Qt::ALT + Qt::Key_Up)));
 }
 
 void MainWin::setupMenus() {
   ActionCollection *coll = QtUi::actionCollection("General");
 
-  _fileMenu = menuBar()->addMenu(tr("&File"));
+  menuBar()->addAction(coll->action("ConnectCore"));
+  menuBar()->addAction(coll->action("DisconnectCore"));
+  // menuBar()->addAction(coll->action("CoreInfo"));
 
-  static const QStringList coreActions = QStringList()
-    << "ConnectCore" << "DisconnectCore" << "CoreInfo";
+  //menuBar()->addAction(coll->action("ConfigureNetworks"));
 
-  QAction *coreAction;
-  foreach(QString actionName, coreActions) {
-    coreAction = coll->action(actionName);
-    _fileMenu->addAction(coreAction);
-    flagRemoteCoreOnly(coreAction);
-  }
-  flagRemoteCoreOnly(_fileMenu->addSeparator());
+  //menuBar()->addAction(coll->action("ConfigureBufferViews"));
 
-  _networksMenu = _fileMenu->addMenu(tr("&Networks"));
-  _networksMenu->addAction(coll->action("ConfigureNetworks"));
-  _networksMenu->addSeparator();
-  _fileMenu->addSeparator();
-  _fileMenu->addAction(coll->action("Quit"));
+  menuBar()->addAction(coll->action("ToggleStatusBar"));
+  menuBar()->addAction(coll->action("ToggleSearchBar"));
 
-  _viewMenu = menuBar()->addMenu(tr("&View"));
-  _bufferViewsMenu = _viewMenu->addMenu(tr("&Chat Lists"));
-  _bufferViewsMenu->addAction(coll->action("ConfigureBufferViews"));
-  _toolbarMenu = _viewMenu->addMenu(tr("&Toolbars"));
-  _viewMenu->addSeparator();
+  menuBar()->addAction(coll->action("ShowAwayLog"));
 
-  _viewMenu->addAction(coll->action("ToggleMenuBar"));
-  _viewMenu->addAction(coll->action("ToggleStatusBar"));
-  _viewMenu->addAction(coll->action("ToggleSearchBar"));
+  menuBar()->addAction(coll->action("ConfigureQuassel"));
 
-  coreAction = coll->action("ShowAwayLog");
-  flagRemoteCoreOnly(coreAction);
-  _viewMenu->addAction(coreAction);
+  menuBar()->addAction(coll->action("About"));
 
-  _viewMenu->addSeparator();
-  _viewMenu->addAction(coll->action("LockLayout"));
+  // TODO: maybe add to about dialogue...
+  // _helpDebugMenu = _helpMenu->addMenu(SmallIcon("tools-report-bug"), tr("Debug"));
+  // _helpDebugMenu->addAction(coll->action("DebugNetworkModel"));
+  // _helpDebugMenu->addAction(coll->action("DebugBufferViewOverlay"));
+  // _helpDebugMenu->addAction(coll->action("DebugMessageModel"));
+  // _helpDebugMenu->addAction(coll->action("DebugHotList"));
+  // _helpDebugMenu->addAction(coll->action("DebugLog"));
+  // _helpDebugMenu->addSeparator();
+  // _helpDebugMenu->addAction(coll->action("ReloadStyle"));
 
-  _settingsMenu = menuBar()->addMenu(tr("&Settings"));
-#ifdef HAVE_KDE
-  _settingsMenu->addAction(KStandardAction::configureNotifications(this, SLOT(showNotificationsDlg()), this));
-  _settingsMenu->addAction(KStandardAction::keyBindings(this, SLOT(showShortcutsDlg()), this));
-#else
-  _settingsMenu->addAction(coll->action("ConfigureShortcuts"));
-#endif
-  _settingsMenu->addAction(coll->action("ConfigureQuassel"));
-
-  _helpMenu = menuBar()->addMenu(tr("&Help"));
-  _helpMenu->addAction(coll->action("AboutQuassel"));
-#ifndef HAVE_KDE
-  _helpMenu->addAction(coll->action("AboutQt"));
-#else
-  _helpMenu->addAction(KStandardAction::aboutKDE(_kHelpMenu, SLOT(aboutKDE()), this));
-#endif
-  _helpMenu->addSeparator();
-  _helpDebugMenu = _helpMenu->addMenu(SmallIcon("tools-report-bug"), tr("Debug"));
-  _helpDebugMenu->addAction(coll->action("DebugNetworkModel"));
-  _helpDebugMenu->addAction(coll->action("DebugBufferViewOverlay"));
-  _helpDebugMenu->addAction(coll->action("DebugMessageModel"));
-  _helpDebugMenu->addAction(coll->action("DebugHotList"));
-  _helpDebugMenu->addAction(coll->action("DebugLog"));
-  _helpDebugMenu->addSeparator();
-  _helpDebugMenu->addAction(coll->action("ReloadStyle"));
-
-  // Toggle visibility
-  QAction *showMenuBar = QtUi::actionCollection("General")->action("ToggleMenuBar");
-
-  QtUiSettings uiSettings;
-  bool enabled = uiSettings.value("ShowMenuBar", QVariant(true)).toBool();
-  showMenuBar->setChecked(enabled);
-  enabled ? menuBar()->show() : menuBar()->hide();
-
-  connect(showMenuBar, SIGNAL(toggled(bool)), menuBar(), SLOT(setVisible(bool)));
-  connect(showMenuBar, SIGNAL(toggled(bool)), this, SLOT(saveMenuBarStatus(bool)));
 }
 
 void MainWin::setupBufferWidget() {
@@ -550,25 +506,27 @@ void MainWin::addBufferView(ClientBufferViewConfig *config) {
   if(!config)
     return;
 
-  config->setLocked(QtUiSettings().value("LockLayout", false).toBool());
-  BufferViewDock *dock = new BufferViewDock(config, this);
+  config->setLocked(true);
+  // BufferViewDock *dock = new BufferViewDock(config, this);
 
   //create the view and initialize it's filter
-  BufferView *view = new BufferView(dock);
+  MobileBufferView *view = new MobileBufferView(this);
+
+  view->setWindowFlags(_nickListWidget->windowFlags() | Qt::Window);
+  view->setAttribute(Qt::WA_Maemo5StackedWindow);
+
   view->setFilteredModel(Client::bufferModel(), config);
   view->installEventFilter(_inputWidget); // for key presses
 
+  menuBar()->addAction(view->toggleVisibleAction() );
+
   Client::bufferModel()->synchronizeView(view);
 
-  dock->setWidget(view);
-  dock->setVisible(_layoutLoaded); // don't show before state has been restored
+  view->setVisible(_layoutLoaded);
 
-  addDockWidget(Qt::LeftDockWidgetArea, dock);
-  _bufferViewsMenu->addAction(dock->toggleViewAction());
-
-  connect(dock->toggleViewAction(), SIGNAL(toggled(bool)), this, SLOT(bufferViewToggled(bool)));
-  connect(dock, SIGNAL(visibilityChanged(bool)), SLOT(bufferViewVisibilityChanged(bool)));
-  _bufferViews.append(dock);
+  // connect(dock->toggleViewAction(), SIGNAL(toggled(bool)), this, SLOT(bufferViewToggled(bool)));
+  // connect(view, SIGNAL(visibilityChanged(bool)), SLOT(bufferViewVisibilityChanged(bool)));
+  _bufferViews.append(view);
 
   if(!activeBufferView())
     nextBufferView();
@@ -576,25 +534,25 @@ void MainWin::addBufferView(ClientBufferViewConfig *config) {
 
 void MainWin::removeBufferView(int bufferViewConfigId) {
   QVariant actionData;
-  BufferViewDock *dock;
-  foreach(QAction *action, _bufferViewsMenu->actions()) {
+  MobileBufferView *view;
+  foreach(QAction *action, menuBar()->actions()) {
     actionData = action->data();
     if(!actionData.isValid())
       continue;
 
-    dock = qobject_cast<BufferViewDock *>(action->parent());
-    if(dock && actionData.toInt() == bufferViewConfigId) {
+    view = qobject_cast<MobileBufferView *>(action->parent());
+    if(view && actionData.toInt() == bufferViewConfigId) {
       removeAction(action);
-      Client::bufferViewOverlay()->removeView(dock->bufferViewId());
-      _bufferViews.removeAll(dock);
+      Client::bufferViewOverlay()->removeView(view->config()->bufferViewId() );
+      _bufferViews.removeAll(view);
 
-      if(dock->isActive()) {
-        dock->setActive(false);
+      if(view->isActive()) {
+        view->setActive(false);
         _activeBufferViewIndex = -1;
         nextBufferView();
       }
 
-      dock->deleteLater();
+      view->deleteLater();
     }
   }
 }
@@ -607,56 +565,48 @@ void MainWin::bufferViewToggled(bool enabled) {
   }
   QAction *action = qobject_cast<QAction *>(sender());
   Q_ASSERT(action);
-  BufferViewDock *dock = qobject_cast<BufferViewDock *>(action->parent());
-  Q_ASSERT(dock);
+  MobileBufferView *view = qobject_cast<MobileBufferView *>(action->parent());
+  Q_ASSERT(view);
 
   // Make sure we don't toggle backlog fetch for a view we've already removed
-  if(!_bufferViews.contains(dock))
+  if(!_bufferViews.contains(view))
     return;
 
   if(enabled)
-    Client::bufferViewOverlay()->addView(dock->bufferViewId());
+    Client::bufferViewOverlay()->addView(view->config()->bufferViewId());
   else
-    Client::bufferViewOverlay()->removeView(dock->bufferViewId());
+    Client::bufferViewOverlay()->removeView(view->config()->bufferViewId());
 }
 
-void MainWin::bufferViewVisibilityChanged(bool visible) {
-  Q_UNUSED(visible);
-  BufferViewDock *dock = qobject_cast<BufferViewDock *>(sender());
-  Q_ASSERT(dock);
-  if((!dock->isHidden() && !activeBufferView()) || (dock->isHidden() && dock->isActive()))
-    nextBufferView();
-}
-
-BufferView *MainWin::allBuffersView() const {
+MobileBufferView *MainWin::allBuffersView() const {
   // "All Buffers" is always the first dock created
   if(_bufferViews.count() > 0)
-    return _bufferViews[0]->bufferView();
+    return _bufferViews[0];
   return 0;
 }
 
-BufferView *MainWin::activeBufferView() const {
+MobileBufferView *MainWin::activeBufferView() const {
   if(_activeBufferViewIndex < 0 || _activeBufferViewIndex >= _bufferViews.count())
     return 0;
-  BufferViewDock *dock = _bufferViews.at(_activeBufferViewIndex);
-  return dock->isActive() ? qobject_cast<BufferView*>(dock->widget()) : 0;
+  MobileBufferView *view = _bufferViews.at(_activeBufferViewIndex);
+  return view->isActive() ? view : 0;
 }
 
 void MainWin::changeActiveBufferView(int bufferViewId) {
   if(bufferViewId < 0)
     return;
 
-  BufferView *current = activeBufferView();
+  MobileBufferView *current = activeBufferView();
   if(current) {
-    qobject_cast<BufferViewDock*>(current->parent())->setActive(false);
+    current->setActive(false);
     _activeBufferViewIndex = -1;
   }
 
   for(int i = 0; i < _bufferViews.count(); i++) {
-    BufferViewDock *dock = _bufferViews.at(i);
-    if(dock->bufferViewId() == bufferViewId && !dock->isHidden()) {
+    MobileBufferView *view = _bufferViews.at(i);
+    if(view->config()->bufferViewId() == bufferViewId && !view->isHidden()) {
       _activeBufferViewIndex = i;
-      dock->setActive(true);
+      view->setActive(true);
       return;
     }
   }
@@ -665,9 +615,9 @@ void MainWin::changeActiveBufferView(int bufferViewId) {
 }
 
 void MainWin::changeActiveBufferView(bool backwards) {
-  BufferView *current = activeBufferView();
+  MobileBufferView *current = activeBufferView();
   if(current)
-    qobject_cast<BufferViewDock*>(current->parent())->setActive(false);
+    current->setActive(false);
 
   if(!_bufferViews.count())
     return;
@@ -682,11 +632,9 @@ void MainWin::changeActiveBufferView(bool backwards) {
         _activeBufferViewIndex = 0;
     }
 
-    BufferViewDock *dock = _bufferViews.at(_activeBufferViewIndex);
-    if(dock->isHidden())
-      continue;
+    MobileBufferView *view = _bufferViews.at(_activeBufferViewIndex);
 
-    dock->setActive(true);
+    view->setActive(true);
     return;
   }
 
@@ -702,13 +650,13 @@ void MainWin::previousBufferView() {
 }
 
 void MainWin::nextBuffer() {
-  BufferView *view = activeBufferView();
+  MobileBufferView *view = activeBufferView();
   if(view)
     view->nextBuffer();
 }
 
 void MainWin::previousBuffer() {
-  BufferView *view = activeBufferView();
+  MobileBufferView *view = activeBufferView();
   if(view)
     view->previousBuffer();
 }
@@ -728,7 +676,11 @@ void MainWin::on_actionConfigureViews_triggered() {
   dlg.exec();
 }
 
-void MainWin::on_actionLockLayout_toggled(bool lock) {
+void MainWin::setupLock() {
+  // TODO this is based on old stuff from quassel...
+
+  bool lock = true;
+
   QList<VerticalDock *> docks = findChildren<VerticalDock *>();
   foreach(VerticalDock *dock, docks) {
     dock->showTitle(!lock);
@@ -742,17 +694,28 @@ void MainWin::on_actionLockLayout_toggled(bool lock) {
 }
 
 void MainWin::setupNickWidget() {
-  // create nick dock
-  NickListDock *nickDock = new NickListDock(tr("Nicks"), this);
-  nickDock->setObjectName("NickDock");
-  nickDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+  // // create nick dock
+  // NickListDock *nickDock = new NickListDock(tr("Nicks"), this);
+  // nickDock->setObjectName("NickDock");
+  // nickDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 
-  _nickListWidget = new NickListWidget(nickDock);
-  nickDock->setWidget(_nickListWidget);
+  _nickListWidget = new NickListWidget(this);
+  _nickListWidget->setWindowTitle(tr("Nicks"));
+  _nickListWidget->setWindowFlags(_nickListWidget->windowFlags() | Qt::Window);
+  _nickListWidget->setAttribute(Qt::WA_Maemo5StackedWindow);
 
-  addDockWidget(Qt::RightDockWidgetArea, nickDock);
-  _viewMenu->addAction(nickDock->toggleViewAction());
-  nickDock->toggleViewAction()->setText(tr("Show Nick List"));
+  // nickDock->setWidget(_nickListWidget);
+
+  // addDockWidget(Qt::RightDockWidgetArea, nickDock);
+  // _viewMenu->addAction(nickDock->toggleViewAction());
+  // nickDock->toggleViewAction()->setText(tr("Show Nick List"));
+
+  QAction *act = new QAction(tr("Nicks"), this);
+  connect(act, SIGNAL(triggered()), _nickListWidget, SLOT(show()));
+
+  act->setObjectName("ShowNickList");
+  act->setCheckable(true);
+  menuBar()->addAction(act);
 
   // See NickListDock::NickListDock();
   // connect(nickDock->toggleViewAction(), SIGNAL(triggered(bool)), nickListWidget, SLOT(showWidget(bool)));
@@ -774,7 +737,7 @@ void MainWin::setupChatMonitor() {
   dock->hide();
 
   addDockWidget(Qt::TopDockWidgetArea, dock, Qt::Vertical);
-  _viewMenu->addAction(dock->toggleViewAction());
+  menuBar()->addAction(dock->toggleViewAction());
   dock->toggleViewAction()->setText(tr("Show Chat Monitor"));
 }
 
@@ -786,9 +749,6 @@ void MainWin::setupInputWidget() {
   dock->setWidget(_inputWidget);
 
   addDockWidget(Qt::BottomDockWidgetArea, dock);
-
-  _viewMenu->addAction(dock->toggleViewAction());
-  dock->toggleViewAction()->setText(tr("Show Input Line"));
 
   _inputWidget->setModel(Client::bufferModel());
   _inputWidget->setSelectionModel(Client::bufferModel()->standardSelectionModel());
@@ -812,13 +772,13 @@ void MainWin::setupTopicWidget() {
 
   addDockWidget(Qt::TopDockWidgetArea, dock, Qt::Vertical);
 
-  _viewMenu->addAction(dock->toggleViewAction());
+  menuBar()->addAction(dock->toggleViewAction());
   dock->toggleViewAction()->setText(tr("Show Topic Line"));
 }
 
 void MainWin::setupViewMenuTail() {
-  _viewMenu->addSeparator();
-  _viewMenu->addAction(QtUi::actionCollection("General")->action("ToggleFullscreen"));
+  // TODO enable full screen? needs exit btn
+  //  menuBar()->addAction(QtUi::actionCollection("General")->action("ToggleFullscreen"));
 }
 
 void MainWin::setupTitleSetter() {
@@ -845,6 +805,7 @@ void MainWin::setupStatusBar() {
   connect(showStatusbar, SIGNAL(toggled(bool)), statusBar(), SLOT(setVisible(bool)));
   connect(showStatusbar, SIGNAL(toggled(bool)), this, SLOT(saveStatusBarStatus(bool)));
 
+  // TODO: use maemo info banner instead of statusBar.
   connect(Client::coreConnection(), SIGNAL(connectionMsg(QString)), statusBar(), SLOT(showMessage(QString)));
 }
 
@@ -852,11 +813,6 @@ void MainWin::setupHotList() {
   FlatProxyModel *flatProxy = new FlatProxyModel(this);
   flatProxy->setSourceModel(Client::bufferModel());
   _bufferHotList = new BufferHotListFilter(flatProxy);
-}
-
-void MainWin::saveMenuBarStatus(bool enabled) {
-  QtUiSettings uiSettings;
-  uiSettings.setValue("ShowMenuBar", enabled);
 }
 
 void MainWin::saveStatusBarStatus(bool enabled) {
@@ -875,29 +831,6 @@ void MainWin::setupSystray() {
   _systemTray->init();
 }
 
-void MainWin::setupToolBars() {
-  connect(_bufferWidget, SIGNAL(currentChanged(QModelIndex)),
-          QtUi::toolBarActionProvider(), SLOT(currentBufferChanged(QModelIndex)));
-  connect(_nickListWidget, SIGNAL(nickSelectionChanged(QModelIndexList)),
-          QtUi::toolBarActionProvider(), SLOT(nickSelectionChanged(QModelIndexList)));
-
-#ifdef Q_WS_MAC
-  setUnifiedTitleAndToolBarOnMac(true);
-#endif
-
-#ifdef HAVE_KDE
-  _mainToolBar = new KToolBar("MainToolBar", this, Qt::TopToolBarArea, false, true, true);
-#else
-  _mainToolBar = new QToolBar(this);
-  _mainToolBar->setObjectName("MainToolBar");
-#endif
-  _mainToolBar->setWindowTitle(tr("Main Toolbar"));
-  addToolBar(_mainToolBar);
-
-  QtUi::toolBarActionProvider()->addActions(_mainToolBar, ToolBarActionProvider::MainToolBar);
-  _toolbarMenu->addAction(_mainToolBar->toggleViewAction());
-}
-
 void MainWin::connectedToCore() {
   Q_CHECK_PTR(Client::bufferViewManager());
   connect(Client::bufferViewManager(), SIGNAL(bufferViewConfigAdded(int)), this, SLOT(addBufferView(int)));
@@ -914,7 +847,7 @@ void MainWin::setConnectedState() {
   coll->action("DisconnectCore")->setEnabled(true);
   coll->action("CoreInfo")->setEnabled(true);
 
-  foreach(QAction *action, _fileMenu->actions()) {
+  foreach(QAction *action, menuBar()->actions()) {
     if(isRemoteCoreOnly(action))
       action->setVisible(!Client::internalCore());
   }
@@ -958,13 +891,15 @@ void MainWin::loadLayout() {
   int accountId = Client::currentCoreAccount().accountId().toInt();
   QByteArray state = s.value(QString("MainWinState-%1").arg(accountId)).toByteArray();
   if(state.isEmpty()) {
-    foreach(BufferViewDock *view, _bufferViews)
-      view->show();
+    // foreach(BufferView *view, _bufferViews)
+    //   view->show();
     _layoutLoaded = true;
     return;
   }
 
-  restoreState(state, accountId);
+  // we don't customize mainwindow layout for now.
+  // restoreState(state, accountId);
+
   int bufferViewId = s.value(QString("ActiveBufferView-%1").arg(accountId), -1).toInt();
   if(bufferViewId >= 0)
     changeActiveBufferView(bufferViewId);
@@ -977,7 +912,7 @@ void MainWin::saveLayout() {
   int accountId = _bufferViews.count()? Client::currentCoreAccount().accountId().toInt() : 0; // only save if we still have a layout!
   if(accountId > 0) {
     s.setValue(QString("MainWinState-%1").arg(accountId) , saveState(accountId));
-    BufferView *view = activeBufferView();
+    MobileBufferView *view = activeBufferView();
     s.setValue(QString("ActiveBufferView-%1").arg(accountId), view ? view->config()->bufferViewId() : -1);
   }
 }
@@ -988,18 +923,9 @@ void MainWin::disconnectedFromCore() {
   _layoutLoaded = false;
 
   QVariant actionData;
-  BufferViewDock *dock;
-  foreach(QAction *action, _bufferViewsMenu->actions()) {
-    actionData = action->data();
-    if(!actionData.isValid())
-      continue;
-
-    dock = qobject_cast<BufferViewDock *>(action->parent());
-    if(dock && actionData.toInt() != -1) {
-      removeAction(action);
-      _bufferViews.removeAll(dock);
-      dock->deleteLater();
-    }
+  MobileBufferView *view;
+  foreach(view, _bufferViews) {
+    view->deleteLater();
   }
 
   // store last active buffer
@@ -1010,7 +936,10 @@ void MainWin::disconnectedFromCore() {
     // clear the current selection
     Client::bufferModel()->standardSelectionModel()->clearSelection();
   }
-  restoreState(s.value("MainWinState").toByteArray());
+
+  // we don't customize mainwindow docking etc. layout for now
+  // restoreState(s.value("MainWinState").toByteArray());
+
   setDisconnectedState();
 }
 
@@ -1166,6 +1095,7 @@ void MainWin::showSettingsDlg() {
   dlg->registerSettingsPage(new HighlightSettingsPage(dlg));
   dlg->registerSettingsPage(new NotificationsSettingsPage(dlg));
   dlg->registerSettingsPage(new BacklogSettingsPage(dlg));
+  dlg->registerSettingsPage(new ShortcutsSettingsPage(QtUi::actionCollections(), dlg));
 
   //Category: IRC
   dlg->registerSettingsPage(new ConnectionSettingsPage(dlg));
@@ -1188,6 +1118,9 @@ void MainWin::showAboutDlg() {
 }
 
 void MainWin::showShortcutsDlg() {
+  // not used in mobile ui. moved to settings dialog
+  return;
+
 #ifdef HAVE_KDE
   KShortcutsDialog dlg(KShortcutsEditor::AllActions, KShortcutsEditor::LetterShortcutsDisallowed, this);
   foreach(KActionCollection *coll, QtUi::actionCollections())
@@ -1233,7 +1166,7 @@ void MainWin::resizeEvent(QResizeEvent *event) {
 
 void MainWin::closeEvent(QCloseEvent *event) {
   QtUiSettings s;
-  QtUiApplication* app = qobject_cast<QtUiApplication*> qApp;
+  MobileUiApplication* app = qobject_cast<MobileUiApplication*> qApp;
   Q_ASSERT(app);
   if(!app->isAboutToQuit() && QtUi::haveSystemTray() && s.value("MinimizeOnClose").toBool()) {
     QtUi::hideMainWidget();
@@ -1295,22 +1228,7 @@ void MainWin::currentBufferChanged(BufferId buffer) {
 
 void MainWin::clientNetworkCreated(NetworkId id) {
   const Network *net = Client::network(id);
-  QAction *act = new QAction(net->networkName(), this);
-  act->setObjectName(QString("NetworkAction-%1").arg(id.toInt()));
-  act->setData(QVariant::fromValue<NetworkId>(id));
   connect(net, SIGNAL(updatedRemotely()), this, SLOT(clientNetworkUpdated()));
-  connect(act, SIGNAL(triggered()), this, SLOT(connectOrDisconnectFromNet()));
-
-  QAction *beforeAction = 0;
-  foreach(QAction *action, _networksMenu->actions()) {
-    if(!action->data().isValid())  // ignore stock actions
-      continue;
-    if(net->networkName().localeAwareCompare(action->text()) < 0) {
-      beforeAction = action;
-      break;
-    }
-  }
-  _networksMenu->insertAction(beforeAction, act);
 }
 
 void MainWin::clientNetworkUpdated() {
@@ -1318,15 +1236,8 @@ void MainWin::clientNetworkUpdated() {
   if(!net)
     return;
 
-  QAction *action = findChild<QAction *>(QString("NetworkAction-%1").arg(net->networkId().toInt()));
-  if(!action)
-    return;
-
-  action->setText(net->networkName());
-
   switch(net->connectionState()) {
   case Network::Initialized:
-    action->setIcon(SmallIcon("network-connect"));
     // if we have no currently selected buffer, jump to the first connecting statusbuffer
     if(!bufferWidget()->currentBuffer().isValid()) {
       QModelIndex idx = Client::networkModel()->networkIndex(net->networkId());
@@ -1337,10 +1248,9 @@ void MainWin::clientNetworkUpdated() {
     }
     break;
   case Network::Disconnected:
-    action->setIcon(SmallIcon("network-disconnect"));
     break;
   default:
-    action->setIcon(SmallIcon("network-wired"));
+    ;
   }
 }
 

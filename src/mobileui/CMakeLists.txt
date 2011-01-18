@@ -39,17 +39,21 @@ set(SOURCES
     debugmessagemodelfilter.cpp
     inputwidget.cpp
     ircconnectionwizard.cpp
+    itemviewkinetictapsuppressor.cpp
     legacysystemtray.cpp
     mainpage.cpp
     mainwin.cpp
     markerlineitem.cpp
+    mobileaction.cpp
+    mobilebufferview.cpp
     msgprocessorstatuswidget.cpp
     nicklistwidget.cpp
     qtui.cpp
-    qtuiapplication.cpp
+    mobileuiapplication.cpp
     qtuimessageprocessor.cpp
     qtuisettings.cpp
     qtuistyle.cpp
+    scrollareakineticscroller.cpp
     settingsdlg.cpp
     settingspagedlg.cpp
     simplenetworkeditor.cpp
@@ -86,16 +90,20 @@ set(MOC_HDRS
     debugmessagemodelfilter.h
     inputwidget.h
     ircconnectionwizard.h
+    itemviewkinetictapsuppressor.h
     legacysystemtray.h
     mainpage.h
     mainwin.h
     markerlineitem.h
+    mobileaction.h
+    mobilebufferview.h
     msgprocessorstatuswidget.h
     nicklistwidget.h
     qtui.h
-    qtuiapplication.h
+    mobileuiapplication.h
     qtuimessageprocessor.h
     qtuistyle.h
+    scrollareakineticscroller.h
     settingsdlg.h
     settingspagedlg.h
     simplenetworkeditor.h
@@ -197,10 +205,10 @@ qt4_wrap_ui(UI ${FORMPATH} ${SPFRM})
 
 include_directories(${CMAKE_SOURCE_DIR}/src/common
                     ${CMAKE_SOURCE_DIR}/src/client
-                    ${CMAKE_SOURCE_DIR}/src/qtui
-                    ${CMAKE_SOURCE_DIR}/src/qtui/settingspages
+                    ${CMAKE_SOURCE_DIR}/src/mobileui
+                    ${CMAKE_SOURCE_DIR}/src/mobileui/settingspages
                     ${CMAKE_SOURCE_DIR}/src/uisupport
                     ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(mod_qtui STATIC ${SOURCES} ${SPSRC} ${MOC} ${DBUS} ${UI} ${HEADERS})
-add_dependencies(mod_qtui mod_common mod_client mod_uisupport)
+add_library(mod_mobileui STATIC ${SOURCES} ${SPSRC} ${MOC} ${DBUS} ${UI} ${HEADERS})
+add_dependencies(mod_mobileui mod_common mod_client mod_uisupport)

@@ -19,7 +19,9 @@
  ***************************************************************************/
 
 #include <QDialogButtonBox>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QScrollArea>
 
 #include "coreconnectdlg.h"
 
@@ -28,9 +30,14 @@
 #include "coreaccountsettingspage.h"
 
 CoreConnectDlg::CoreConnectDlg(QWidget *parent) : QDialog(parent) {
-  _settingsPage = new CoreAccountSettingsPage(this);
+  QScrollArea *scrollArea = new QScrollArea(this);
+
+  _settingsPage = new CoreAccountSettingsPage(scrollArea);
   _settingsPage->setStandAlone(true);
   _settingsPage->load();
+
+  scrollArea->setWidget(_settingsPage);
+  scrollArea->setWidgetResizable(true);
 
   CoreAccountSettings s;
   AccountId lastAccount = s.lastAccount();
@@ -40,12 +47,19 @@ CoreConnectDlg::CoreConnectDlg(QWidget *parent) : QDialog(parent) {
   setWindowTitle(tr("Connect to Core"));
   setWindowIcon(SmallIcon("network-disconnect"));
 
-  QVBoxLayout *layout = new QVBoxLayout(this);
-  layout->addWidget(_settingsPage);
+
+  QHBoxLayout *layout = new QHBoxLayout(this);
+  layout->addWidget(scrollArea);
+  layout->setStretchFactor(scrollArea, 1);
+
+  QVBoxLayout *layout2 = new QVBoxLayout(this);
+  layout->addLayout(layout2);
+  layout->setStretchFactor(layout2, 0);
 
   QDialogButtonBox *buttonBox = new QDialogButtonBox(this);
   buttonBox->setStandardButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
-  layout->addWidget(buttonBox);
+  layout2->addStretch();
+  layout2->addWidget(buttonBox);
 
   connect(_settingsPage, SIGNAL(connectToCore(AccountId)), SLOT(accept()));
   connect(buttonBox, SIGNAL(accepted()), SLOT(accept()));

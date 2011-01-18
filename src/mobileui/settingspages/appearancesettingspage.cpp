@@ -44,7 +44,7 @@ AppearanceSettingsPage::AppearanceSettingsPage(QWidget *parent)
 #endif
 
   initAutoWidgets();
-  initStyleComboBox();
+  // initStyleComboBox();
   initLanguageComboBox();
 
   foreach(QComboBox *comboBox, findChildren<QComboBox *>()) {
@@ -69,13 +69,13 @@ AppearanceSettingsPage::AppearanceSettingsPage(QWidget *parent)
   connect(ui.errorMsgsInCurrentBuffer, SIGNAL(clicked(bool)), this, SLOT(widgetHasChanged()));
 }
 
-void AppearanceSettingsPage::initStyleComboBox() {
-  QStringList styleList = QStyleFactory::keys();
-  ui.styleComboBox->addItem(tr("<System Default>"));
-  foreach(QString style, styleList) {
-    ui.styleComboBox->addItem(style);
-  }
-}
+// void AppearanceSettingsPage::initStyleComboBox() {
+//   QStringList styleList = QStyleFactory::keys();
+//   ui.styleComboBox->addItem(tr("<System Default>"));
+//   foreach(QString style, styleList) {
+//     ui.styleComboBox->addItem(style);
+//   }
+// }
 
 void AppearanceSettingsPage::initLanguageComboBox() {
   QDir i18nDir(Quassel::translationDirPath(), "*.qm");
@@ -95,7 +95,7 @@ void AppearanceSettingsPage::initLanguageComboBox() {
 }
 
 void AppearanceSettingsPage::defaults() {
-  ui.styleComboBox->setCurrentIndex(0);
+  // ui.styleComboBox->setCurrentIndex(0);
   ui.languageComboBox->setCurrentIndex(1);
 
   SettingsPage::defaults();
@@ -105,14 +105,14 @@ void AppearanceSettingsPage::defaults() {
 void AppearanceSettingsPage::load() {
   QtUiSettings uiSettings;
 
-  // Gui Style
-  QString style = uiSettings.value("Style", QString("")).toString();
-  if(style.isEmpty()) {
-    ui.styleComboBox->setCurrentIndex(0);
-  } else {
-    ui.styleComboBox->setCurrentIndex(ui.styleComboBox->findText(style, Qt::MatchExactly));
-  }
-  ui.styleComboBox->setProperty("storedValue", ui.styleComboBox->currentIndex());
+  // // Gui Style
+  // QString style = uiSettings.value("Style", QString("")).toString();
+  // if(style.isEmpty()) {
+  //   ui.styleComboBox->setCurrentIndex(0);
+  // } else {
+  //   ui.styleComboBox->setCurrentIndex(ui.styleComboBox->findText(style, Qt::MatchExactly));
+  // }
+  // ui.styleComboBox->setProperty("storedValue", ui.styleComboBox->currentIndex());
 
   // Language
   QLocale locale = uiSettings.value("Locale", QLocale::system()).value<QLocale>();
@@ -149,13 +149,13 @@ void AppearanceSettingsPage::load() {
 void AppearanceSettingsPage::save() {
   QtUiSettings uiSettings;
 
-  if(ui.styleComboBox->currentIndex() < 1) {
-    uiSettings.setValue("Style", QString(""));
-  } else {
-    uiSettings.setValue("Style", ui.styleComboBox->currentText());
-    QApplication::setStyle(ui.styleComboBox->currentText());
-  }
-  ui.styleComboBox->setProperty("storedValue", ui.styleComboBox->currentIndex());
+  // if(ui.styleComboBox->currentIndex() < 1) {
+  //   uiSettings.setValue("Style", QString(""));
+  // } else {
+  //   uiSettings.setValue("Style", ui.styleComboBox->currentText());
+  //   QApplication::setStyle(ui.styleComboBox->currentText());
+  // }
+  // ui.styleComboBox->setProperty("storedValue", ui.styleComboBox->currentIndex());
 
   if(ui.languageComboBox->currentIndex() == 1) {
     uiSettings.remove("Locale"); // force the default (QLocale::system())
@@ -232,7 +232,7 @@ void AppearanceSettingsPage::widgetHasChanged() {
 }
 
 bool AppearanceSettingsPage::testHasChanged() {
-  if(ui.styleComboBox->currentIndex() != ui.styleComboBox->property("storedValue").toInt()) return true;
+  // if(ui.styleComboBox->currentIndex() != ui.styleComboBox->property("storedValue").toInt()) return true;
   if(ui.languageComboBox->currentIndex() != ui.languageComboBox->property("storedValue").toInt()) return true;
 
   if(SettingsPage::hasChanged(ui.userNoticesInStatusBuffer)) return true;

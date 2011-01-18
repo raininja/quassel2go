@@ -54,7 +54,8 @@ SettingsPage *SettingsPageDlg::currentPage() const {
 
 void SettingsPageDlg::setButtonStates() {
   SettingsPage *sp = currentPage();
-  ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(sp && sp->hasChanged());
+  if(ui.buttonBox->button(QDialogButtonBox::Apply))
+    ui.buttonBox->button(QDialogButtonBox::Apply)->setEnabled(sp && sp->hasChanged());
   ui.buttonBox->button(QDialogButtonBox::Reset)->setEnabled(sp && sp->hasChanged());
   ui.buttonBox->button(QDialogButtonBox::RestoreDefaults)->setEnabled(sp && sp->hasDefaults());
 }

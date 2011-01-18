@@ -21,13 +21,13 @@
 #ifndef PREVIEWBUFFERVIEW_H
 #define PREVIEWBUFFERVIEW_H
 
-#include "bufferview.h"
+#include "../mobilebufferview.h"
 
-class PreviewBufferView : public BufferView {
+class PreviewBufferView : public MobileBufferView {
   Q_OBJECT
 
 public:
-  PreviewBufferView(QWidget *parent = 0) : BufferView(parent) {}
+  PreviewBufferView(QWidget *parent = 0) : MobileBufferView(parent) {}
 
 protected:
   virtual void keyPressEvent(QKeyEvent *event) { QTreeView::keyPressEvent(event); }

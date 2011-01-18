@@ -212,16 +212,7 @@ void IdentityEditWidget::on_nickDown_clicked() {
 }
 
 void IdentityEditWidget::showAdvanced(bool advanced) {
-  int idx = ui.tabWidget->indexOf(ui.advancedTab);
-  if(advanced) {
-    if(idx != -1)
-      return; // already added
-    ui.tabWidget->addTab(ui.advancedTab, tr("Advanced"));
-  } else {
-    if(idx == -1)
-      return; // already removed
-    ui.tabWidget->removeTab(idx);
-  }
+  ui.advancedGroupBox->setVisible(advanced);
 }
 
 void IdentityEditWidget::setSslState(SslState state) {

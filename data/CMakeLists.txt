@@ -2,6 +2,11 @@
 # if((UNIX AND NOT APPLE) OR HAVE_KDE)
 if(HAVE_KDE OR UNIX)
  if(HAVE_KDE OR NOT APPLE)
+
+  if(WANT_MOBILECLIENT)
+    install(FILES quassel2go.desktop DESTINATION ${XDG_APPS_INSTALL_DIR}/hildon)
+  endif(WANT_MOBILECLIENT)
+
   if(WANT_QTCLIENT)
     install(FILES quasselclient.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
   endif(WANT_QTCLIENT)

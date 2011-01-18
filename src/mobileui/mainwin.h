@@ -33,12 +33,11 @@
 
 class ActionCollection;
 class BufferHotListFilter;
-class BufferView;
+class MobileBufferView;
 class BufferViewConfig;
 class ClientBufferViewConfig;
 class CoreAccount;
 class CoreConnectionStatusWidget;
-class BufferViewDock;
 class BufferWidget;
 class InputWidget;
 class MsgProcessorStatusWidget;
@@ -69,8 +68,8 @@ class MainWin
     void init();
 
     void addBufferView(ClientBufferViewConfig *config);
-    BufferView *allBuffersView() const;
-    BufferView *activeBufferView() const;
+    MobileBufferView *allBuffersView() const;
+    MobileBufferView *activeBufferView() const;
 
     inline BufferWidget *bufferWidget() const { return _bufferWidget; }
     inline SystemTray *systemTray() const { return _systemTray; }
@@ -132,7 +131,6 @@ class MainWin
 
     void on_actionConfigureNetworks_triggered();
     void on_actionConfigureViews_triggered();
-    void on_actionLockLayout_toggled(bool lock);
     void on_jumpHotBuffer_triggered();
     void on_actionDebugNetworkModel_triggered();
     void on_actionDebugBufferViewOverlay_triggered();
@@ -148,14 +146,12 @@ class MainWin
     void clientNetworkUpdated();
     void connectOrDisconnectFromNet();
 
-    void saveMenuBarStatus(bool enabled);
     void saveStatusBarStatus(bool enabled);
 
     void loadLayout();
     void saveLayout();
 
     void bufferViewToggled(bool enabled);
-    void bufferViewVisibilityChanged(bool visible);
     void changeActiveBufferView(bool backwards);
     void changeActiveBufferView(int bufferViewId);
 
@@ -185,21 +181,19 @@ class MainWin
     void setupStatusBar();
     void setupSystray();
     void setupTitleSetter();
-    void setupToolBars();
     void setupHotList();
+    void setupLock();
 
     void updateIcon();
     void enableMenus();
 
-    QList<BufferViewDock *> _bufferViews;
+    QList<MobileBufferView *> _bufferViews;
     BufferWidget *_bufferWidget;
     NickListWidget *_nickListWidget;
     InputWidget *_inputWidget;
     ChatMonitorView *_chatMonitorView;
     TopicWidget *_topicWidget;
 
-    QMenu *_fileMenu, *_networksMenu, *_viewMenu, *_bufferViewsMenu, *_settingsMenu, *_helpMenu, *_helpDebugMenu;
-    QMenu *_toolbarMenu;
     QToolBar *_mainToolBar, *_chatViewToolBar, *_nickToolBar;
 
     QWidget *_awayLog;

@@ -18,11 +18,15 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <QApplication>
 #include <QDateTime>
 
 #include "aboutdlg.h"
 #include "icon.h"
 #include "iconloader.h"
+
+#include "coreinfodlg.h"
+
 #include "quassel.h"
 
 AboutDlg::AboutDlg(QWidget *parent) : QDialog(parent) {
@@ -33,12 +37,24 @@ AboutDlg::AboutDlg(QWidget *parent) : QDialog(parent) {
                            .arg(Quassel::buildInfo().fancyVersionString)
 			   .arg(Quassel::buildInfo().protocolVersion)
 			   .arg(Quassel::buildInfo().buildDate));
-  ui.aboutTextBrowser->setHtml(about());
-  ui.authorTextBrowser->setHtml(authors());
-  ui.contributorTextBrowser->setHtml(contributors());
-  ui.thanksToTextBrowser->setHtml(thanksTo());
+  ui.aboutTextLabel->setText("<hr><h3>" + tr("About") + "</h3>" +
+                             about() +
+                             "<hr><h3>" + tr("Authors") + "</h3>" +
+                             authors() +
+                             "<hr><h3>" + tr("Contributors") + "</h3>" +
+                             contributors() +
+                             "<hr><h3>" + tr("Thanks To") + "</h3>" +
+                             thanksTo());
+
+  connect(ui.aboutQtButton, SIGNAL(clicked()), qApp, SLOT(aboutQt()));
+  connect(ui.coreInfoButton, SIGNAL(clicked()), this, SLOT(coreInfo()));
 
   setWindowIcon(Icon("quassel"));
+}
+
+void AboutDlg::coreInfo()
+{
+  CoreInfoDlg(this).exec();
 }
 
 QString AboutDlg::about() const {
@@ -56,6 +72,8 @@ QString AboutDlg::about() const {
 
   return res;
 }
+
+
 
 QString AboutDlg::authors() const {
   QString res;
@@ -146,3 +164,4 @@ QString AboutDlg::thanksTo() const {
 
   return res;
 }
+

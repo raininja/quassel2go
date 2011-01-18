@@ -31,6 +31,9 @@ class AboutDlg : public QDialog {
   public:
     AboutDlg(QWidget *parent = 0);
 
+  private slots:
+    void coreInfo();
+
   private:
     Ui::AboutDlg ui;
 

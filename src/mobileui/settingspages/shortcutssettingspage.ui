@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>497</width>
-    <height>481</height>
+    <height>316</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,6 +30,12 @@
    </item>
    <item>
     <widget class="QTreeView" name="shortcutsView">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>

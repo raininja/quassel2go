@@ -1,7 +1,7 @@
 # This is the cmake-based build system for Quassel IRC.
 #
 # You may pass various options to cmake:
-# -DWANT_(CORE|QTCLIENT|MONO)=(ON|OFF)
+# -DWANT_(CORE|QTCLIENT|MOBILECLIENT|MONO)=(ON|OFF)
 #                        : select binaries to build
 # -DWITH_OPENSSL=OFF     : Disable OpenSSL support
 # -DWITH_DBUS=OFF        : Disable D-Bus support (dbus notifications)
@@ -37,6 +37,7 @@ include(QuasselMacros)
 # Various options and variables that can be set on the command line
 option(WANT_CORE     "Build the core (server) binary"           ON)
 option(WANT_QTCLIENT "Build the Qt4 GUI client binary"          ON)
+option(WANT_MOBILECLIENT "Build the Qt4 mobile GUI client binary" OFF)
 option(WANT_MONO     "Build the monolithic (all-in-one) binary" ON)
 
 option(WITH_OPENSSL  "Enable OpenSSL support if present on the system"	ON)
@@ -131,9 +132,9 @@ if(APPLE AND DEPLOY)
 endif(APPLE AND DEPLOY)
 
 # Simplify checks
-if(WANT_MONO OR WANT_QTCLIENT)
+if(WANT_MONO OR WANT_QTCLIENT OR WANT_MOBILECLIENT)
   set(BUILD_GUI true)
-endif(WANT_MONO OR WANT_QTCLIENT)
+endif(WANT_MONO OR WANT_QTCLIENT OR WANT_MOBILECLIENT)
 if(WANT_MONO OR WANT_CORE)
   set(BUILD_CORE true)
 endif(WANT_MONO OR WANT_CORE)
@@ -390,7 +391,7 @@ endif(HAVE_INDICATEQT)
 #                   ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/src/version.gen)
 # add_dependencies(genversion_run genversion)
 
-# These variables will be added to the main targets (CORE, QTCLIENT, MONO)
+# These variables will be added to the main targets (CORE, QTCLIENT, MOBILECLIENT, MONO)
 set(COMMON_DEPS ${RC_WIN32})
 set(CORE_DEPS )
 set(CLIENT_DEPS )
