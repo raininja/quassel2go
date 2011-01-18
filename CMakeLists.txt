@@ -383,13 +383,34 @@ endif(HAVE_INDICATEQT)
 
 # We need to create a version.gen
 # For this, we create our genversion binary and make sure it is run every time.
-# add_executable(genversion ${CMAKE_SOURCE_DIR}/src/common/genversion.cpp)
-# target_link_libraries(genversion ${QT_LIBRARIES} ${QT_CORE_LIB_DEPENDENCIES})
 
-# get_target_property(GENVERSION_EXECUTABLE genversion LOCATION)
-# add_custom_target(genversion_run ALL ${GENVERSION_EXECUTABLE}
-#                   ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/src/version.gen)
-# add_dependencies(genversion_run genversion)
+# things get slightly more tricky when cross compiling because the
+# cross compiled genversion binary can't be used. therefore, import
+# the executable targets from a file, specified by:
+# -DIMPORT_EXECUTABLES=<path-to-native-build>/ImportExecutables.cmake
+IF(CMAKE_CROSSCOMPILING OR FORCE_CROSSCOMPILING)
+  message(STATUS "DO cross!")
+  SET(IMPORT_EXECUTABLES "IMPORTFILE-NOTFOUND" CACHE FILEPATH "Point it to the export file from a native build")
+  INCLUDE(${IMPORT_EXECUTABLES})
+ENDIF(CMAKE_CROSSCOMPILING OR FORCE_CROSSCOMPILING)
+# only build the generator if not crosscompiling
+IF(NOT (CMAKE_CROSSCOMPILING OR FORCE_CROSSCOMPILING))
+  add_executable(genversion ${CMAKE_SOURCE_DIR}/src/common/genversion.cpp)
+  target_link_libraries(genversion ${QT_LIBRARIES} ${QT_CORE_LIB_DEPENDENCIES})
+ENDIF(NOT (CMAKE_CROSSCOMPILING OR FORCE_CROSSCOMPILING))
+# export the generator target to a file, so it can be imported (see above) by another build
+# the IF() is not necessary, but makes the intention clearer
+IF(NOT (CMAKE_CROSSCOMPILING OR FORCE_CROSSCOMPILING))
+  EXPORT(TARGETS genversion FILE ${CMAKE_BINARY_DIR}/ImportExecutables.cmake )
+ENDIF(NOT (CMAKE_CROSSCOMPILING OR FORCE_CROSSCOMPILING))
+# then use the target name as COMMAND, CMake >= 2.6 knows how to
+# handle executables imported during cross compile
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/src/version.gen
+                   COMMAND genversion ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/src/version.gen
+                   DEPENDS ${CMAKE_SOURCE_DIR}/.git )
+# the custom command is needed because only targets can be referenced
+# from within src/CMakeLists.txt
+ADD_CUSTOM_TARGET(genversion_run ALL DEPENDS ${CMAKE_BINARY_DIR}/src/version.gen)
 
 # These variables will be added to the main targets (CORE, QTCLIENT, MOBILECLIENT, MONO)
 set(COMMON_DEPS ${RC_WIN32})
