@@ -1,0 +1,23 @@
+;; -*- emacs-lisp -*-
+;;
+;; This file is processed by the dirvars emacs package.  Each variable
+;; setting below is performed when this dirvars file is loaded.
+;;
+;; NOTE: for the 'evaluate' variable to work, the dirvars.el package from
+;; https://giessl@svn.kde.org/home/kde/trunk/KDE/kdesdk/scripts/kde-emacs
+;; is required. dirvars.el shipped with e.g. ubuntu will not evaluate
+;; dirvars-expressions - put these statements in your ~/.emacs instead.
+;;
+indent-tabs-mode: nil
+tab-width: 2
+c-basic-offset: 2
+evaluate: (c-set-offset 'innamespace '0)
+kde-emacs-after-parent-string: ""
+evaluate: (c-set-offset 'inline-open '0)
+kdab-qt-version: 4
+magic-parens-mode: nil
+show-trailing-whitespace: t
+indicate-empty-lines: t
+evaluate: (c-set-offset 'substatement-open 0)
+evaluate: (c-set-offset 'statement-case-open 0)
+
