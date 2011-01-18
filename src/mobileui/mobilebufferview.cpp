@@ -506,7 +506,7 @@ QSize MobileBufferView::sizeHint() const {
 }
 
 void MobileBufferView::updateTitle() {
-  QString title = config()->bufferViewName();
+  QString title = config() ? config()->bufferViewName() : "";
   if(_active)
     title.prepend(QString::fromUtf8("• "));
   setWindowTitle(title);

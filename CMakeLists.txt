@@ -389,7 +389,7 @@ endif(HAVE_INDICATEQT)
 # the executable targets from a file, specified by:
 # -DIMPORT_EXECUTABLES=<path-to-native-build>/ImportExecutables.cmake
 IF(CMAKE_CROSSCOMPILING OR FORCE_CROSSCOMPILING)
-  message(STATUS "DO cross!")
+  message(STATUS "Activating cross compile and importing native executables from '${IMPORT_EXECUTABLES}'")
   SET(IMPORT_EXECUTABLES "IMPORTFILE-NOTFOUND" CACHE FILEPATH "Point it to the export file from a native build")
   INCLUDE(${IMPORT_EXECUTABLES})
 ENDIF(CMAKE_CROSSCOMPILING OR FORCE_CROSSCOMPILING)

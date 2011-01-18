@@ -927,6 +927,7 @@ void MainWin::disconnectedFromCore() {
   foreach(view, _bufferViews) {
     view->deleteLater();
   }
+  _bufferViews.clear();
 
   // store last active buffer
   QtUiSettings s;

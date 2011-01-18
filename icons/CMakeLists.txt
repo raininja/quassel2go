@@ -2,7 +2,7 @@
 # We put them in DATA_INSTALL_DIR rather than ICON_INSTALL_DIR, to avoid
 # polluting the global namespace and to allow overriding
 
-if(WANT_MONO OR WANT_QTCLIENT)
+if(WANT_MONO OR WANT_QTCLIENT OR WANT_MOBILECLIENT)
 
   # Figure out if we want to install KDE's icons
   # Starting with KDE 4.3, they shouldn't be needed anymore
@@ -37,7 +37,7 @@ if(WANT_MONO OR WANT_QTCLIENT)
       install(DIRECTORY oxygen_kde/ DESTINATION ${DATA_INSTALL_DIR}/quassel/icons/oxygen)
     endif(INSTALL_OXY)
   endif(EMBED_DATA)
-endif(WANT_MONO OR WANT_QTCLIENT)
+endif(WANT_MONO OR WANT_QTCLIENT OR WANT_MOBILECLIENT)
 
 # Application icon
 
