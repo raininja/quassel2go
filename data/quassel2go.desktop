@@ -24,6 +24,5 @@ Comment[sv]=Distribuerad IRC-klient med central kärnkomponent
 Comment[uk]=Клієнт IRC з центральним ядром
 Comment[zh_CN]=带有中央核心组件的分布式 IRC 客户端
 Icon=quassel
-TryExec=quassel2go
-Exec=quassel2go
+Exec=/opt/maemo/usr/bin/quassel2go
 Categories=Qt;Network;Chat;IRCClient;
