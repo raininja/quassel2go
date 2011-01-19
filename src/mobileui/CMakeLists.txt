@@ -60,6 +60,8 @@ set(SOURCES
     systemtray.cpp
     systraynotificationbackend.cpp
     taskbarnotificationbackend.cpp
+    maemonotificationbackend.cpp
+    maemo5notification.cpp
     titlesetter.cpp
     topicwidget.cpp
     verticaldock.cpp
@@ -110,6 +112,7 @@ set(MOC_HDRS
     systemtray.h
     systraynotificationbackend.h
     taskbarnotificationbackend.h
+    maemonotificationbackend.h
     titlesetter.h
     topicwidget.h
     verticaldock.h)

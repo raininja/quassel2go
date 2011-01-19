@@ -18,6 +18,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <QDialog>
+
 #include "coreconnectionstatuswidget.h"
 
 #include "client.h"
@@ -50,8 +52,9 @@ void CoreConnectionStatusWidget::update() {
     ui.progressBar->setMaximum(conn->progressMaximum());
     ui.progressBar->setValue(conn->progressValue());
     ui.progressBar->show();
-  } else
+  } else {
     ui.progressBar->hide();
+  }
 
   ui.messageLabel->setText(conn->progressText());
 }

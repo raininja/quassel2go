@@ -90,6 +90,7 @@
 #  endif
 #  include "systraynotificationbackend.h"
 #  include "taskbarnotificationbackend.h"
+#  include "maemonotificationbackend.h"
 #else /* HAVE_KDE */
 #  include "knotificationbackend.h"
 #endif /* HAVE_KDE */
@@ -203,24 +204,26 @@ void MainWin::init() {
   // in mobile quassel, we want everything be locked.
   setupLock();
 
-#ifndef HAVE_KDE
-#  ifdef HAVE_PHONON
-  QtUi::registerNotificationBackend(new PhononNotificationBackend(this));
-#  endif
-#  ifndef QT_NO_SYSTEMTRAYICON
-  QtUi::registerNotificationBackend(new SystrayNotificationBackend(this));
-#  endif
+//#ifndef HAVE_KDE
+//#  ifdef HAVE_PHONON
+//  QtUi::registerNotificationBackend(new PhononNotificationBackend(this));
+//#  endif
+//#  ifndef QT_NO_SYSTEMTRAYICON
+//  QtUi::registerNotificationBackend(new SystrayNotificationBackend(this));
+//#  endif
 
-  // mobile quassel doesn't have taskbar for notifications
-  //QtUi::registerNotificationBackend(new TaskbarNotificationBackend(this));
+//  // mobile quassel doesn't have taskbar for notifications
+//  //QtUi::registerNotificationBackend(new TaskbarNotificationBackend(this));
 
-#else /* HAVE_KDE */
-  QtUi::registerNotificationBackend(new KNotificationBackend(this));
-#endif /* HAVE_KDE */
+  QtUi::registerNotificationBackend(new MaemoNotificationBackend(this));
 
-#ifdef HAVE_INDICATEQT
-  QtUi::registerNotificationBackend(new IndicatorNotificationBackend(this));
-#endif
+//#else /* HAVE_KDE */
+//  QtUi::registerNotificationBackend(new KNotificationBackend(this));
+//#endif /* HAVE_KDE */
+
+//#ifdef HAVE_INDICATEQT
+//  QtUi::registerNotificationBackend(new IndicatorNotificationBackend(this));
+//#endif
 
   // we assume that at this point, all configurable actions are defined!
   QtUi::loadShortcuts();

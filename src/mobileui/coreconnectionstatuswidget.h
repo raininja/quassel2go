@@ -22,6 +22,7 @@
 #define CORECONNECTIONSTATUSWIDGET_H
 
 #include <QWidget>
+#include <QDialog>
 
 #include "ui_coreconnectionstatuswidget.h"
 

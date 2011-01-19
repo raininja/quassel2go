@@ -303,6 +303,14 @@ if(BUILD_GUI)
       add_definitions(-DHAVE_QT_BEARER)
       set(HAVE_QT_BEARER 1)
     endif(QT_MOBILITY_FOUND)
+
+
+    find_package(Libnotify REQUIRED)
+    if(LIBNOTIFY_FOUND)
+      message(STATUS "Enabling Libnotify notifications support")
+      include_directories(${LIBNOTIFY_INCLUDE_DIR} ${GLIB2_INCLUDE_DIR} ${GTK2_INCLUDE_DIRS})
+      set(CLIENT_LIBRARIES ${CLIENT_LIBRARIES} ${LIBNOTIFY_LIBRARIES} ${GLIB2_LIBRARIES} ${GTK2_LIBRARIES})
+    endif(LIBNOTIFY_FOUND)
   endif(WANT_MOBILECLIENT)
 
 endif(BUILD_GUI)
