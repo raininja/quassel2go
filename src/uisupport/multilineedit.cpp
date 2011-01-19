@@ -143,7 +143,11 @@ void MultiLineEdit::updateSizeHint() {
   int scrollBarHeight = horizontalScrollBar()->isVisible() ? horizontalScrollBar()->height() : 0;
 
   // use the style to determine a decent size
-  int h = qMin(qMax((int)document()->size().height() + scrollBarHeight, minPixelHeight), maxPixelHeight) + 2 * frameWidth();
+
+  // FIXME: it seems OxygenStyle needs + 2 * frameWidth() instead; not
+  // sure if it's a bug in the style. this is mostly to make it work
+  // with hildon style (sgiessl)
+  int h = qMin(qMax((int)document()->size().height() + scrollBarHeight, minPixelHeight), maxPixelHeight) + 2 * lineWidth();
   QStyleOptionFrameV2 opt;
   opt.initFrom(this);
   opt.rect = QRect(0, 0, 100, h);

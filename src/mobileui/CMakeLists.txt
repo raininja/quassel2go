@@ -1,4 +1,4 @@
-# Builds the qtui module
+# Builds the mobileui module
 
 set(QT_DONT_USE_QTGUI 0)
 set(QT_USE_QTNETWORK 1)
