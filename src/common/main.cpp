@@ -57,7 +57,11 @@ int main(int argc, char **argv) {
   // Setup build information and version string
   # include "version.gen"
   buildinfo.append(QString(",%1,%2").arg(__DATE__, __TIME__));
-  Quassel::setupBuildInfo(buildinfo);
+#if defined BUILD_MOBILEUI
+  Quassel::setupBuildInfo(buildinfo, "quassel2go");
+#else
+  Quassel::setupBuildInfo(buildinfo, "quasselclient");
+#endif
   QCoreApplication::setApplicationName(Quassel::buildInfo().applicationName);
   QCoreApplication::setOrganizationName(Quassel::buildInfo().organizationName);
   QCoreApplication::setOrganizationDomain(Quassel::buildInfo().organizationDomain);

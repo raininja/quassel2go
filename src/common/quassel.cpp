@@ -157,10 +157,10 @@ void Quassel::registerMetaTypes() {
   }
 }
 
-void Quassel::setupBuildInfo(const QString &generated) {
+void Quassel::setupBuildInfo(const QString &generated, const QString &clientAppName) {
   _buildInfo.applicationName = "Quassel IRC";
   _buildInfo.coreApplicationName = "quasselcore";
-  _buildInfo.clientApplicationName = "quasselclient";
+  _buildInfo.clientApplicationName = clientAppName;
   _buildInfo.organizationName = "Quassel Project";
   _buildInfo.organizationDomain = "quassel-irc.org";
 

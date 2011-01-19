@@ -38,7 +38,7 @@ void QtUiStyle::updateTimestampFormatString() {
 }
 
 void QtUiStyle::generateSettingsQss() const {
-  QFile settingsQss(Quassel::configDirPath() + "settings.qss");
+  QFile settingsQss(Quassel::configDirPath() + "settings-quassel2go.qss");
   if(!settingsQss.open(QFile::WriteOnly|QFile::Truncate)) {
     qWarning() << "Could not open" << settingsQss.fileName() << "for writing!";
     return;

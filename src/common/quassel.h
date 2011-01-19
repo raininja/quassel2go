@@ -80,7 +80,7 @@ public:
 
   virtual ~Quassel();
 
-  static void setupBuildInfo(const QString &generated);
+  static void setupBuildInfo(const QString &generated, const QString &clientAppName);
   static inline const BuildInfo & buildInfo();
   static inline RunMode runMode();
 

@@ -71,7 +71,7 @@ bool MobileUiApplication::init() {
     // FIXME: MIGRATION 0.3 -> 0.4: Move database and core config to new location
     // Move settings, note this does not delete the old files
 #ifdef Q_WS_MAC
-    QSettings newSettings("quassel-irc.org", "quasselclient");
+    QSettings newSettings("quassel-irc.org", "quassel2go");
 #else
 
 # ifdef Q_WS_WIN
@@ -80,7 +80,7 @@ bool MobileUiApplication::init() {
     QSettings::Format format = QSettings::NativeFormat;
 # endif
 
-    QString newFilePath = Quassel::configDirPath() + "quasselclient"
+    QString newFilePath = Quassel::configDirPath() + "quassel2go"
     + ((format == QSettings::NativeFormat) ? QLatin1String(".conf") : QLatin1String(".ini"));
     QSettings newSettings(newFilePath, format);
 #endif /* Q_WS_MAC */

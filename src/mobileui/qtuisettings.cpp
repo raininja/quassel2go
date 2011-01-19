@@ -21,23 +21,23 @@
 #include "qtuisettings.h"
 
 QtUiSettings::QtUiSettings(const QString &subGroup)
-  : UiSettings(QString("QtUi/%1").arg(subGroup))
+  : UiSettings(QString("MobileUi/%1").arg(subGroup))
 {
 }
 
 QtUiSettings::QtUiSettings()
-  : UiSettings("QtUi")
+  : UiSettings("MobileUi")
 {
 }
 
 /***********************************************************************/
 QtUiStyleSettings::QtUiStyleSettings(const QString &subGroup)
-  : UiSettings(QString("QtUiStyle/%1").arg(subGroup))
+  : UiSettings(QString("MobileUiStyle/%1").arg(subGroup))
 {
 }
 
 QtUiStyleSettings::QtUiStyleSettings()
-  : UiSettings("QtUiStyle")
+  : UiSettings("MobileUiStyle")
 {
 }
 
