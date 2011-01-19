@@ -118,6 +118,7 @@ class CoreConnectionSettings : public ClientSettings {
 public:
   enum NetworkDetectionMode {
     UseSolid,
+    UseQtBearer,
     UsePingTimeout,
     NoActiveDetection
   };

@@ -295,6 +295,16 @@ if(BUILD_GUI)
     set(INDICATEQT_LIBRARIES "")
   endif(WITH_LIBINDICATE)
 
+  # QtMobility for Bearer management
+  if(WANT_MOBILECLIENT)
+    find_package(QtMobility REQUIRED)
+    if(QT_MOBILITY_FOUND)
+      message(STATUS "Enabling QtMobility support")
+      add_definitions(-DHAVE_QT_BEARER)
+      set(HAVE_QT_BEARER 1)
+    endif(QT_MOBILITY_FOUND)
+  endif(WANT_MOBILECLIENT)
+
 endif(BUILD_GUI)
 
 # Core-only deps

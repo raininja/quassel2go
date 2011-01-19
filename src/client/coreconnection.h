@@ -36,6 +36,10 @@
 #  include <Solid/Networking>
 #endif
 
+#if HAVE_QT_BEARER
+#  include <QNetworkSession>
+#endif
+
 #include "coreaccount.h"
 #include "types.h"
 
@@ -167,6 +171,10 @@ private slots:
   void solidNetworkStatusChanged(Solid::Networking::Status status);
 #endif
 
+#ifdef HAVE_QT_BEARER
+  void qtNetworkStatusChanged(QNetworkSession::State state);
+#endif
+
 private:
   CoreAccountModel *_model;
   CoreAccount _account;
@@ -189,6 +197,10 @@ private:
   bool _requestedDisconnect;
 
   inline CoreAccountModel *accountModel() const;
+
+#ifdef HAVE_QT_BEARER
+  QNetworkSession *_qtNetworkSession;
+#endif
 
   friend class CoreConfigWizard;
 };

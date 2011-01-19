@@ -24,6 +24,11 @@
 #  include <QNetworkProxy>
 #endif
 
+#ifdef HAVE_QT_BEARER
+#  include <QNetworkConfigurationManager>
+#  include <QMessageBox>
+#endif
+
 #include "client.h"
 #include "clientsettings.h"
 #include "coreaccountmodel.h"
@@ -44,7 +49,8 @@ CoreConnection::CoreConnection(CoreAccountModel *model, QObject *parent)
   _progressMaximum(-1),
   _progressValue(-1),
   _wasReconnect(false),
-  _requestedDisconnect(false)
+  _requestedDisconnect(false),
+  _qtNetworkSession(0)
 {
   qRegisterMetaType<ConnectionState>("CoreConnection::ConnectionState");
 }
@@ -60,6 +66,18 @@ void CoreConnection::init() {
 #ifdef HAVE_KDE
   connect(Solid::Networking::notifier(), SIGNAL(statusChanged(Solid::Networking::Status)),
           SLOT(solidNetworkStatusChanged(Solid::Networking::Status)));
+#endif
+
+#if HAVE_QT_BEARER
+  QNetworkConfigurationManager manager;
+  // Is there default access point, use it
+  QNetworkConfiguration cfg = manager.defaultConfiguration();
+  if (!cfg.isValid() ) {
+    qDebug() << "Qt Network Configuration Manager: No Access Point found";
+  }
+  _qtNetworkSession = new QNetworkSession(cfg, this);
+  connect(_qtNetworkSession, SIGNAL(stateChanged(QNetworkSession::State)),
+          SLOT(qtNetworkStatusChanged(QNetworkSession::State)));
 #endif
 
   CoreConnectionSettings s;
@@ -120,6 +138,15 @@ void CoreConnection::reconnectTimeout() {
       }
 #endif /* HAVE_KDE */
 
+#ifdef HAVE_QT_BEARER
+      // If using Qt Network Management, we don't want to reconnect if we're offline
+      if(s.networkDetectionMode() == CoreConnectionSettings::UseQtBearer) {
+        if(_qtNetworkSession->state() != QNetworkSession::Connected) {
+          return;
+        }
+      }
+#endif /* HAVE_KDE */
+
       reconnectToCore();
     }
   }
@@ -172,6 +199,37 @@ void CoreConnection::solidNetworkStatusChanged(Solid::Networking::Status status)
   }
 }
 
+#endif
+
+#ifdef HAVE_QT_BEARER
+void CoreConnection::qtNetworkStatusChanged(QNetworkSession::State networkState) {
+  CoreConnectionSettings s;
+  if(s.networkDetectionMode() != CoreConnectionSettings::UseQtBearer)
+    return;
+
+  switch(networkState) {
+  case QNetworkSession::Connected:
+    qDebug() << "Qt Bearer: Network status changed to connected";
+    if(state() == Disconnected) {
+      if(_wantReconnect && s.autoReconnect()) {
+        reconnectToCore();
+      }
+    }
+    break;
+  case QNetworkSession::Closing:
+  case QNetworkSession::Disconnected:
+    if(networkState == QNetworkSession::Closing)
+      qDebug() << "Qt Bearer: Network status changed to closing";
+    else if(networkState == QNetworkSession::Disconnected)
+        qDebug() << "Qt Bearer: Network status changed to disconnected";
+
+    if(state() != Disconnected && !isLocalConnection())
+      disconnectFromCore(tr("Qt Bearer: Network is down"), true);
+    break;
+  default:
+    break;
+  }
+}
 #endif
 
 bool CoreConnection::isEncrypted() const {
@@ -410,6 +468,28 @@ void CoreConnection::connectToCurrentAccount() {
     emit connectToInternalCore(Client::instance()->signalProxy());
     return;
   }
+
+  // check network connection state and try to establish a connection
+#ifdef HAVE_QT_BEARER
+  // Set Internet Access Point
+  QNetworkConfigurationManager manager;
+  const bool canStartIAP = (manager.capabilities()
+                            & QNetworkConfigurationManager::CanStartAndStopInterfaces);
+  // Is there default access point, use it
+  QNetworkConfiguration cfg = manager.defaultConfiguration();
+  if(!_qtNetworkSession->isOpen() ) {
+    if (!cfg.isValid() || (!canStartIAP && cfg.state() != QNetworkConfiguration::Active)) {
+      QMessageBox::information(0, tr("Network"), tr("No Network Access Point found."));
+      return;
+    }
+
+    _qtNetworkSession->open();
+    if(!_qtNetworkSession->waitForOpened(-1) ) {
+      QMessageBox::information(0, tr("Network"), tr("Unable to start network connection: %1").arg(_qtNetworkSession->errorString()));
+      return;
+    }
+  }
+#endif
 
   CoreAccountSettings s;
 

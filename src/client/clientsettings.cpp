@@ -206,6 +206,8 @@ void CoreConnectionSettings::setNetworkDetectionMode(NetworkDetectionMode mode) 
 CoreConnectionSettings::NetworkDetectionMode CoreConnectionSettings::networkDetectionMode() {
 #ifdef HAVE_KDE
   NetworkDetectionMode def = UseSolid;
+#elif HAVE_QT_BEARER
+  NetworkDetectionMode def = UseQtBearer;
 #else
   NetworkDetectionMode def = UsePingTimeout;
 #endif
