@@ -295,14 +295,20 @@ if(BUILD_GUI)
     set(INDICATEQT_LIBRARIES "")
   endif(WITH_LIBINDICATE)
 
-  # QtMobility for Bearer management
+  # Bearer management
   if(WANT_MOBILECLIENT)
-    find_package(QtMobility REQUIRED)
-    if(QT_MOBILITY_FOUND)
-      message(STATUS "Enabling QtMobility support")
+    if(QT_VERSION_MAJOR EQUAL 4 AND QT_VERSION_MINOR LESS 7)
+      find_package(QtMobility REQUIRED)
+      if(QT_MOBILITY_FOUND)
+        message(STATUS "Enabling QtMobility support for Bearer management.")
+        add_definitions(-DHAVE_QT_BEARER)
+        set(HAVE_QT_BEARER 1)
+      endif(QT_MOBILITY_FOUND)
+    else(QT_VERSION_MAJOR EQUAL 4 AND QT_VERSION_MINOR LESS 7)
+      message(STATUS "Using Bearer management which comes with Qt >= 4.7.")
       add_definitions(-DHAVE_QT_BEARER)
       set(HAVE_QT_BEARER 1)
-    endif(QT_MOBILITY_FOUND)
+    endif(QT_VERSION_MAJOR EQUAL 4 AND QT_VERSION_MINOR LESS 7)
 
 
     find_package(Libnotify REQUIRED)

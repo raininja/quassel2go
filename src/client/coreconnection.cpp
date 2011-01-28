@@ -49,8 +49,11 @@ CoreConnection::CoreConnection(CoreAccountModel *model, QObject *parent)
   _progressMaximum(-1),
   _progressValue(-1),
   _wasReconnect(false),
-  _requestedDisconnect(false),
+  _requestedDisconnect(false)
+#ifdef HAVE_QT_BEARER
+  ,
   _qtNetworkSession(0)
+#endif
 {
   qRegisterMetaType<ConnectionState>("CoreConnection::ConnectionState");
 }
