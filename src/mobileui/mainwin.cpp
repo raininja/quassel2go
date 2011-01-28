@@ -125,6 +125,15 @@
 #  include "settingspages/shortcutssettingspage.h"
 #endif
 
+#include <QGraphicsProxyWidget>
+#include <QGraphicsLinearLayout>
+#include <QDeclarativeView>
+#include <QDeclarativeComponent>
+#include <QDeclarativeEngine>
+#include <QDeclarativeContext>
+#include <QDeclarativeItem>
+#include "qmlcontextobject.h"
+
 MainWin::MainWin(QWidget *parent)
 #ifdef HAVE_KDE
   : KMainWindow(parent),
@@ -135,6 +144,7 @@ MainWin::MainWin(QWidget *parent)
     _msgProcessorStatusWidget(new MsgProcessorStatusWidget(this)),
     _coreConnectionStatusWidget(new CoreConnectionStatusWidget(Client::coreConnection(), this)),
     _titleSetter(this),
+    _declarativeView(0),
     _bufferWidget(0),
     _nickListWidget(0),
     _inputWidget(0),
@@ -187,6 +197,15 @@ void MainWin::init() {
   setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
   setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
+  // try setup qml...
+//  qmlRegisterType<ButtonExt>("org.quassel", 0, 1, "Mainwindow");
+  _declarativeView = new QDeclarativeView(this);
+  QmlContextObject *contextObj = new QmlContextObject(_declarativeView);
+  _declarativeView->rootContext()->setContextObject(contextObj);
+  _declarativeView->rootContext()->setContextProperty("ctxt", contextObj);
+  _declarativeView->setSource(QUrl("qrc:/qml/Main.qml"));
+  setCentralWidget(_declarativeView);
+
   // Order is sometimes important
   setupActions();
   setupBufferWidget();
@@ -215,7 +234,9 @@ void MainWin::init() {
 //  // mobile quassel doesn't have taskbar for notifications
 //  //QtUi::registerNotificationBackend(new TaskbarNotificationBackend(this));
 
+#if defined(Q_WS_MAEMO_5) || defined(Q_WS_HILDON)
   QtUi::registerNotificationBackend(new MaemoNotificationBackend(this));
+#endif
 
 //#else /* HAVE_KDE */
 //  QtUi::registerNotificationBackend(new KNotificationBackend(this));
@@ -498,7 +519,8 @@ void MainWin::setupBufferWidget() {
   _bufferWidget = new BufferWidget(this);
   _bufferWidget->setModel(Client::bufferModel());
   _bufferWidget->setSelectionModel(Client::bufferModel()->standardSelectionModel());
-  setCentralWidget(_bufferWidget);
+  _bufferWidget->hide();
+  //setCentralWidget(_bufferWidget);
 }
 
 void MainWin::addBufferView(int bufferViewConfigId) {
@@ -516,7 +538,9 @@ void MainWin::addBufferView(ClientBufferViewConfig *config) {
   MobileBufferView *view = new MobileBufferView(this);
 
   view->setWindowFlags(_nickListWidget->windowFlags() | Qt::Window);
+#if defined(Q_WS_MAEMO_5)
   view->setAttribute(Qt::WA_Maemo5StackedWindow);
+#endif
 
   view->setFilteredModel(Client::bufferModel(), config);
   view->installEventFilter(_inputWidget); // for key presses
@@ -705,7 +729,9 @@ void MainWin::setupNickWidget() {
   _nickListWidget = new NickListWidget(this);
   _nickListWidget->setWindowTitle(tr("Nicks"));
   _nickListWidget->setWindowFlags(_nickListWidget->windowFlags() | Qt::Window);
+#if defined(Q_WS_MAEMO_5)
   _nickListWidget->setAttribute(Qt::WA_Maemo5StackedWindow);
+#endif
 
   // nickDock->setWidget(_nickListWidget);
 

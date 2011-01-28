@@ -49,6 +49,7 @@ set(SOURCES
     msgprocessorstatuswidget.cpp
     nicklistwidget.cpp
     qtui.cpp
+    qmlcontextobject.cpp
     mobileuiapplication.cpp
     qtuimessageprocessor.cpp
     qtuisettings.cpp
@@ -102,6 +103,7 @@ set(MOC_HDRS
     msgprocessorstatuswidget.h
     nicklistwidget.h
     qtui.h
+    qmlcontextobject.h
     mobileuiapplication.h
     qtuimessageprocessor.h
     qtuistyle.h
@@ -182,6 +184,9 @@ if(INDICATEQT_FOUND)
   include_directories(${INDICATEQT_INCLUDE_DIRS})
 endif(INDICATEQT_FOUND)
 
+# embed QML file
+set(CLIENT_RCS ${CLIENT_RCS} "mobileui/qml/qml.qrc" PARENT_SCOPE)
+
 foreach(FORM ${FORMS})
   set(FORMPATH ${FORMPATH} ui/${FORM})
 endforeach(FORM ${FORMS})
@@ -215,3 +220,8 @@ include_directories(${CMAKE_SOURCE_DIR}/src/common
 
 add_library(mod_mobileui STATIC ${SOURCES} ${SPSRC} ${MOC} ${DBUS} ${UI} ${HEADERS})
 add_dependencies(mod_mobileui mod_common mod_client mod_uisupport)
+
+
+add_dependencies(mod_mobileui
+qml/Button.qml         qml/ChatListView.qml  qml/ChatView.qml  qml/Main.qml
+qml/ChatListModel.qml  qml/ChatModel.qml     qml/Input.qml     qml/NickListView.qml  qml/ScrollBar.qml)

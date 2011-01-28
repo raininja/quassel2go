@@ -1,5 +1,5 @@
 #include <QMouseEvent>
-#include <QAbstractKineticScroller>
+
 #include <QScrollBar>
 #include <QPainter>
 #include <QDebug>
@@ -48,7 +48,11 @@ QSize ScrollAreaKineticScroller::viewportSize() const
 
 bool ScrollAreaKineticScroller::handleMouseEvent ( QMouseEvent * event )
 {
+#if defined(Q_WS_MAEMO_5)
     return QAbstractKineticScroller::handleMouseEvent(event);
+#else
+  return false;
+#endif
 }
 
 void ScrollAreaKineticScroller::paintEvent(QPaintEvent *e)

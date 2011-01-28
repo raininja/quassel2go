@@ -187,6 +187,8 @@ class MainWin
     void updateIcon();
     void enableMenus();
 
+    class QDeclarativeView *_declarativeView;
+
     QList<MobileBufferView *> _bufferViews;
     BufferWidget *_bufferWidget;
     NickListWidget *_nickListWidget;

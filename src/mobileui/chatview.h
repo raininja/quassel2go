@@ -23,7 +23,6 @@
 
 #include <QGraphicsView>
 #include <QTimer>
-#include <QAbstractKineticScroller>
 
 #include "abstractbuffercontainer.h"
 

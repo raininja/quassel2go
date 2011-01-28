@@ -1,7 +1,10 @@
 #include <QDebug>
 
 #include <QMouseEvent>
+
+#if defined(Q_WS_MAEMO_5)
 #include <QAbstractKineticScroller>
+#endif
 
 #include "scrollareakineticscroller.h"
 #include "itemviewkinetictapsuppressor.h"
@@ -12,11 +15,14 @@ ItemViewKineticTapSuppressor::ItemViewKineticTapSuppressor(QAbstractItemView *pa
     _scroller(new ScrollAreaKineticScroller(parent))
 {
     // disable the internal itemview scroller...
+#if defined(Q_WS_MAEMO_5)
     _view->property("kineticScroller").value<QAbstractKineticScroller *>()->setEnabled(false);
+#endif
 }
 
 bool ItemViewKineticTapSuppressor::handleMouseEvent(QEvent *event)
 {
+#if defined(Q_WS_MAEMO_5)
     _view->property("kineticScroller").value<QAbstractKineticScroller *>()->setEnabled(false);
 
     if(!event)
@@ -78,6 +84,8 @@ bool ItemViewKineticTapSuppressor::handleMouseEvent(QEvent *event)
     default:
         ;
     }
+
+#endif
 
     return false;
 }

@@ -29,8 +29,6 @@
 #include <QTreeView>
 #include <QPointer>
 
-#include <QAbstractKineticScroller>
-
 #include "actioncollection.h"
 #include "bufferviewconfig.h"
 #include "networkmodel.h"

@@ -2,10 +2,17 @@
 #define SCROLLAREAKINETICSCROLLER_H
 
 #include <QAbstractScrollArea>
+
+#if defined(Q_WS_MAEMO_5)
 #include <QAbstractKineticScroller>
+#endif
+
 #include <QTimer>
 
-class ScrollAreaKineticScroller : public QObject, public QAbstractKineticScroller
+class ScrollAreaKineticScroller : public QObject
+    #if defined(Q_WS_MAEMO_5)
+    , public QAbstractKineticScroller
+    #endif
 {
     Q_OBJECT
 public:
@@ -28,7 +35,11 @@ protected slots:
 signals:
 
 private:
+#if defined(Q_WS_MAEMO_5)
     QAbstractScrollArea *_scroll;
+#else
+    QAbstractScrollArea *_scroll;
+#endif
     bool _showBars;
     QTimer _timer;
 };

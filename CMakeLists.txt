@@ -295,8 +295,9 @@ if(BUILD_GUI)
     set(INDICATEQT_LIBRARIES "")
   endif(WITH_LIBINDICATE)
 
-  # Bearer management
+  # Bearer management, QML
   if(WANT_MOBILECLIENT)
+    # bearer
     if(QT_VERSION_MAJOR EQUAL 4 AND QT_VERSION_MINOR LESS 7)
       find_package(QtMobility REQUIRED)
       if(QT_MOBILITY_FOUND)
@@ -310,13 +311,25 @@ if(BUILD_GUI)
       set(HAVE_QT_BEARER 1)
     endif(QT_VERSION_MAJOR EQUAL 4 AND QT_VERSION_MINOR LESS 7)
 
-
+    # hildon notifications (glib+gtk, ugh...)
     find_package(Libnotify REQUIRED)
     if(LIBNOTIFY_FOUND)
       message(STATUS "Enabling Libnotify notifications support")
       include_directories(${LIBNOTIFY_INCLUDE_DIR} ${GLIB2_INCLUDE_DIR} ${GTK2_INCLUDE_DIRS})
       set(CLIENT_LIBRARIES ${CLIENT_LIBRARIES} ${LIBNOTIFY_LIBRARIES} ${GLIB2_LIBRARIES} ${GTK2_LIBRARIES})
     endif(LIBNOTIFY_FOUND)
+
+    # QML
+    set(QT_MIN_VERSION "4.7.0")
+    if(QT_QTDECLARATIVE_FOUND)
+      message(STATUS "Found QtDeclarative, enabling the QML-based Mobile UI")
+      add_definitions(-DHAVE_QML)
+      set(CLIENT_QT4_VARS ${CLIENT_QT4_VARS} DECLARATIVE)
+       set(CLIENT_COMPILE_FLAGS "${CLIENT_COMPILE_FLAGS} -DQT_DECLARATIVE_LIB")
+      set(HAVE_QML true)
+    else(QT_QTDECLARATIVE_FOUND)
+        message(FATAL_ERROR "QtDeclarative not found, unable to build mobile UI")
+    endif(QT_QTDECLARATIVE_FOUND)
   endif(WANT_MOBILECLIENT)
 
 endif(BUILD_GUI)

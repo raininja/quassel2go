@@ -7,13 +7,16 @@
 
 #include <QtGui>
 
+#if defined(Q_WS_MAEMO_5) || defined(Q_WS_HILDON)
 const int Maemo5Notification::EXPIRES_NEVER = NOTIFY_EXPIRES_NEVER;
 
 const int Maemo5Notification::DEFAULT_TIMEOUT = NOTIFY_EXPIRES_DEFAULT;
+#endif
 
 const QString Maemo5Notification::DEFAULT_ICON("general_web");
 
 const QString Maemo5Notification::APPLICATION_ICON_SETTING_KEY("Maemo5Notification_application_icon");
+
 
 const QString Maemo5Notification::applicationIcon()
 {
