@@ -82,7 +82,6 @@
 #include "statusnotifieritem.h"
 #include "toolbaractionprovider.h"
 #include "topicmodel.h"
-#include "verticaldock.h"
 
 #ifndef HAVE_KDE
 #  ifdef HAVE_PHONON
@@ -193,13 +192,6 @@ void MainWin::init() {
   connect(Client::coreConnection(), SIGNAL(handleSslErrors(const QSslSocket *, bool *, bool *)), SLOT(handleSslErrors(const QSslSocket *, bool *, bool *)));
 #endif
 
-  // Setup Dock Areas
-  setDockNestingEnabled(true);
-  setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-  setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-  setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-  setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-
   // Order is sometimes important
   setupActions();
   setupBufferWidget();
@@ -237,10 +229,6 @@ void MainWin::init() {
   _declarativeView->rootContext()->setContextProperty("topicModel", _topicModel);
   _declarativeView->setSource(QUrl("qrc:/qml/Main.qml"));
   setCentralWidget(_declarativeView);
-
-
-  // in mobile quassel, we want everything be locked.
-  setupLock();
 
 //#ifndef HAVE_KDE
 //#  ifdef HAVE_PHONON
@@ -394,6 +382,9 @@ void MainWin::setupActions() {
   coll->addAction("ToggleStatusBar", new MobileAction(tr("Show Status &Bar"), coll,
                                                 0, 0))->setCheckable(true);
 
+  coll->addAction("ToggleChatMonitor", new MobileAction(tr("Show Chat Monitor"), coll,
+                                                0, 0))->setCheckable(true);
+
 #ifdef HAVE_KDE
   QAction *fullScreenAct = KStandardAction::fullScreen(this, SLOT(toggleFullscreen()), this, coll);
 #else
@@ -514,6 +505,7 @@ void MainWin::setupMenus() {
   //menuBar()->addAction(coll->action("ConfigureBufferViews"));
 
   menuBar()->addAction(coll->action("ToggleStatusBar"));
+  menuBar()->addAction(coll->action("ToggleChatMonitor"));
   menuBar()->addAction(coll->action("ToggleSearchBar"));
 
   menuBar()->addAction(coll->action("ShowAwayLog"));
@@ -551,7 +543,6 @@ void MainWin::addBufferView(ClientBufferViewConfig *config) {
     return;
 
   config->setLocked(true);
-  // BufferViewDock *dock = new BufferViewDock(config, this);
 
   //create the view and initialize it's filter
   MobileBufferView *view = new MobileBufferView(this);
@@ -570,8 +561,6 @@ void MainWin::addBufferView(ClientBufferViewConfig *config) {
 
   view->setVisible(_layoutLoaded);
 
-  // connect(dock->toggleViewAction(), SIGNAL(toggled(bool)), this, SLOT(bufferViewToggled(bool)));
-  // connect(view, SIGNAL(visibilityChanged(bool)), SLOT(bufferViewVisibilityChanged(bool)));
   _bufferViews.append(view);
 
   if(!activeBufferView())
@@ -625,7 +614,7 @@ void MainWin::bufferViewToggled(bool enabled) {
 }
 
 MobileBufferView *MainWin::allBuffersView() const {
-  // "All Buffers" is always the first dock created
+  // "All Buffers" is always the first buffer created
   if(_bufferViews.count() > 0)
     return _bufferViews[0];
   return 0;
@@ -722,41 +711,13 @@ void MainWin::on_actionConfigureViews_triggered() {
   dlg.exec();
 }
 
-void MainWin::setupLock() {
-  // TODO this is based on old stuff from quassel...
-
-  bool lock = true;
-
-  QList<VerticalDock *> docks = findChildren<VerticalDock *>();
-  foreach(VerticalDock *dock, docks) {
-    dock->showTitle(!lock);
-  }
-  if(Client::bufferViewManager()) {
-    foreach(ClientBufferViewConfig *config, Client::bufferViewManager()->clientBufferViewConfigs()) {
-      config->setLocked(lock);
-    }
-  }
-  QtUiSettings().setValue("LockLayout", lock);
-}
-
 void MainWin::setupNickWidget() {
-  // // create nick dock
-  // NickListDock *nickDock = new NickListDock(tr("Nicks"), this);
-  // nickDock->setObjectName("NickDock");
-  // nickDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-
   _nickListWidget = new NickListWidget(this);
   _nickListWidget->setWindowTitle(tr("Nicks"));
   _nickListWidget->setWindowFlags(_nickListWidget->windowFlags() | Qt::Window);
 #if defined(Q_WS_MAEMO_5)
   _nickListWidget->setAttribute(Qt::WA_Maemo5StackedWindow);
 #endif
-
-  // nickDock->setWidget(_nickListWidget);
-
-  // addDockWidget(Qt::RightDockWidgetArea, nickDock);
-  // _viewMenu->addAction(nickDock->toggleViewAction());
-  // nickDock->toggleViewAction()->setText(tr("Show Nick List"));
 
   QAction *act = new QAction(tr("Nicks"), this);
   connect(act, SIGNAL(triggered()), _nickListWidget, SLOT(show()));
@@ -765,38 +726,25 @@ void MainWin::setupNickWidget() {
   act->setCheckable(true);
   menuBar()->addAction(act);
 
-  // See NickListDock::NickListDock();
-  // connect(nickDock->toggleViewAction(), SIGNAL(triggered(bool)), nickListWidget, SLOT(showWidget(bool)));
-
   // attach the NickListWidget to the BufferModel and the default selection
   _nickListWidget->setModel(Client::bufferModel());
   _nickListWidget->setSelectionModel(Client::bufferModel()->standardSelectionModel());
 }
 
 void MainWin::setupChatMonitor() {
-  VerticalDock *dock = new VerticalDock(tr("Chat Monitor"), this);
-  dock->setObjectName("ChatMonitorDock");
-
   ChatMonitorFilter *filter = new ChatMonitorFilter(Client::messageModel(), this);
   _chatMonitorView = new ChatMonitorView(filter, this);
+  _chatMonitorView->setWindowTitle(tr("Chat Monitor"));
+  _chatMonitorView->setWindowFlags(_nickListWidget->windowFlags() | Qt::Window);
   _chatMonitorView->setFocusProxy(_inputWidget);
-  _chatMonitorView->show();
-  dock->setWidget(_chatMonitorView);
-  dock->hide();
+  _chatMonitorView->hide();
 
-  addDockWidget(Qt::TopDockWidgetArea, dock, Qt::Vertical);
-  menuBar()->addAction(dock->toggleViewAction());
-  dock->toggleViewAction()->setText(tr("Show Chat Monitor"));
+  QAction *action = QtUi::actionCollection("General")->action("ToggleChatMonitor");
+  connect(action, SIGNAL(toggled(bool)), _chatMonitorView, SLOT(setVisible(bool)));
 }
 
 void MainWin::setupInputWidget() {
-  // VerticalDock *dock = new VerticalDock(tr("Inputline"), this);
-  // dock->setObjectName("InputDock");
-
   _inputWidget = new InputWidget(0);
-  // dock->setWidget(_inputWidget);
-
-  // addDockWidget(Qt::BottomDockWidgetArea, dock);
 
   _inputWidget->setModel(Client::bufferModel());
   _inputWidget->setSelectionModel(Client::bufferModel()->standardSelectionModel());
@@ -976,9 +924,6 @@ void MainWin::disconnectedFromCore() {
     // clear the current selection
     Client::bufferModel()->standardSelectionModel()->clearSelection();
   }
-
-  // we don't customize mainwindow docking etc. layout for now
-  // restoreState(s.value("MainWinState").toByteArray());
 
   setDisconnectedState();
 }

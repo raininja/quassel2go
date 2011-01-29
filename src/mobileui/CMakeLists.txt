@@ -68,7 +68,6 @@ set(SOURCES
     titlesetter.cpp
     topicmodel.cpp
     topicwidget.cpp
-    verticaldock.cpp
     webpreviewitem.cpp)
 
 set(MOC_HDRS
@@ -122,8 +121,7 @@ set(MOC_HDRS
     maemonotificationbackend.h
     titlesetter.h
     topicmodel.h
-    topicwidget.h
-    verticaldock.h)
+    topicwidget.h)
 
 set(HEADERS
     chatline.h
