@@ -81,7 +81,7 @@
 #include "settingspagedlg.h"
 #include "statusnotifieritem.h"
 #include "toolbaractionprovider.h"
-#include "topicwidget.h"
+#include "topicmodel.h"
 #include "verticaldock.h"
 
 #ifndef HAVE_KDE
@@ -132,7 +132,10 @@
 #include <QDeclarativeEngine>
 #include <QDeclarativeContext>
 #include <QDeclarativeItem>
+#include <QGLWidget>
+#include "qmlchatview.h"
 #include "qmlcontextobject.h"
+#include "qmlinputwidget.h"
 
 MainWin::MainWin(QWidget *parent)
 #ifdef HAVE_KDE
@@ -149,7 +152,7 @@ MainWin::MainWin(QWidget *parent)
     _nickListWidget(0),
     _inputWidget(0),
     _chatMonitorView(0),
-    _topicWidget(0),
+    _topicModel(0),
     _awayLog(0),
     _layoutLoaded(false),
     _activeBufferViewIndex(-1)
@@ -197,15 +200,6 @@ void MainWin::init() {
   setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
   setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
-  // try setup qml...
-//  qmlRegisterType<ButtonExt>("org.quassel", 0, 1, "Mainwindow");
-  _declarativeView = new QDeclarativeView(this);
-  QmlContextObject *contextObj = new QmlContextObject(_declarativeView);
-  _declarativeView->rootContext()->setContextObject(contextObj);
-  _declarativeView->rootContext()->setContextProperty("ctxt", contextObj);
-  _declarativeView->setSource(QUrl("qrc:/qml/Main.qml"));
-  setCentralWidget(_declarativeView);
-
   // Order is sometimes important
   setupActions();
   setupBufferWidget();
@@ -219,6 +213,31 @@ void MainWin::init() {
   setupSystray();
   setupTitleSetter();
   setupHotList();
+
+  // try setup qml... (needs _bufferWidget already initialized)
+  QmlChatView::setBufferWidget(_bufferWidget);
+  QmlInputWidget::setEmbeddedWidget(_inputWidget);
+  qmlRegisterType<BufferWidget>();
+  qmlRegisterType<TopicModel>();
+  qmlRegisterType<QmlChatView>("org.quassel", 0, 1, "QuasselChatView");
+  qmlRegisterType<QmlInputWidget>("org.quassel", 0, 1, "QuasselInputWidget");
+  _declarativeView = new QDeclarativeView(this);
+#ifdef Q_WS_MAEMO_5
+  // default settings are fine
+#else
+  // desktop version appears to perform better this way (even though not as good as qmlviewerq??):
+  _declarativeView->setViewport(new QGLWidget());
+#endif
+  _declarativeView->setResizeMode(QDeclarativeView::SizeRootObjectToView);
+  QmlContextObject *contextObj = new QmlContextObject(_declarativeView);
+  contextObj->setBufferContainer(_bufferWidget);
+  _declarativeView->rootContext()->setContextObject(contextObj);
+  _declarativeView->rootContext()->setContextProperty("ctxt", contextObj);
+  _declarativeView->rootContext()->setContextProperty("bufferWidget", _bufferWidget);
+  _declarativeView->rootContext()->setContextProperty("topicModel", _topicModel);
+  _declarativeView->setSource(QUrl("qrc:/qml/Main.qml"));
+  setCentralWidget(_declarativeView);
+
 
   // in mobile quassel, we want everything be locked.
   setupLock();
@@ -516,10 +535,10 @@ void MainWin::setupMenus() {
 }
 
 void MainWin::setupBufferWidget() {
-  _bufferWidget = new BufferWidget(this);
+  _bufferWidget = new BufferWidget(0);
   _bufferWidget->setModel(Client::bufferModel());
   _bufferWidget->setSelectionModel(Client::bufferModel()->standardSelectionModel());
-  _bufferWidget->hide();
+  //_bufferWidget->show();
   //setCentralWidget(_bufferWidget);
 }
 
@@ -771,13 +790,13 @@ void MainWin::setupChatMonitor() {
 }
 
 void MainWin::setupInputWidget() {
-  VerticalDock *dock = new VerticalDock(tr("Inputline"), this);
-  dock->setObjectName("InputDock");
+  // VerticalDock *dock = new VerticalDock(tr("Inputline"), this);
+  // dock->setObjectName("InputDock");
 
-  _inputWidget = new InputWidget(dock);
-  dock->setWidget(_inputWidget);
+  _inputWidget = new InputWidget(0);
+  // dock->setWidget(_inputWidget);
 
-  addDockWidget(Qt::BottomDockWidgetArea, dock);
+  // addDockWidget(Qt::BottomDockWidgetArea, dock);
 
   _inputWidget->setModel(Client::bufferModel());
   _inputWidget->setSelectionModel(Client::bufferModel()->standardSelectionModel());
@@ -785,24 +804,15 @@ void MainWin::setupInputWidget() {
   _bufferWidget->setFocusProxy(_inputWidget);
 
   _inputWidget->inputLine()->installEventFilter(_bufferWidget);
-
-  connect(_topicWidget, SIGNAL(switchedPlain()), _bufferWidget, SLOT(setFocus()));
 }
 
 void MainWin::setupTopicWidget() {
-  VerticalDock *dock = new VerticalDock(tr("Topic"), this);
-  dock->setObjectName("TopicDock");
-  _topicWidget = new TopicWidget(dock);
+  _topicModel = new TopicModel(this);
+  _topicModel->setModel(Client::bufferModel());
+  _topicModel->setSelectionModel(Client::bufferModel()->standardSelectionModel());
 
-  dock->setWidget(_topicWidget);
-
-  _topicWidget->setModel(Client::bufferModel());
-  _topicWidget->setSelectionModel(Client::bufferModel()->standardSelectionModel());
-
-  addDockWidget(Qt::TopDockWidgetArea, dock, Qt::Vertical);
-
-  menuBar()->addAction(dock->toggleViewAction());
-  dock->toggleViewAction()->setText(tr("Show Topic Line"));
+  // TODO: check wether to port TopicWidget settings to QML. then, get rid of
+  //       TopicWidget class
 }
 
 void MainWin::setupViewMenuTail() {

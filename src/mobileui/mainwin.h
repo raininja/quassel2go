@@ -45,6 +45,7 @@ class NickListWidget;
 class SystemTray;
 class ChatMonitorView;
 class TopicWidget;
+class TopicModel;
 
 class QMenu;
 class QLabel;
@@ -194,7 +195,7 @@ class MainWin
     NickListWidget *_nickListWidget;
     InputWidget *_inputWidget;
     ChatMonitorView *_chatMonitorView;
-    TopicWidget *_topicWidget;
+    TopicModel *_topicModel;
 
     QToolBar *_mainToolBar, *_chatViewToolBar, *_nickToolBar;
 

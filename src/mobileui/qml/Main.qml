@@ -1,9 +1,11 @@
 import Qt 4.7
+import org.quassel 0.1
 
 Rectangle {
     id: background
-    width:  ctxt?ctxt.width:800
-    height: ctxt?ctxt.height:480
+    //width:  /*ctxt?ctxt.width:*/800
+    //height: /*ctxt?ctxt.height:*/480
+    anchors.fill:  parent
     gradient: Gradient {
         GradientStop {
             position: 0.00;
@@ -65,15 +67,23 @@ Rectangle {
 //            anchors.centerIn: parent
 //        }
 
-        ChatView {
+        QuasselChatView {
             id: chatview_view
             anchors.left: parent.left
             anchors.right:parent.right
             anchors.top: parent.top
             anchors.bottom:parent.bottom
 
-            model: ChatModel { }
+            //bufferId: ctxt.bufferContainer.currentBuffer
+            //widget: ctxt.bufferContainer
+
+            //model: ChatModel { }
         }
+
+//        Connections {
+//          target: ctxt.bufferContainer
+//          onCurrentIdChanged: console.log("buffer Container current changed:" + id)
+//        }
     }
 
     Item {
@@ -113,7 +123,7 @@ Rectangle {
 
             Text {
                 id: topicText
-                text: "Latest Qt: 4.7.1 | docs: qt.nokia.com/doc/ | #qt-creator | Bugs: bugreports.qt.nokia.com | Off-topic: #qt-chat | Forum: www.qtcentre.org | Mailing list:  lists.trolltech.com/qt-interest | Nokia devices and NDK: www.forum.nokia.com | Symbian: #qt-symbian | Maemo: #qt-maemo"
+                text: topicModel.currentTopic
                 anchors.verticalCenter: parent.verticalCenter
                 //height: parent.height
                 elide: Text.ElideRight
@@ -208,12 +218,13 @@ Rectangle {
             spacing: 10
             Text {
                 id: topicTextFullText
-                text: "Latest Qt: 4.7.1 | docs: qt.nokia.com/doc/ | #qt-creator | Bugs: bugreports.qt.nokia.com | Off-topic: #qt-chat | Forum: www.qtcentre.org | Mailing list:  lists.trolltech.com/qt-interest | Nokia devices and NDK: www.forum.nokia.com | Symbian: #qt-symbian | Maemo: #qt-maemo"
+                text: topicModel.currentTopic
                 width: parent.width
                 wrapMode: Text.WordWrap
             }
             Button {
                 id: topicTextFullBtn
+                visible: topicModel.readOnly
                 text: "edit"
             }
         }
@@ -235,22 +246,27 @@ Rectangle {
 
         z: 99
 
-        Button {
-            id: nickSelectBtn
-            text: "nick"
-            height: parent.height
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
+        QuasselInputWidget {
+          id: quassel_input_widget
+          anchors.fill: parent
         }
-        Input {
-            text: "text input"
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.left: nickSelectBtn.right
-            focus:true
-        }
+
+//        Button {
+//            id: nickSelectBtn
+//            text: "nick"
+//            height: parent.height
+//            anchors.left: parent.left
+//            anchors.top: parent.top
+//            anchors.bottom: parent.bottom
+//        }
+//        Input {
+//            text: "text input"
+//            anchors.right: parent.right
+//            anchors.top: parent.top
+//            anchors.bottom: parent.bottom
+//            anchors.left: nickSelectBtn.right
+//            focus:true
+//        }
     }
 
     Rectangle {

@@ -68,6 +68,8 @@ BufferWidget::BufferWidget(QWidget *parent)
   connect(ui.searchBar->searchDownButton(), SIGNAL(clicked()),
     _chatViewSearchController, SLOT(highlightNext()));
 
+  connect(this, SIGNAL(currentChanged(BufferId)), this, SIGNAL(currentIdChanged(BufferId)));
+
   connect(ui.searchBar, SIGNAL(hidden()), this, SLOT(setFocus()));
 
   connect(_chatViewSearchController, SIGNAL(newCurrentHighlight(QGraphicsItem *)),

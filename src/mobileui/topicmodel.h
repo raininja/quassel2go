@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2005-09 by the Quassel Project                          *
+ *   Copyright (C) 2005/06 by the Quassel Project                          *
  *   devel@quassel-irc.org                                                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -18,63 +18,53 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef BUFFERWIDGET_H_
-#define BUFFERWIDGET_H_
+#ifndef TOPICMODEL_H_
+#define TOPICMODEL_H_
 
-#include "ui_bufferwidget.h"
+#include <QPointer>
+#include <QObject>
+#include <QAbstractItemModel>
+#include <QItemSelectionModel>
 
-#include "abstractbuffercontainer.h"
-
-class QGraphicsItem;
-class ChatView;
-class ChatViewSearchBar;
-class ChatViewSearchController;
-
-class BufferWidget : public AbstractBufferContainer {
+class TopicModel : public QObject {
   Q_OBJECT
 
-  Q_PROPERTY(BufferId currentBuffer READ currentBuffer NOTIFY currentIdChanged)
+  Q_PROPERTY(QString currentTopic READ currentTopic WRITE setCurrentTopic NOTIFY currentTopicChanged)
+  Q_PROPERTY(bool readOnly READ isReadOnly NOTIFY readOnlyChanged)
 
 public:
-  BufferWidget(QWidget *parent);
-  ~BufferWidget();
+  TopicModel(QObject *parent = 0);
 
-  virtual bool eventFilter(QObject *watched, QEvent *event);
+  const QString &currentTopic() const { return _topic; }
+  inline bool isReadOnly() const { return _readonly; }
 
-  inline ChatViewSearchBar *searchBar() const { return ui.searchBar; }
-  void addActionsToMenu(QMenu *, const QPointF &pos);
+  inline QAbstractItemModel *model() { return _model; }
+  void setModel(QAbstractItemModel *model);
+  inline QItemSelectionModel *selectionModel() const { return _selectionModel; }
+  void setSelectionModel(QItemSelectionModel *selectionModel);
 
 public slots:
-  virtual void setMarkerLine(ChatView *view = 0, bool allowGoingBack = true);
-  virtual void jumpToMarkerLine(ChatView *view = 0, bool requestBacklog = true);
+  void setCurrentTopic(const QString &topic);
 
-protected:
-  virtual AbstractChatView *createChatView(BufferId);
-  virtual void removeChatView(BufferId);
-  virtual inline bool autoMarkerLine() const { return _autoMarkerLine; }
+signals:
+  void currentTopicChanged(const QString &topic);
+  void readOnlyChanged(bool readonly);
+
 
 protected slots:
   virtual void currentChanged(const QModelIndex &current, const QModelIndex &previous);
-  virtual void showChatView(BufferId);
-
-private slots:
-  void scrollToHighlight(QGraphicsItem *highlightItem);
-  void zoomIn();
-  void zoomOut();
-  void zoomOriginal();
-
-  void setAutoMarkerLine(const QVariant &);
-
-signals:
-  void currentIdChanged(BufferId id);
+  virtual void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
 
 private:
-  Ui::BufferWidget ui;
-  QHash<BufferId, QWidget *> _chatViews;
+  void setReadOnly(const bool &readonly);
+  void _updateTopic(const QModelIndex &index);
+  void _changeTopic(const QString &topic);
+  QPointer<QAbstractItemModel> _model;
+  QPointer<QItemSelectionModel> _selectionModel;
 
-  ChatViewSearchController *_chatViewSearchController;
-
-  bool _autoMarkerLine;
+  QString _topic;
+  bool _readonly;
 };
+
 
 #endif

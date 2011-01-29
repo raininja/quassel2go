@@ -49,7 +49,9 @@ set(SOURCES
     msgprocessorstatuswidget.cpp
     nicklistwidget.cpp
     qtui.cpp
+    qmlchatview.cpp
     qmlcontextobject.cpp
+    qmlinputwidget.cpp
     mobileuiapplication.cpp
     qtuimessageprocessor.cpp
     qtuisettings.cpp
@@ -64,6 +66,7 @@ set(SOURCES
     maemonotificationbackend.cpp
     maemo5notification.cpp
     titlesetter.cpp
+    topicmodel.cpp
     topicwidget.cpp
     verticaldock.cpp
     webpreviewitem.cpp)
@@ -103,7 +106,9 @@ set(MOC_HDRS
     msgprocessorstatuswidget.h
     nicklistwidget.h
     qtui.h
+    qmlchatview.h
     qmlcontextobject.h
+    qmlinputwidget.h
     mobileuiapplication.h
     qtuimessageprocessor.h
     qtuistyle.h
@@ -116,6 +121,7 @@ set(MOC_HDRS
     taskbarnotificationbackend.h
     maemonotificationbackend.h
     titlesetter.h
+    topicmodel.h
     topicwidget.h
     verticaldock.h)
 

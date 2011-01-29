@@ -21,6 +21,7 @@
 #ifndef TOPICWIDGET_H_
 #define TOPICWIDGET_H_
 
+#include <QObject>
 #include "abstractitemview.h"
 
 #include "ui_topicwidget.h"

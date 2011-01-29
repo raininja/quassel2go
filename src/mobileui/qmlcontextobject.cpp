@@ -13,6 +13,14 @@ QmlContextObject::QmlContextObject(QWidget *parent) :
   parent->installEventFilter(this);
 }
 
+void QmlContextObject::setBufferContainer(BufferWidget *container)
+{
+  if(_bufferContainer != container) {
+    _bufferContainer = container;
+    emit bufferContainerChanged();
+  }
+}
+
 void QmlContextObject::setWidth(int width) {
   if(width != _width) {
     _width = width;
