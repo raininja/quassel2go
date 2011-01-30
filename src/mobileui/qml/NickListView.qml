@@ -14,63 +14,20 @@ Item {
     section.delegate: ListSectionItem {
       width: listView.width
       text: section // type=="Network" ? plaintext : "   "+plaintext;
-
-//          MouseArea {
-//            anchors.fill: parent
-//            onClicked: {
-//              parent.ListView.view.currentIndex = index
-//            }
-//          }
     }
 
-    model: VisualDataModel {
-      id: visualModel
-      model: listView.model
+    model: listView.model
 
-      // rootIndex: ctxt.channelUsersRootIndex
+    delegate: ListItem {
+      width: parent.width
+      text: display // type=="Network" ? plaintext : "   "+plaintext;
+      current: ListView.view.currentIndex == index
 
-      delegate: Column {
-        id: networkItem
-        width: parent.width
-
-        ListItem {
-          width: parent.width
-          text: display // type=="Network" ? plaintext : "   "+plaintext;
-
-//          MouseArea {
-//            anchors.fill: parent
-//            onClicked: {
-//              parent.ListView.view.currentIndex = index
-//            }
-//          }
+      MouseArea {
+        anchors.fill: parent
+        onClicked: {
+          ListView.view.currentIndex = index
         }
-
-        Column {
-          width: parent.width
-
-          Repeater {
-            model: VisualDataModel {
-
-              model: listView.model
-              rootIndex: visualModel.modelIndex(index)
-
-              delegate: ListItem {
-                width: parent.width
-                text: display // type=="Network" ? plaintext : "   "+plaintext;
-                current: parent.ListView.isCurrentItem
-
-      //          MouseArea {
-      //            anchors.fill: parent
-      //            onClicked: {
-      //              // todo parent.ListView.view.currentIndex = index
-      //            }
-      //          }
-              }
-            }
-          }
-
-        }
-
       }
     }
 
