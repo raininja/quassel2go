@@ -46,6 +46,9 @@ public slots:
 signals:
   void nickSelectionChanged(const QModelIndexList &);
 
+  void currentNickModelChanged(QAbstractItemModel *model);
+  void currentNickRootIndexChanged(const QModelIndex &index);
+
 protected:
   virtual QSize sizeHint() const;
   virtual void hideEvent(QHideEvent *);

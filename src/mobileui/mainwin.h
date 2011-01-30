@@ -31,6 +31,8 @@
 #include "titlesetter.h"
 #include "uisettings.h"
 
+class QmlContextObject;
+
 class ActionCollection;
 class BufferHotListFilter;
 class MobileBufferView;
@@ -121,6 +123,7 @@ class MainWin
     void showIgnoreList(QString newRule = QString());
     void showShortcutsDlg();
     void toggleFullscreen();
+    void setFullscreen(bool fullScreen);
 
     void handleCoreConnectionError(const QString &errorMsg);
     void userAuthenticationRequired(CoreAccount *, bool *valid, const QString &errorMessage);
@@ -189,6 +192,7 @@ class MainWin
     void enableMenus();
 
     class QDeclarativeView *_declarativeView;
+    QmlContextObject *_qmlContextObject;
 
     QList<MobileBufferView *> _bufferViews;
     BufferWidget *_bufferWidget;

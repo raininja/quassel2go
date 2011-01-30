@@ -2,6 +2,7 @@
  <qresource prefix="/qml">
      <file>Main.qml</file>
      <file>Button.qml</file>
+     <file>ToolButton.qml</file>
      <file>ChatListView.qml</file>
      <file>ChatView.qml</file>
      <file>NickListView.qml</file>
@@ -9,5 +10,7 @@
      <file>ChatListModel.qml</file>
      <file>ChatModel.qml</file>
      <file>Input.qml</file>
+     <file>ListSectionItem.qml</file>
+     <file>ListItem.qml</file>
  </qresource>
  </RCC>

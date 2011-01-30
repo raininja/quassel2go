@@ -99,7 +99,7 @@
 #endif
 
 #ifdef HAVE_INDICATEQT
-  #include "indicatornotificationbackend.h"
+#include "indicatornotificationbackend.h"
 #endif
 
 #include "settingspages/aliasessettingspage.h"
@@ -135,18 +135,20 @@
 #include "qmlchatview.h"
 #include "qmlcontextobject.h"
 #include "qmlinputwidget.h"
+#include "qmlthemeimageprovider.h"
 
 MainWin::MainWin(QWidget *parent)
 #ifdef HAVE_KDE
   : KMainWindow(parent),
-  _kHelpMenu(new KHelpMenu(this, KGlobal::mainComponent().aboutData())),
-#else
+    _kHelpMenu(new KHelpMenu(this, KGlobal::mainComponent().aboutData())),
+    #else
   : QMainWindow(parent),
-#endif
+    #endif
     _msgProcessorStatusWidget(new MsgProcessorStatusWidget(this)),
     _coreConnectionStatusWidget(new CoreConnectionStatusWidget(Client::coreConnection(), this)),
     _titleSetter(this),
     _declarativeView(0),
+    _qmlContextObject(0),
     _bufferWidget(0),
     _nickListWidget(0),
     _inputWidget(0),
@@ -179,7 +181,7 @@ void MainWin::init() {
   connect(Client::instance(), SIGNAL(networkCreated(NetworkId)), SLOT(clientNetworkCreated(NetworkId)));
   connect(Client::instance(), SIGNAL(networkRemoved(NetworkId)), SLOT(clientNetworkRemoved(NetworkId)));
   connect(Client::messageModel(), SIGNAL(rowsInserted(const QModelIndex &, int, int)),
-           SLOT(messagesInserted(const QModelIndex &, int, int)));
+          SLOT(messagesInserted(const QModelIndex &, int, int)));
   connect(GraphicalUi::contextMenuActionProvider(), SIGNAL(showChannelList(NetworkId)), SLOT(showChannelList(NetworkId)));
   connect(GraphicalUi::contextMenuActionProvider(), SIGNAL(showIgnoreList(QString)), SLOT(showIgnoreList(QString)));
 
@@ -211,9 +213,11 @@ void MainWin::init() {
   QmlInputWidget::setEmbeddedWidget(_inputWidget);
   qmlRegisterType<BufferWidget>();
   qmlRegisterType<TopicModel>();
+  qmlRegisterType<QAbstractItemModel>();
   qmlRegisterType<QmlChatView>("org.quassel", 0, 1, "QuasselChatView");
   qmlRegisterType<QmlInputWidget>("org.quassel", 0, 1, "QuasselInputWidget");
   _declarativeView = new QDeclarativeView(this);
+  _declarativeView->engine()->addImageProvider(QLatin1String("quassel"), new QmlThemeImageProvider(this));
 #ifdef Q_WS_MAEMO_5
   // default settings are fine
 #else
@@ -221,37 +225,45 @@ void MainWin::init() {
   _declarativeView->setViewport(new QGLWidget());
 #endif
   _declarativeView->setResizeMode(QDeclarativeView::SizeRootObjectToView);
-  QmlContextObject *contextObj = new QmlContextObject(_declarativeView);
-  contextObj->setBufferContainer(_bufferWidget);
-  _declarativeView->rootContext()->setContextObject(contextObj);
-  _declarativeView->rootContext()->setContextProperty("ctxt", contextObj);
+  _qmlContextObject = new QmlContextObject(_declarativeView);
+  _qmlContextObject->setBufferContainer(_bufferWidget);
+  _declarativeView->rootContext()->setContextObject(_qmlContextObject);
+  _declarativeView->rootContext()->setContextProperty("ctxt", _qmlContextObject);
   _declarativeView->rootContext()->setContextProperty("bufferWidget", _bufferWidget);
   _declarativeView->rootContext()->setContextProperty("topicModel", _topicModel);
   _declarativeView->setSource(QUrl("qrc:/qml/Main.qml"));
   setCentralWidget(_declarativeView);
 
-//#ifndef HAVE_KDE
-//#  ifdef HAVE_PHONON
-//  QtUi::registerNotificationBackend(new PhononNotificationBackend(this));
-//#  endif
-//#  ifndef QT_NO_SYSTEMTRAYICON
-//  QtUi::registerNotificationBackend(new SystrayNotificationBackend(this));
-//#  endif
+  connect(_qmlContextObject, SIGNAL(fullScreenChanged(bool)), this, SLOT(setFullscreen(bool)));
+  connect(_nickListWidget, SIGNAL(currentNickModelChanged(QAbstractItemModel*)),
+          _qmlContextObject, SLOT(setChannelUsersModel(QAbstractItemModel*)));
+  connect(_nickListWidget, SIGNAL(currentNickRootIndexChanged(QModelIndex)),
+          _qmlContextObject, SLOT(setChannelUsersRootIndex(QModelIndex)));
 
-//  // mobile quassel doesn't have taskbar for notifications
-//  //QtUi::registerNotificationBackend(new TaskbarNotificationBackend(this));
+
+
+  //#ifndef HAVE_KDE
+  //#  ifdef HAVE_PHONON
+  //  QtUi::registerNotificationBackend(new PhononNotificationBackend(this));
+  //#  endif
+  //#  ifndef QT_NO_SYSTEMTRAYICON
+  //  QtUi::registerNotificationBackend(new SystrayNotificationBackend(this));
+  //#  endif
+
+  //  // mobile quassel doesn't have taskbar for notifications
+  //  //QtUi::registerNotificationBackend(new TaskbarNotificationBackend(this));
 
 #if defined(Q_WS_MAEMO_5) || defined(Q_WS_HILDON)
   QtUi::registerNotificationBackend(new MaemoNotificationBackend(this));
 #endif
 
-//#else /* HAVE_KDE */
-//  QtUi::registerNotificationBackend(new KNotificationBackend(this));
-//#endif /* HAVE_KDE */
+  //#else /* HAVE_KDE */
+  //  QtUi::registerNotificationBackend(new KNotificationBackend(this));
+  //#endif /* HAVE_KDE */
 
-//#ifdef HAVE_INDICATEQT
-//  QtUi::registerNotificationBackend(new IndicatorNotificationBackend(this));
-//#endif
+  //#ifdef HAVE_INDICATEQT
+  //  QtUi::registerNotificationBackend(new IndicatorNotificationBackend(this));
+  //#endif
 
   // we assume that at this point, all configurable actions are defined!
   QtUi::loadShortcuts();
@@ -358,78 +370,78 @@ void MainWin::setupActions() {
   coll->addAction("ConnectCore", act);
 
   act = new MobileAction(SmallIcon("network-disconnect"), tr("&Disconnect Core"), coll,
-                    Client::instance(), SLOT(disconnectFromCore()));
+                         Client::instance(), SLOT(disconnectFromCore()));
   coll->addAction("DisconnectCore", act);
 
   act = new MobileAction(SmallIcon("help-about"), tr("Core &Info"), coll,
-                    this, SLOT(showCoreInfoDlg()));
+                         this, SLOT(showCoreInfoDlg()));
   coll->addAction("CoreInfo", act);
 
   act = new MobileAction(SmallIcon("configure"), tr("Configure &Networks"), coll,
-                    this, SLOT(on_actionConfigureNetworks_triggered()));
+                         this, SLOT(on_actionConfigureNetworks_triggered()));
   coll->addAction("ConfigureNetworks", act);
 
   // View
   act = new MobileAction(SmallIcon("configure"), tr("&Configure Chat Lists"), coll,
-                    this, SLOT(on_actionConfigureViews_triggered()));
+                         this, SLOT(on_actionConfigureViews_triggered()));
   coll->addAction("ConfigureBufferViews", act);
 
   coll->addAction("ToggleSearchBar", new MobileAction(SmallIcon("edit-find"), tr("Show &Search Bar"), coll,
-                                                0, 0, QKeySequence::Find))->setCheckable(true);
+                                                      0, 0, QKeySequence::Find))->setCheckable(true);
   coll->addAction("ShowAwayLog", new MobileAction(tr("Show Away Log"), coll,
-                                            this, SLOT(showAwayLog())));
+                                                  this, SLOT(showAwayLog())));
 
   coll->addAction("ToggleStatusBar", new MobileAction(tr("Show Status &Bar"), coll,
-                                                0, 0))->setCheckable(true);
+                                                      0, 0))->setCheckable(true);
 
   coll->addAction("ToggleChatMonitor", new MobileAction(tr("Show Chat Monitor"), coll,
-                                                0, 0))->setCheckable(true);
+                                                        0, 0))->setCheckable(true);
 
 #ifdef HAVE_KDE
   QAction *fullScreenAct = KStandardAction::fullScreen(this, SLOT(toggleFullscreen()), this, coll);
 #else
   QAction *fullScreenAct = new MobileAction(SmallIcon("view-fullscreen"), tr("&Full Screen Mode"), coll,
-                             this, SLOT(toggleFullscreen()), QKeySequence(Qt::Key_F11));
+                                            this, SLOT(toggleFullscreen()), QKeySequence(Qt::Key_F11));
   fullScreenAct->setCheckable(true);
 #endif
   coll->addAction("ToggleFullscreen", fullScreenAct);
 
   // Settings
-  #ifdef Q_WS_MAC
+#ifdef Q_WS_MAC
   QAction *configureQuasselAct = new MobileAction(SmallIcon("configure"), tr("&Configure Quassel"), coll,
-					    this, SLOT(showSettingsDlg()));
+                                                  this, SLOT(showSettingsDlg()));
   configureQuasselAct->setMenuRole(QAction::PreferencesRole);
-  #else
+#else
   QAction *configureQuasselAct = new MobileAction(SmallIcon("configure"), tr("&Configure Quassel"), coll,
-                                            this, SLOT(showSettingsDlg()), QKeySequence(Qt::Key_F7));
-  #endif
+                                                  this, SLOT(showSettingsDlg()), QKeySequence(Qt::Key_F7));
+#endif
   coll->addAction("ConfigureQuassel", configureQuasselAct);
 
   // Help
   QAction *aboutAct = new MobileAction(SmallIcon("quassel"), tr("&About"), coll,
-                                              this, SLOT(showAboutDlg()));
+                                       this, SLOT(showAboutDlg()));
   aboutAct->setMenuRole(QAction::AboutRole);
   coll->addAction("About", aboutAct);
 
 
   coll->addAction("DebugNetworkModel", new MobileAction(SmallIcon("tools-report-bug"), tr("Debug &NetworkModel"), coll,
-                                       this, SLOT(on_actionDebugNetworkModel_triggered())));
+                                                        this, SLOT(on_actionDebugNetworkModel_triggered())));
   coll->addAction("DebugBufferViewOverlay", new MobileAction(SmallIcon("tools-report-bug"), tr("Debug &BufferViewOverlay"), coll,
-                                       this, SLOT(on_actionDebugBufferViewOverlay_triggered())));
+                                                             this, SLOT(on_actionDebugBufferViewOverlay_triggered())));
   coll->addAction("DebugMessageModel", new MobileAction(SmallIcon("tools-report-bug"), tr("Debug &MessageModel"), coll,
-                                       this, SLOT(on_actionDebugMessageModel_triggered())));
+                                                        this, SLOT(on_actionDebugMessageModel_triggered())));
   coll->addAction("DebugHotList", new MobileAction(SmallIcon("tools-report-bug"), tr("Debug &HotList"), coll,
-                                       this, SLOT(on_actionDebugHotList_triggered())));
+                                                   this, SLOT(on_actionDebugHotList_triggered())));
   coll->addAction("DebugLog", new MobileAction(SmallIcon("tools-report-bug"), tr("Debug &Log"), coll,
-                                       this, SLOT(on_actionDebugLog_triggered())));
+                                               this, SLOT(on_actionDebugLog_triggered())));
   coll->addAction("ReloadStyle", new MobileAction(SmallIcon("view-refresh"), tr("Reload Stylesheet"), coll,
-                                       QtUi::style(), SLOT(reload()), QKeySequence::Refresh));
+                                                  QtUi::style(), SLOT(reload()), QKeySequence::Refresh));
 
   // Navigation
   coll = QtUi::actionCollection("Navigation", tr("Navigation"));
 
   coll->addAction("JumpHotBuffer", new MobileAction(tr("Jump to hot chat"), coll,
-                                              this, SLOT(on_jumpHotBuffer_triggered()), QKeySequence(Qt::META + Qt::Key_A)));
+                                                    this, SLOT(on_jumpHotBuffer_triggered()), QKeySequence(Qt::META + Qt::Key_A)));
 
   // Jump keys
 #ifdef Q_WS_MAC
@@ -441,56 +453,56 @@ void MainWin::setupActions() {
 #endif
 
   coll->addAction("BindJumpKey0", new MobileAction(tr("Set Quick Access #0"), coll, this, SLOT(bindJumpKey()),
-                                             QKeySequence(bindModifier + Qt::Key_0)))->setProperty("Index", 0);
+                                                   QKeySequence(bindModifier + Qt::Key_0)))->setProperty("Index", 0);
   coll->addAction("BindJumpKey1", new MobileAction(tr("Set Quick Access #1"), coll, this, SLOT(bindJumpKey()),
-                                             QKeySequence(bindModifier + Qt::Key_1)))->setProperty("Index", 1);
+                                                   QKeySequence(bindModifier + Qt::Key_1)))->setProperty("Index", 1);
   coll->addAction("BindJumpKey2", new MobileAction(tr("Set Quick Access #2"), coll, this, SLOT(bindJumpKey()),
-                                             QKeySequence(bindModifier + Qt::Key_2)))->setProperty("Index", 2);
+                                                   QKeySequence(bindModifier + Qt::Key_2)))->setProperty("Index", 2);
   coll->addAction("BindJumpKey3", new MobileAction(tr("Set Quick Access #3"), coll, this, SLOT(bindJumpKey()),
-                                             QKeySequence(bindModifier + Qt::Key_3)))->setProperty("Index", 3);
+                                                   QKeySequence(bindModifier + Qt::Key_3)))->setProperty("Index", 3);
   coll->addAction("BindJumpKey4", new MobileAction(tr("Set Quick Access #4"), coll, this, SLOT(bindJumpKey()),
-                                             QKeySequence(bindModifier + Qt::Key_4)))->setProperty("Index", 4);
+                                                   QKeySequence(bindModifier + Qt::Key_4)))->setProperty("Index", 4);
   coll->addAction("BindJumpKey5", new MobileAction(tr("Set Quick Access #5"), coll, this, SLOT(bindJumpKey()),
-                                             QKeySequence(bindModifier + Qt::Key_5)))->setProperty("Index", 5);
+                                                   QKeySequence(bindModifier + Qt::Key_5)))->setProperty("Index", 5);
   coll->addAction("BindJumpKey6", new MobileAction(tr("Set Quick Access #6"), coll, this, SLOT(bindJumpKey()),
-                                             QKeySequence(bindModifier + Qt::Key_6)))->setProperty("Index", 6);
+                                                   QKeySequence(bindModifier + Qt::Key_6)))->setProperty("Index", 6);
   coll->addAction("BindJumpKey7", new MobileAction(tr("Set Quick Access #7"), coll, this, SLOT(bindJumpKey()),
-                                             QKeySequence(bindModifier + Qt::Key_7)))->setProperty("Index", 7);
+                                                   QKeySequence(bindModifier + Qt::Key_7)))->setProperty("Index", 7);
   coll->addAction("BindJumpKey8", new MobileAction(tr("Set Quick Access #8"), coll, this, SLOT(bindJumpKey()),
-                                             QKeySequence(bindModifier + Qt::Key_8)))->setProperty("Index", 8);
+                                                   QKeySequence(bindModifier + Qt::Key_8)))->setProperty("Index", 8);
   coll->addAction("BindJumpKey9", new MobileAction(tr("Set Quick Access #9"), coll, this, SLOT(bindJumpKey()),
-                                             QKeySequence(bindModifier + Qt::Key_9)))->setProperty("Index", 9);
+                                                   QKeySequence(bindModifier + Qt::Key_9)))->setProperty("Index", 9);
 
   coll->addAction("JumpKey0", new MobileAction(tr("Quick Access #0"), coll, this, SLOT(onJumpKey()),
-                                         QKeySequence(jumpModifier + Qt::Key_0)))->setProperty("Index", 0);
+                                               QKeySequence(jumpModifier + Qt::Key_0)))->setProperty("Index", 0);
   coll->addAction("JumpKey1", new MobileAction(tr("Quick Access #1"), coll, this, SLOT(onJumpKey()),
-                                         QKeySequence(jumpModifier + Qt::Key_1)))->setProperty("Index", 1);
+                                               QKeySequence(jumpModifier + Qt::Key_1)))->setProperty("Index", 1);
   coll->addAction("JumpKey2", new MobileAction(tr("Quick Access #2"), coll, this, SLOT(onJumpKey()),
-                                         QKeySequence(jumpModifier + Qt::Key_2)))->setProperty("Index", 2);
+                                               QKeySequence(jumpModifier + Qt::Key_2)))->setProperty("Index", 2);
   coll->addAction("JumpKey3", new MobileAction(tr("Quick Access #3"), coll, this, SLOT(onJumpKey()),
-                                         QKeySequence(jumpModifier + Qt::Key_3)))->setProperty("Index", 3);
+                                               QKeySequence(jumpModifier + Qt::Key_3)))->setProperty("Index", 3);
   coll->addAction("JumpKey4", new MobileAction(tr("Quick Access #4"), coll, this, SLOT(onJumpKey()),
-                                         QKeySequence(jumpModifier + Qt::Key_4)))->setProperty("Index", 4);
+                                               QKeySequence(jumpModifier + Qt::Key_4)))->setProperty("Index", 4);
   coll->addAction("JumpKey5", new MobileAction(tr("Quick Access #5"), coll, this, SLOT(onJumpKey()),
-                                         QKeySequence(jumpModifier + Qt::Key_5)))->setProperty("Index", 5);
+                                               QKeySequence(jumpModifier + Qt::Key_5)))->setProperty("Index", 5);
   coll->addAction("JumpKey6", new MobileAction(tr("Quick Access #6"), coll, this, SLOT(onJumpKey()),
-                                         QKeySequence(jumpModifier + Qt::Key_6)))->setProperty("Index", 6);
+                                               QKeySequence(jumpModifier + Qt::Key_6)))->setProperty("Index", 6);
   coll->addAction("JumpKey7", new MobileAction(tr("Quick Access #7"), coll, this, SLOT(onJumpKey()),
-                                         QKeySequence(jumpModifier + Qt::Key_7)))->setProperty("Index", 7);
+                                               QKeySequence(jumpModifier + Qt::Key_7)))->setProperty("Index", 7);
   coll->addAction("JumpKey8", new MobileAction(tr("Quick Access #8"), coll, this, SLOT(onJumpKey()),
-                                         QKeySequence(jumpModifier + Qt::Key_8)))->setProperty("Index", 8);
+                                               QKeySequence(jumpModifier + Qt::Key_8)))->setProperty("Index", 8);
   coll->addAction("JumpKey9", new MobileAction(tr("Quick Access #9"), coll, this, SLOT(onJumpKey()),
-                                         QKeySequence(jumpModifier + Qt::Key_9)))->setProperty("Index", 9);
+                                               QKeySequence(jumpModifier + Qt::Key_9)))->setProperty("Index", 9);
 
   // Buffer navigation
   coll->addAction("NextBufferView", new MobileAction(SmallIcon("go-next-view"), tr("Activate Next Chat List"), coll,
-                                               this, SLOT(nextBufferView()), QKeySequence(QKeySequence::Forward)));
+                                                     this, SLOT(nextBufferView()), QKeySequence(QKeySequence::Forward)));
   coll->addAction("PreviousBufferView", new MobileAction(SmallIcon("go-previous-view"), tr("Activate Previous Chat List"), coll,
-                                                   this, SLOT(previousBufferView()), QKeySequence::Back));
+                                                         this, SLOT(previousBufferView()), QKeySequence::Back));
   coll->addAction("NextBuffer", new MobileAction(SmallIcon("go-down"), tr("Go to Next Chat"), coll,
-                                           this, SLOT(nextBuffer()), QKeySequence(Qt::ALT + Qt::Key_Down)));
+                                                 this, SLOT(nextBuffer()), QKeySequence(Qt::ALT + Qt::Key_Down)));
   coll->addAction("PreviousBuffer", new MobileAction(SmallIcon("go-up"), tr("Go to Previous Chat"), coll,
-                                               this, SLOT(previousBuffer()), QKeySequence(Qt::ALT + Qt::Key_Up)));
+                                                     this, SLOT(previousBuffer()), QKeySequence(Qt::ALT + Qt::Key_Up)));
 }
 
 void MainWin::setupMenus() {
@@ -547,7 +559,7 @@ void MainWin::addBufferView(ClientBufferViewConfig *config) {
   //create the view and initialize it's filter
   MobileBufferView *view = new MobileBufferView(this);
 
-  view->setWindowFlags(_nickListWidget->windowFlags() | Qt::Window);
+  view->setWindowFlags(view->windowFlags() | Qt::Window);
 #if defined(Q_WS_MAEMO_5)
   view->setAttribute(Qt::WA_Maemo5StackedWindow);
 #endif
@@ -562,6 +574,9 @@ void MainWin::addBufferView(ClientBufferViewConfig *config) {
   view->setVisible(_layoutLoaded);
 
   _bufferViews.append(view);
+
+  if(_bufferViews.count() == 1)
+    _qmlContextObject->setAllBuffersModel(view->model());
 
   if(!activeBufferView())
     nextBufferView();
@@ -735,7 +750,10 @@ void MainWin::setupChatMonitor() {
   ChatMonitorFilter *filter = new ChatMonitorFilter(Client::messageModel(), this);
   _chatMonitorView = new ChatMonitorView(filter, this);
   _chatMonitorView->setWindowTitle(tr("Chat Monitor"));
-  _chatMonitorView->setWindowFlags(_nickListWidget->windowFlags() | Qt::Window);
+  _chatMonitorView->setWindowFlags(_chatMonitorView->windowFlags() | Qt::Window);
+#ifdef Q_WS_MAEMO_5
+  _chatMonitorView->setAttribute(Qt::WA_Maemo5StackedWindow);
+#endif
   _chatMonitorView->setFocusProxy(_inputWidget);
   _chatMonitorView->hide();
 
@@ -1124,6 +1142,13 @@ void MainWin::toggleFullscreen() {
     showFullScreen();
 }
 
+void MainWin::setFullscreen(bool fullScreen) {
+  if(isFullScreen() == fullScreen)
+    return;
+
+  toggleFullscreen();
+}
+
 /********************************************************************************************************/
 
 bool MainWin::event(QEvent *event) {
@@ -1184,8 +1209,8 @@ void MainWin::messagesInserted(const QModelIndex &parent, int start, int end) {
       continue;
 
     if((flags & Message::Highlight || bufType == BufferInfo::QueryBuffer)
-      && !(Client::ignoreListManager() && Client::ignoreListManager()->match(idx.data(MessageModel::MessageRole).value<Message>(),
-                                                                             Client::networkModel()->networkName(bufId))))
+        && !(Client::ignoreListManager() && Client::ignoreListManager()->match(idx.data(MessageModel::MessageRole).value<Message>(),
+                                                                               Client::networkModel()->networkName(bufId))))
     {
       QModelIndex senderIdx = Client::messageModel()->index(i, ChatLineModel::SenderColumn);
       QString sender = senderIdx.data(ChatLineModel::EditRole).toString();

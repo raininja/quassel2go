@@ -1,37 +1,79 @@
 import Qt 4.7
 
-ListView {
-    id: bufferlistView
+Item {
+  id: bufferlistView
 
-    delegate: Item {
-        width: parent.width;
-        height: bufferlistViewDelegateText.height>70 ? bufferlistViewDelegateText.height:70
+  property variant model
 
-        Rectangle {
-            color: "#3333ff"
-            anchors.fill: parent
-            opacity: parent.ListView.isCurrentItem ? 1 : 0
-        }
+  ListView {
+    anchors.fill: parent
+    //contentY:  10000
 
-        Text {
-            id: bufferlistViewDelegateText
-            text: type=="Network" ? plaintext : "   "+plaintext;
-            elide: Text.ElideRight;
-            font.bold: type=="Network"
-            anchors.verticalCenter: parent.verticalCenter
-            width: parent.width
-        }
+    section.property: "section_item"
+    section.criteria: ViewSection.FullString
+    section.delegate: ListSectionItem {
+      width: bufferlistView.width
+      text: section // type=="Network" ? plaintext : "   "+plaintext;
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                parent.ListView.view.currentIndex = index
-            }
-        }
+//          MouseArea {
+//            anchors.fill: parent
+//            onClicked: {
+//              parent.ListView.view.currentIndex = index
+//            }
+//          }
     }
-    contentY:  10000
+
+    model: VisualDataModel {
+      id: visualModel
+      model: bufferlistView.model
+
+      delegate: Column {
+        id: networkItem
+        width: parent.width
+
+        ListItem {
+          width: parent.width
+          text: display // type=="Network" ? plaintext : "   "+plaintext;
+
+//          MouseArea {
+//            anchors.fill: parent
+//            onClicked: {
+//              parent.ListView.view.currentIndex = index
+//            }
+//          }
+        }
+
+        Column {
+          width: parent.width
+
+          Repeater {
+            model: VisualDataModel {
+
+              model: bufferlistView.model
+              rootIndex: visualModel.modelIndex(index)
+
+              delegate: ListItem {
+                width: parent.width
+                text: display // type=="Network" ? plaintext : "   "+plaintext;
+                current: parent.ListView.isCurrentItem
+
+      //          MouseArea {
+      //            anchors.fill: parent
+      //            onClicked: {
+      //              // todo parent.ListView.view.currentIndex = index
+      //            }
+      //          }
+              }
+            }
+          }
+
+        }
+
+      }
+    }
 
     ScrollBar {
-        scrollArea: parent
+      scrollArea: parent
     }
+  }
 }

@@ -3,14 +3,17 @@
 #include <QWidget>
 #include <QDebug>
 
+#include "qmlsectionproxymodel.h"
+
 #include "qmlcontextobject.h"
 
 QmlContextObject::QmlContextObject(QWidget *parent) :
     QObject(parent),
-  _width(0),
-  _height(0)
+  _bufferContainer(0),
+  _fullScreen(false),
+  _allBuffersModel(new QmlSectionProxyModel(this)),
+  _channelUsersModel(new QmlSectionProxyModel(this))
 {
-  parent->installEventFilter(this);
 }
 
 void QmlContextObject::setBufferContainer(BufferWidget *container)
@@ -21,39 +24,39 @@ void QmlContextObject::setBufferContainer(BufferWidget *container)
   }
 }
 
-void QmlContextObject::setWidth(int width) {
-  if(width != _width) {
-    _width = width;
-    emit widthChanged(width);
-  }
+void QmlContextObject::setFullScreen(bool fullScreen)
+{
+  if(_fullScreen == fullScreen)
+    return;
+
+  _fullScreen = fullScreen;
+  emit fullScreenChanged(fullScreen);
 }
 
-void QmlContextObject::setHeight(int height) {
-  if(height != _height) {
-    _height = height;
-    emit heightChanged(height);
-  }
+void QmlContextObject::setAllBuffersModel(QAbstractItemModel *model)
+{
+  if(_allBuffersModel->sourceModel() == model)
+    return;
+
+  _allBuffersModel->setSourceModel(model);
 }
 
-bool QmlContextObject::eventFilter(QObject *obj, QEvent *event) {
-  // track widget geometry changes
+void QmlContextObject::setChannelUsersModel(QAbstractItemModel *model)
+{
+  if(_channelUsersModel->sourceModel() == model)
+    return;
 
+  _channelUsersModel->setSourceModel(model);
+  emit channelUsersModelChanged();
+}
 
-  QWidget *w = 0;
-  if(obj == parent() && (w = qobject_cast<QWidget*>(obj))) {
+void QmlContextObject::setChannelUsersRootIndex(const QModelIndex &index)
+{
+  if(_channelUsersRootIndex == index)
+    return;
 
+  _channelUsersModel->setSourceRootIndex(index);
 
-    switch(event->type()) {
-    case QEvent::Resize: {
-      QResizeEvent *re = (QResizeEvent*)event;
-      setWidth(re->size().width());
-      setHeight(re->size().height());
-      break;
-    }
-    default:
-      break;
-    }
-  }
-
-  return false;
+  _channelUsersRootIndex= index;
+  emit channelUsersRootIndexChanged();
 }

@@ -1,57 +1,82 @@
 import Qt 4.7
 
-ListView {
-    id: nickListView
+Item {
+  id: listView
 
-    model: ListModel {
-        ListElement { plaintext: "1 Operator"; type: "Header" }
-        ListElement { plaintext: "ChanServ"; type: "User" }
-        ListElement { plaintext: "3 Voiced"; type: "Header" }
-        ListElement { plaintext: "asdsdf"; type: "User" }
-        ListElement { plaintext: "dddd"; type: "User" }
-        ListElement { plaintext: "ddd"; type: "User" }
-        ListElement { plaintext: "dff"; type: "User" }
-        ListElement { plaintext: "10 Users"; type: "Header" }
-        ListElement { plaintext: "asdsdf"; type: "User" }
-        ListElement { plaintext: "dddd"; type: "User" }
-        ListElement { plaintext: "ddd"; type: "User" }
-        ListElement { plaintext: "dff"; type: "User" }
-        ListElement { plaintext: "asdsdf"; type: "User" }
-        ListElement { plaintext: "dddd"; type: "User" }
-        ListElement { plaintext: "ddd"; type: "User" }
-        ListElement { plaintext: "dff"; type: "User" }
+  property variant model
+
+  ListView {
+    anchors.fill: parent
+    //contentY:  10000
+
+    section.property: "section_item"
+    section.criteria: ViewSection.FullString
+    section.delegate: ListSectionItem {
+      width: listView.width
+      text: section // type=="Network" ? plaintext : "   "+plaintext;
+
+//          MouseArea {
+//            anchors.fill: parent
+//            onClicked: {
+//              parent.ListView.view.currentIndex = index
+//            }
+//          }
     }
 
-    delegate: Item {
-        width: parent.width;
-        height: nickListViewDelegateText.height>70 ? nickListViewDelegateText.height:70
+    model: VisualDataModel {
+      id: visualModel
+      model: listView.model
 
-        Rectangle {
-            color: "#3333ff"
-            anchors.fill: parent
-            opacity: parent.ListView.isCurrentItem ? 1 : 0
+      // rootIndex: ctxt.channelUsersRootIndex
+
+      delegate: Column {
+        id: networkItem
+        width: parent.width
+
+        ListItem {
+          width: parent.width
+          text: display // type=="Network" ? plaintext : "   "+plaintext;
+
+//          MouseArea {
+//            anchors.fill: parent
+//            onClicked: {
+//              parent.ListView.view.currentIndex = index
+//            }
+//          }
         }
 
-        Text {
-            id: nickListViewDelegateText
-            text: type=="Header" ? plaintext : "   "+plaintext;
-            elide: Text.ElideRight;
-            font.bold: type=="Header"
-            anchors.verticalCenter: parent.verticalCenter
-            width: parent.width
-        }
+        Column {
+          width: parent.width
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                //if(model[index].type != "Header")
-                    parent.ListView.view.currentIndex = index
+          Repeater {
+            model: VisualDataModel {
+
+              model: listView.model
+              rootIndex: visualModel.modelIndex(index)
+
+              delegate: ListItem {
+                width: parent.width
+                text: display // type=="Network" ? plaintext : "   "+plaintext;
+                current: parent.ListView.isCurrentItem
+
+      //          MouseArea {
+      //            anchors.fill: parent
+      //            onClicked: {
+      //              // todo parent.ListView.view.currentIndex = index
+      //            }
+      //          }
+              }
             }
+          }
+
         }
+
+      }
     }
-    contentY:  10000
 
     ScrollBar {
-        scrollArea: parent
+      scrollArea: parent
     }
+  }
 }
+

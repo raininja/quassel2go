@@ -3,23 +3,9 @@ import org.quassel 0.1
 
 Rectangle {
     id: background
-    //width:  /*ctxt?ctxt.width:*/800
-    //height: /*ctxt?ctxt.height:*/480
     anchors.fill:  parent
-    gradient: Gradient {
-        GradientStop {
-            position: 0.00;
-            color: "#ffffff";
-        }
-        GradientStop {
-            position: 0.35;
-            color: "#ffffff";
-        }
-        GradientStop {
-            position: 1.00;
-            color: "#ffffff";
-        }
-    }
+
+    color: "#000000"
 
     property bool chatListDocked: false;
     property bool nickListDocked: false;
@@ -96,25 +82,27 @@ Rectangle {
 
         z: 99
 
-        Rectangle {
+        Item {
             id: topicbar
             height: parent.height
             width: parent.width
             x: parent.x
             y: parent.y // parent.y - height
 
-            Button {
+            ToolButton {
                 id: chatsBtn
-                text: "Chats"
+                // text: "Chats"
+                icon: "image://quassel/general_foldertree"
                 height: parent.height
                 anchors.left: parent.left
                 anchors.top: parent.top
                 onClicked: background.state="showChatList"
             }
 
-            Button {
+            ToolButton {
                 id: nicksBtn
-                text: "Nicks"
+                // text: "Nicks"
+                icon: "image://quassel/general_contacts_button" // general_conference_avatar
                 height: parent.height
                 anchors.right: parent.right
                 anchors.top: parent.top
@@ -124,6 +112,7 @@ Rectangle {
             Text {
                 id: topicText
                 text: topicModel.currentTopic
+                color: "#ffffff"
                 anchors.verticalCenter: parent.verticalCenter
                 //height: parent.height
                 elide: Text.ElideRight
@@ -235,20 +224,35 @@ Rectangle {
         }
     }
 
-    Rectangle {
+    Item {
         id: inputbar
 //        color: "#99ff99"
         height: 60
         width: parent.width
         y: parent.y+parent.height-height
-//        opacity: 0.6
-        border.width: 1
+        // opacity: 0.6
+        // border.width: 1
 
         z: 99
 
         QuasselInputWidget {
           id: quassel_input_widget
-          anchors.fill: parent
+          anchors.top: parent.top
+          height: parent.height
+          anchors.left: parent.left
+          anchors.right: rightInputBtnRow.left
+        }
+
+        Row {
+          id: rightInputBtnRow
+          anchors.top: parent.top
+          anchors.right: parent.right
+          height: parent.height
+          // TODO: actions for zoomin/zoomout
+          ToolButton {
+            icon: "image://quassel/general_fullsize"
+            onClicked: { ctxt.fullScreen = !ctxt.fullScreen; }
+          }
         }
 
 //        Button {
@@ -279,7 +283,8 @@ Rectangle {
 
         ChatListView {
             anchors.fill: parent
-            model: ChatListModel{}
+            // model: ChatListModel{}
+            model: ctxt.allBuffersModel
         }
     }
 
@@ -293,13 +298,14 @@ Rectangle {
         opacity: 0
         visible: false
 
-        Button {
+        ToolButton {
             id: bufferlistGripDockBtn
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.right: parent.right
             height: toolbar.height
-            text: "Dock"
+            icon: "image://quassel/general_locked"
+            // text: "Dock"
             checked: background.chatListDocked
             onClicked: {
                 background.chatListDocked = !background.chatListDocked;
@@ -346,13 +352,14 @@ Rectangle {
         opacity: 0
         visible: false
 
-        Button {
+        ToolButton {
             id: nickGripDockBtn
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.right: parent.right
             height: toolbar.height
-            text: "Dock"
+            // text: "Dock"
+            icon: "image://quassel/general_locked"
             checked: background.nickListDocked
             onClicked: {
                 background.nickListDocked = !background.nickListDocked;
@@ -399,6 +406,7 @@ Rectangle {
 
         NickListView {
             anchors.fill: parent
+            model:  ctxt.channelUsersModel
         }
     }
 

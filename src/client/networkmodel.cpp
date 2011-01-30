@@ -840,6 +840,22 @@ NetworkModel::NetworkModel(QObject *parent)
   connect(this, SIGNAL(rowsAboutToBeRemoved(const QModelIndex &, int, int)),
           this, SLOT(checkForRemovedBuffers(const QModelIndex &, int, int)));
 
+  QHash<int, QByteArray> roles = roleNames();
+  // roles[Qt::DisplayRole] = "display"
+  roles[BufferTypeRole] = "bufferType";
+  roles[ItemActiveRole] = "itemActive";
+  roles[BufferActivityRole] = "bufferActivity";
+  roles[BufferIdRole] = "bufferId";
+  roles[NetworkIdRole] = "networkId";
+  roles[BufferInfoRole] = "bufferInfo";
+  roles[ItemTypeRole] = "itemType";
+  roles[UserAwayRole] = "userAway";
+  roles[IrcUserRole] = "ircUser";
+  roles[IrcChannelRole] = "ircChannel";
+  roles[BufferFirstUnreadMsgIdRole] = "bufferFirstUnreadMsg";
+  roles[MarkerLineMsgIdRole] = "markerLineMsgId";
+  setRoleNames(roles);
+
   BufferSettings defaultSettings;
   defaultSettings.notify("UserNoticesTarget", this, SLOT(messageRedirectionSettingsChanged()));
   defaultSettings.notify("ServerNoticesTarget", this, SLOT(messageRedirectionSettingsChanged()));

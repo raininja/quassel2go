@@ -2,42 +2,53 @@
 #define QMLCONTEXTOBJECT_H
 
 #include <QObject>
+#include <QPointer>
+#include <QAbstractProxyModel>
 
 #include "bufferwidget.h"
+#include "qmlsectionproxymodel.h"
 //class AbstractBufferContainer;
 
 class QmlContextObject : public QObject
 {
     Q_OBJECT
 
-  Q_PROPERTY(int width READ width NOTIFY widthChanged)
-  Q_PROPERTY(int height READ height NOTIFY heightChanged)
   Q_PROPERTY(BufferWidget *bufferContainer READ bufferContainer NOTIFY bufferContainerChanged)
-
+  Q_PROPERTY(QAbstractItemModel *allBuffersModel READ allBuffersModel NOTIFY allBuffersModelChanged)
+  Q_PROPERTY(QAbstractItemModel *channelUsersModel READ channelUsersModel NOTIFY channelUsersModelChanged)
+  Q_PROPERTY(QModelIndex channelUsersRootIndex READ channelUsersRootIndex NOTIFY channelUsersRootIndexChanged)
+  Q_PROPERTY(bool fullScreen READ fullScreen WRITE setFullScreen NOTIFY fullScreenChanged)
 public:
     explicit QmlContextObject(QWidget *parent = 0);
 
-  int width() const { return _width; };
-  int height() const { return _height; };
   BufferWidget* bufferContainer() const { return _bufferContainer; };
+  bool fullScreen() const { return _fullScreen; }
+  QAbstractItemModel* allBuffersModel() const { return _allBuffersModel; }
+  QAbstractItemModel* channelUsersModel() const { return _channelUsersModel; }
+  QModelIndex channelUsersRootIndex() const { return _channelUsersRootIndex; }
 
 signals:
-  void widthChanged(int widht);
-  void heightChanged(int height);
   void bufferContainerChanged();
+  void fullScreenChanged(bool fullScreen);
+  void allBuffersModelChanged();
+  void channelUsersModelChanged();
+  void channelUsersRootIndexChanged();
 
 public slots:
   void setBufferContainer(BufferWidget *container);
-  void setWidth(int width);
-  void setHeight(int height);
+  void setFullScreen(bool fullScreen);
+  void setAllBuffersModel(QAbstractItemModel *model);
+  void setChannelUsersModel(QAbstractItemModel *model);
+  void setChannelUsersRootIndex(const QModelIndex &index);
 
 protected:
-  bool eventFilter(QObject *obj, QEvent *event);
 
 private:
-  int _width;
-  int _height;
   BufferWidget *_bufferContainer;
+  bool _fullScreen;
+  QPointer<QAbstractProxyModel> _allBuffersModel;
+  QPointer<QmlSectionProxyModel> _channelUsersModel;
+  QModelIndex _channelUsersRootIndex;
 };
 
 #endif // QMLCONTEXTOBJECT_H

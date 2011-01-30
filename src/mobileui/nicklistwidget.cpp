@@ -117,6 +117,9 @@ void NickListWidget::currentChanged(const QModelIndex &current, const QModelInde
     connect(view, SIGNAL(selectionUpdated()), SLOT(nickSelectionChanged()));
   }
   emit nickSelectionChanged(view->selectedIndexes());
+
+  emit currentNickModelChanged(view->model());
+  emit currentNickRootIndexChanged(view->rootIndex());
 }
 
 void NickListWidget::nickSelectionChanged() {
