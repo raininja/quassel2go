@@ -1,26 +1,28 @@
 import Qt 4.7
 
-Item {
-  id: listView
+//Item {
+//  id: listView
 
-  property variant model
+//  property variant model
 
   ListView {
+    id: listView
     anchors.fill: parent
     //contentY:  10000
 
     section.property: "section_item"
     section.criteria: ViewSection.FullString
     section.delegate: ListSectionItem {
-      width: listView.width
+      width: parent.width
       text: section // type=="Network" ? plaintext : "   "+plaintext;
     }
 
-    model: listView.model
+//    model: listView.model
 
     delegate: ListItem {
       width: parent.width
       text: display // type=="Network" ? plaintext : "   "+plaintext;
+      iconSource: "image://quassel/" + decorationIconName
       current: ListView.view.currentIndex == index
 
       MouseArea {
@@ -35,5 +37,5 @@ Item {
       scrollArea: parent
     }
   }
-}
+//}
 

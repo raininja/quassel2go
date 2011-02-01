@@ -15,6 +15,9 @@ QPixmap QmlThemeImageProvider::requestPixmap(const QString &id, QSize *size, con
   if(pm.isNull()) {
     pm = DesktopIcon(id, qMax(requestedSize.height(),requestedSize.width()));
   }
+  if(pm.isNull()) {
+    pm = SmallIcon(id, qMax(requestedSize.height(),requestedSize.width()));
+  }
   if (size)
     *size = pm.size();
   return pm;

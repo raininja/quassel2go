@@ -12,7 +12,8 @@ QmlContextObject::QmlContextObject(QWidget *parent) :
   _bufferContainer(0),
   _fullScreen(false),
   _allBuffersModel(new QmlSectionProxyModel(this)),
-  _channelUsersModel(new QmlSectionProxyModel(this))
+  _channelUsersModel(new QmlSectionProxyModel(this)),
+  _currentBufferIndex(-1)
 {
 }
 
@@ -59,4 +60,25 @@ void QmlContextObject::setChannelUsersRootIndex(const QModelIndex &index)
 
   _channelUsersRootIndex= index;
   emit channelUsersRootIndexChanged();
+}
+
+int QmlContextObject::currentBufferIndex() const
+{
+  return _currentBufferIndex; }
+
+void QmlContextObject::setCurrentBufferIndex(int index)
+{
+  if(_currentBufferIndex == index)
+    return;
+
+  _currentBufferIndex = index;
+
+  emit currentBufferModelIndexChanged(_allBuffersModel->mapToSource(_allBuffersModel->index(index, 0)),
+                                      QItemSelectionModel::Clear);
+  emit currentBufferIndexChanged();
+}
+
+void QmlContextObject::setCurrentBufferModelIndex(const QModelIndex &index)
+{
+  setCurrentBufferIndex(_allBuffersModel->mapFromSource(index).row());
 }

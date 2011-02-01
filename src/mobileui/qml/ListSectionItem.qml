@@ -3,7 +3,6 @@ import Qt 4.7
 Item {
   property string text: ""
 
-  width: parent.width;
   height: bufferlistViewDelegateText.height * 1.2
 
   Rectangle {

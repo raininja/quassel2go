@@ -575,8 +575,13 @@ void MainWin::addBufferView(ClientBufferViewConfig *config) {
 
   _bufferViews.append(view);
 
-  if(_bufferViews.count() == 1)
+  if(_bufferViews.count() == 1) {
     _qmlContextObject->setAllBuffersModel(view->model());
+    connect(view->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+            _qmlContextObject, SLOT(setCurrentBufferModelIndex(QModelIndex)));
+    connect(_qmlContextObject, SIGNAL(currentBufferModelIndexChanged(QModelIndex, QItemSelectionModel::SelectionFlags)),
+            view->selectionModel(), SLOT(setCurrentIndex(QModelIndex,QItemSelectionModel::SelectionFlags)));
+  }
 
   if(!activeBufferView())
     nextBufferView();

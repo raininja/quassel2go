@@ -1,32 +1,39 @@
 import Qt 4.7
 
-Item {
-  id: listView
+//Item {
 
-  property variant model
+//  property variant model
 
   ListView {
+    // property int currentIndex: -1
+
+    //currentIndex:
+
+    id: listViewItem
     anchors.fill: parent
     contentY:  10000
 
     section.property: "section_item"
     section.criteria: ViewSection.FullString
     section.delegate: ListSectionItem {
-      width: listView.width
+      width: parent.width
       text: section // type=="Network" ? plaintext : "   "+plaintext;
     }
 
-    model: listView.model
+    //model: parent.model
 
     delegate: ListItem {
-      width: parent.width
-      text: display // type=="Network" ? plaintext : "   "+plaintext;
-      current: ListView.view.currentIndex == index
+      width: listViewItem.width
+      text: display + decorationIconName // type=="Network" ? plaintext : "   "+plaintext;
+      iconSource: "image://quassel/" + decorationIconName
+      current: listViewItem.currentIndex == index
 
       MouseArea {
         anchors.fill: parent
         onClicked: {
-          ListView.view.currentIndex = index
+          console.log("about to change current from " + listViewItem._cur)
+          //listViewItem.currentIndex = index
+          ctxt.setCurrentBufferIndex(index)
         }
       }
     }
@@ -35,4 +42,4 @@ Item {
       scrollArea: parent
     }
   }
-}
+//}

@@ -54,6 +54,7 @@ QVariant NickViewFilter::data(const QModelIndex &index, int role) const {
   case Qt::ForegroundRole:
   case Qt::BackgroundRole:
   case Qt::DecorationRole:
+  case NetworkModel::DecorationIconNameRole:
     return GraphicalUi::uiStyle()->nickViewItemData(mapToSource(index), role);
   default:
     return QSortFilterProxyModel::data(index, role);

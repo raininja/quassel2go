@@ -854,6 +854,7 @@ NetworkModel::NetworkModel(QObject *parent)
   roles[IrcChannelRole] = "ircChannel";
   roles[BufferFirstUnreadMsgIdRole] = "bufferFirstUnreadMsg";
   roles[MarkerLineMsgIdRole] = "markerLineMsgId";
+  roles[DecorationIconNameRole] = "decorationIconName";
   setRoleNames(roles);
 
   BufferSettings defaultSettings;

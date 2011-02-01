@@ -161,26 +161,52 @@ QVariant UiStyle::bufferViewItemData(const QModelIndex &index, int role) const {
   BufferInfo::Type type = (BufferInfo::Type)index.data(NetworkModel::BufferTypeRole).toInt();
   bool isActive = index.data(NetworkModel::ItemActiveRole).toBool();
 
-  if(role == Qt::DecorationRole) {
+  switch(role) {
+  case Qt::DecorationRole: {
     if(!_showBufferViewIcons)
       return QVariant();
 
     switch(type) {
-      case BufferInfo::ChannelBuffer:
-        if(isActive)
-          return _channelJoinedIcon;
-        else
-          return _channelPartedIcon;
-      case BufferInfo::QueryBuffer:
-        if(!isActive)
-          return _userOfflineIcon;
-        if(index.data(NetworkModel::UserAwayRole).toBool())
-          return _userAwayIcon;
-        else
-          return _userOnlineIcon;
-      default:
-        return QVariant();
+    case BufferInfo::ChannelBuffer:
+      if(isActive)
+        return _channelJoinedIcon;
+      else
+        return _channelPartedIcon;
+    case BufferInfo::QueryBuffer:
+      if(!isActive)
+        return _userOfflineIcon;
+      if(index.data(NetworkModel::UserAwayRole).toBool())
+        return _userAwayIcon;
+      else
+        return _userOnlineIcon;
+    default:
+      return QVariant();
     }
+    break;
+  }
+  case NetworkModel::DecorationIconNameRole: {
+    if(!_showBufferViewIcons)
+      return QVariant();
+    switch(type) {
+    case BufferInfo::ChannelBuffer:
+      if(isActive)
+        return "irc-channel-active";
+      else
+        return "irc-channel-inactive";
+    case BufferInfo::QueryBuffer:
+      if(!isActive)
+        return "im-user-offline";
+      if(index.data(NetworkModel::UserAwayRole).toBool())
+        return "im-user-away";
+      else
+        return "im-user";
+    default:
+      return QVariant();
+    }
+    break;
+  }
+  default:
+    break;
   }
 
   quint32 fmtType = BufferViewItem;
@@ -225,28 +251,57 @@ QVariant UiStyle::bufferViewItemData(const QModelIndex &index, int role) const {
 QVariant UiStyle::nickViewItemData(const QModelIndex &index, int role) const {
   NetworkModel::ItemType type = (NetworkModel::ItemType)index.data(NetworkModel::ItemTypeRole).toInt();
 
-  if(role == Qt::DecorationRole) {
+  switch(role) {
+  case Qt::DecorationRole: {
     if(!_showNickViewIcons)
       return QVariant();
 
     switch(type) {
-      case NetworkModel::UserCategoryItemType:
-      {
-        int categoryId = index.data(TreeModel::SortRole).toInt();
-        if(categoryId <= _opIconLimit)
-          return _categoryOpIcon;
-        if(categoryId <= _voiceIconLimit)
-          return _categoryVoiceIcon;
-        return _userOnlineIcon;
-      }
-      case NetworkModel::IrcUserItemType:
-        if(index.data(NetworkModel::ItemActiveRole).toBool())
-          return _userOnlineIcon;
-        else
-          return _userAwayIcon;
-      default:
-        return QVariant();
+    case NetworkModel::UserCategoryItemType:
+    {
+      int categoryId = index.data(TreeModel::SortRole).toInt();
+      if(categoryId <= _opIconLimit)
+        return _categoryOpIcon;
+      if(categoryId <= _voiceIconLimit)
+        return _categoryVoiceIcon;
+      return _userOnlineIcon;
     }
+    case NetworkModel::IrcUserItemType:
+      if(index.data(NetworkModel::ItemActiveRole).toBool())
+        return _userOnlineIcon;
+      else
+        return _userAwayIcon;
+    default:
+      return QVariant();
+    }
+    break;
+  }
+  case NetworkModel::DecorationIconNameRole: {
+    if(!_showNickViewIcons)
+      return QVariant();
+
+    switch(type) {
+    case NetworkModel::UserCategoryItemType:
+    {
+      int categoryId = index.data(TreeModel::SortRole).toInt();
+      if(categoryId <= _opIconLimit)
+        return "irc-operator";
+      if(categoryId <= _voiceIconLimit)
+        return "irc-voice";
+      return "im-user";
+    }
+    case NetworkModel::IrcUserItemType:
+      if(index.data(NetworkModel::ItemActiveRole).toBool())
+        return "im-user";
+      else
+        return "im-user-away";
+    default:
+      return QVariant();
+    }
+    break;
+  }
+  default:
+    break;
   }
 
   QTextCharFormat fmt = _listItemFormats.value(NickViewItem);

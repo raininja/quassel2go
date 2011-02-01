@@ -285,6 +285,28 @@ Rectangle {
             anchors.fill: parent
             // model: ChatListModel{}
             model: ctxt.allBuffersModel
+
+            currentIndex: ctxt.currentBufferIndex
+
+//            MouseArea {
+//                anchors.fill: parent
+//                property int dragStartSize: 0;
+//                property int dragStartX: 0;
+
+//                onPressed: {
+//                  console.log("pressed...");
+//                    dragStartSize = bufferlist.width
+//                    dragStartX = mapToItem(background,mouse.x,0).x
+//                }
+
+//                onReleased: {
+//                    dragStartX = -1
+//                }
+
+//                onMousePositionChanged: {
+//                        bufferlist.width = dragStartSize + (mapToItem(background,mouse.x,0).x - dragStartX)
+//                }
+//            }
         }
     }
 
