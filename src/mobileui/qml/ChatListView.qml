@@ -24,7 +24,7 @@ import Qt 4.7
 
     delegate: ListItem {
       width: listViewItem.width
-      text: display + decorationIconName // type=="Network" ? plaintext : "   "+plaintext;
+      text: display // type=="Network" ? plaintext : "   "+plaintext;
       iconSource: "image://quassel/" + decorationIconName
       current: listViewItem.currentIndex == index
 

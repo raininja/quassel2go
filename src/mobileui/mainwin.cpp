@@ -217,7 +217,9 @@ void MainWin::init() {
   qmlRegisterType<QmlChatView>("org.quassel", 0, 1, "QuasselChatView");
   qmlRegisterType<QmlInputWidget>("org.quassel", 0, 1, "QuasselInputWidget");
   _declarativeView = new QDeclarativeView(this);
-  _declarativeView->engine()->addImageProvider(QLatin1String("quassel"), new QmlThemeImageProvider(this));
+  QmlThemeImageProvider *imgProvider = new QmlThemeImageProvider(this);
+  qDebug() << "imgProvider test..." << (imgProvider->requestPixmap("irc-channel-active", 0, QSize(16,16)).size());
+  _declarativeView->engine()->addImageProvider(QLatin1String("quassel"), imgProvider);
 #ifdef Q_WS_MAEMO_5
   // default settings are fine
 #else

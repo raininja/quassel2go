@@ -71,6 +71,8 @@ void QmlContextObject::setCurrentBufferIndex(int index)
   if(_currentBufferIndex == index)
     return;
 
+  qDebug() << "change currentBufferIndex" << _currentBufferIndex << " -> " << index;
+
   _currentBufferIndex = index;
 
   emit currentBufferModelIndexChanged(_allBuffersModel->mapToSource(_allBuffersModel->index(index, 0)),
@@ -80,5 +82,6 @@ void QmlContextObject::setCurrentBufferIndex(int index)
 
 void QmlContextObject::setCurrentBufferModelIndex(const QModelIndex &index)
 {
+  qDebug() << "source model index" << index << "  -> mapped:" << _allBuffersModel->mapFromSource(index);
   setCurrentBufferIndex(_allBuffersModel->mapFromSource(index).row());
 }

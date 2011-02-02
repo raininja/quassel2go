@@ -1,6 +1,8 @@
 import Qt 4.7
 
 Item {
+  id: lvItem
+
   property string text: ""
   property bool current: false
   property variant iconSource: ""
@@ -14,25 +16,67 @@ Item {
     opacity: parent.current ? 1 : 0
   }
 
-  Image {
-    id: icon
-    anchors.left: parent.left
-    anchors.verticalCenter: parent.verticalCenter
+  Column {
+    visible: parent.width <= 90
+    spacing: 5
     anchors.margins: 10
-    source: iconSource
-    width: 16
-    height: 16
-    visible: iconSource != ""
+    anchors.fill: parent
+    anchors.horizontalCenter: parent.horizontalCenter
+
+    Image {
+      id: iconSmall
+      //anchors.left: parent.left
+      anchors.horizontalCenter: parent.horizontalCenter
+      //anchors.margins: 10
+      source: iconSource
+      width: 16
+      height: 16
+      visible: iconSource != ""
+    }
+
+    Text {
+      id: delegateTextSmall
+      text: lvItem.text
+      elide: Text.ElideRight
+      width: parent.width
+      horizontalAlignment: "AlignHCenter"
+      font.pointSize: 9
+
+//      anchors.left: parent.left
+//      anchors.right: parent.right
+      anchors.horizontalCenter: parent.horizontalCenter
+//      anchors.margins: 10
+
+    }
   }
 
-  Text {
-    id: delegateText
-    text: parent.text
-    elide: Text.ElideRight;
-    anchors.left: icon.visible ? icon.right : parent.left
-    anchors.right: parent.right
+  Item {
+    visible: parent.width > 90
+    width: parent.width
     anchors.verticalCenter: parent.verticalCenter
-    anchors.margins: 10
+
+    Image {
+      id: icon
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+      anchors.margins: 10
+      source: iconSource
+      width: 16
+      height: 16
+      visible: iconSource != ""
+    }
+
+    Text {
+      id: delegateText
+      text: lvItem.text
+      elide: Text.ElideRight;
+      font.pointSize: 11
+      anchors.left: icon.visible ? icon.right : parent.left
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+      anchors.margins: 10
+    }
   }
+
 }
 

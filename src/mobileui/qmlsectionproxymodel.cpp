@@ -13,19 +13,33 @@ QModelIndex QmlSectionProxyModel::mapFromSource(const QModelIndex &sourceIndex) 
 {
     if(!sourceModel())
         return QModelIndex();
-//    if(sourceIndex.parent().isValid())
-//        return QModelIndex();
+
     // always map to the only column
 
-    return index(sourceIndex.row(), 0, _root);
+    int cnt = 0;
+    bool success = false;
+    for(int i = 0; i < sourceModel()->rowCount(_root); ++i) {
+      QModelIndex sectionIndex = sourceModel()->index(i, 0, _root);
+
+      if(sectionIndex == sourceIndex.parent()) {
+        cnt += sourceIndex.row();
+        success = true;
+        break;
+      } else {
+        cnt += sourceModel()->rowCount(sectionIndex);
+      }
+    }
+
+    if(success)
+      return index(cnt, 0, _root);
+    else
+      return QModelIndex();
 }
 
 QModelIndex QmlSectionProxyModel::mapToSource(const QModelIndex &proxyIndex) const
 {
     if(!sourceModel())
         return QModelIndex();
- //   if(proxyIndex.parent().isValid())
- //       return QModelIndex();
 
     // always map to first column
 
