@@ -122,7 +122,6 @@ bool ChatView::viewportEvent ( QEvent * event ) {
 void ChatView::paintEvent ( QPaintEvent * event )
 {
   QGraphicsView::paintEvent(event);
-  _scroller->paintEvent(event);
 }
 
 bool ChatView::event(QEvent *event) {
@@ -392,24 +391,8 @@ void ChatView::checkChatLineCaches() {
   }
 }
 
-// QPoint ChatView::maximumScrollPosition() const
-// {
-//   return QPoint(0, verticalScrollBar()->maximum() );
-// }
-
-// QPoint ChatView::scrollPosition() const
-// {
-//   return QPoint(0, verticalScrollBar()->value() );
-// }
-
-// void ChatView::setScrollPosition( const QPoint & pos, const QPoint & overshoot )
-// {
-//   verticalScrollBar()->setValue(pos.y());
-// }
-
-// QSize ChatView::viewportSize() const
-// {
-//   return viewport()->size();
-// }
-
+ScrollAreaKineticScroller *ChatView::scroller() const
+{
+  return _scroller;
+}
 

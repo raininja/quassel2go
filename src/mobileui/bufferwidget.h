@@ -34,6 +34,7 @@ class BufferWidget : public AbstractBufferContainer {
   Q_OBJECT
 
   Q_PROPERTY(BufferId currentBuffer READ currentBuffer NOTIFY currentIdChanged)
+  Q_PROPERTY(ChatView *currentChatView READ currentChatView NOTIFY currentChatViewChanged)
 
 public:
   BufferWidget(QWidget *parent);
@@ -43,6 +44,8 @@ public:
 
   inline ChatViewSearchBar *searchBar() const { return ui.searchBar; }
   void addActionsToMenu(QMenu *, const QPointF &pos);
+
+  ChatView *currentChatView() const;
 
 public slots:
   virtual void setMarkerLine(ChatView *view = 0, bool allowGoingBack = true);
@@ -67,6 +70,7 @@ private slots:
 
 signals:
   void currentIdChanged(BufferId id);
+  void currentChatViewChanged(ChatView *view);
 
 private:
   Ui::BufferWidget ui;

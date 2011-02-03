@@ -11,20 +11,51 @@ ScrollAreaKineticScroller::ScrollAreaKineticScroller(QAbstractScrollArea *parent
     _scroll(parent),
     _showBars(false)
 {
+  _lastViewportSize = viewportSize();
+
+#if defined(Q_WS_MAEMO_5)
+  qDebug() << "scroll setings overshoot/fastVel/decel" << fastVelocityFactor() << decelerationFactor();
+  setOvershootPolicy(QAbstractKineticScroller::OvershootAlwaysOff);
+  setFastVelocityFactor(1.0);
+  setDecelerationFactor(0.1);
+#endif
+
+
+  // TODO get rid of timer when QML scrollbars work
     _timer.setSingleShot(true);
     connect(&_timer,SIGNAL(timeout()), this, SLOT(hideScrollBars()));
+
+    if(_scroll->horizontalScrollBar()) {
+      connect(_scroll->horizontalScrollBar(), SIGNAL(rangeChanged(int,int)), this, SIGNAL(maximumScrollPositionChanged()));
+      connect(_scroll->horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SIGNAL(scrollPositionChanged()));
+    }
+    if(_scroll->verticalScrollBar()) {
+      connect(_scroll->verticalScrollBar(), SIGNAL(rangeChanged(int,int)), this, SIGNAL(maximumScrollPositionChanged()));
+      connect(_scroll->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SIGNAL(scrollPositionChanged()));
+    }
+
+    connect(this, SIGNAL(maximumScrollPositionChanged()), this, SLOT(checkViewportSizeChanged()));
+    connect(this, SIGNAL(scrollPositionChanged()), this, SLOT(checkViewportSizeChanged()));
+}
+
+void ScrollAreaKineticScroller::checkViewportSizeChanged()
+{
+  if(viewportSize() != _lastViewportSize) {
+    _lastViewportSize = viewportSize();
+    emit viewportSizeChanged();
+  }
 }
 
 QPoint ScrollAreaKineticScroller::maximumScrollPosition() const
 {
-    return QPoint(_scroll->horizontalScrollBar() ? _scroll->horizontalScrollBar()->maximum() : 0,
-                  _scroll->verticalScrollBar() ? _scroll->verticalScrollBar()->maximum() : 0 );
+    return QPoint(_scroll->horizontalScrollBar() ? (_scroll->horizontalScrollBar()->maximum()-_scroll->horizontalScrollBar()->minimum()+_scroll->horizontalScrollBar()->pageStep()) : 0,
+                  _scroll->verticalScrollBar() ? (_scroll->verticalScrollBar()->maximum()-_scroll->verticalScrollBar()->minimum()+_scroll->verticalScrollBar()->pageStep()) : 0 );
 }
 
 QPoint ScrollAreaKineticScroller::scrollPosition() const
 {
-  return QPoint(_scroll->horizontalScrollBar() ? _scroll->horizontalScrollBar()->value() : 0,
-                _scroll->verticalScrollBar() ? _scroll->verticalScrollBar()->value() : 0 );
+  return QPoint(_scroll->horizontalScrollBar() ? maximumScrollPosition().x() - (_scroll->horizontalScrollBar()->maximum() - _scroll->horizontalScrollBar()->value()) : 0,
+                _scroll->verticalScrollBar() ? maximumScrollPosition().y() - (_scroll->verticalScrollBar()->maximum() - _scroll->verticalScrollBar()->value()) : 0 );
 }
 
 void ScrollAreaKineticScroller::setScrollPosition( const QPoint & pos, const QPoint & overshoot )
@@ -32,9 +63,9 @@ void ScrollAreaKineticScroller::setScrollPosition( const QPoint & pos, const QPo
     Q_UNUSED(overshoot)
 
   if(_scroll->horizontalScrollBar())
-      _scroll->horizontalScrollBar()->setValue(pos.x());
+      _scroll->horizontalScrollBar()->setValue(pos.x() - maximumScrollPosition().x() + _scroll->horizontalScrollBar()->maximum());
   if(_scroll->verticalScrollBar())
-      _scroll->verticalScrollBar()->setValue(pos.y());
+      _scroll->verticalScrollBar()->setValue(pos.y() - maximumScrollPosition().y() + _scroll->verticalScrollBar()->maximum() + _scroll->verticalScrollBar()->pageStep());
 
   _showBars = true;
   _scroll->viewport()->update();
@@ -69,8 +100,47 @@ void ScrollAreaKineticScroller::paintEvent(QPaintEvent *e)
     }
 }
 
+int ScrollAreaKineticScroller::scrollbarPos() const
+{
+  if(maximumScrollPosition().y() <= 0)
+    return 0;
+
+  return (viewportSize().height()-scrollbarHeight()) * scrollPosition().y()/(qreal)maximumScrollPosition().y();
+}
+
+int ScrollAreaKineticScroller::scrollbarHeight() const
+{
+  if(maximumScrollPosition().y() <= 0)
+    return 10;
+
+  int vertHeight = viewportSize().height() * viewportSize().height()/(qreal)maximumScrollPosition().y();
+  if(vertHeight < 10)
+    vertHeight = 10;
+  return vertHeight;
+}
+
 void ScrollAreaKineticScroller::hideScrollBars()
 {
     _showBars = false;
     _scroll->viewport()->update();
+}
+
+#if defined(Q_WS_MAEMO_5)
+void ScrollAreaKineticScroller::stateChanged(QAbstractKineticScroller::State oldState)
+{
+  bool mvOld = (oldState == QAbstractKineticScroller::Pushing || oldState == QAbstractKineticScroller::AutoScrolling);
+  bool mvNew = moving();
+  if(mvOld != mvNew) {
+    emit movingChanged();
+  }
+}
+#endif
+
+bool ScrollAreaKineticScroller::moving() const
+{
+#if defined(Q_WS_MAEMO_5)
+  return state() == QAbstractKineticScroller::Pushing || state() == QAbstractKineticScroller::AutoScrolling;
+#else
+  return false;
+#endif
 }

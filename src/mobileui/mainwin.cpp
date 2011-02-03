@@ -211,6 +211,7 @@ void MainWin::init() {
   // try setup qml... (needs _bufferWidget already initialized)
   QmlChatView::setBufferWidget(_bufferWidget);
   QmlInputWidget::setEmbeddedWidget(_inputWidget);
+  qmlRegisterType<ChatView>();
   qmlRegisterType<BufferWidget>();
   qmlRegisterType<TopicModel>();
   qmlRegisterType<QAbstractItemModel>();

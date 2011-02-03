@@ -79,6 +79,8 @@ public:
    */
   void setHasCache(ChatLine *line, bool hasCache = true);
 
+  class ScrollAreaKineticScroller *scroller() const;
+
 public slots:
   inline virtual void clear() {}
   void zoomIn();

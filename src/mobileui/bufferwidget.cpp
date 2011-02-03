@@ -23,6 +23,8 @@
 #include <QMenu>
 #include <QScrollBar>
 
+#include <QDebug>
+
 #include "action.h"
 #include "actioncollection.h"
 #include "bufferwidget.h"
@@ -232,6 +234,8 @@ void BufferWidget::currentChanged(const QModelIndex &current, const QModelIndex 
     }
   }
 
+  emit currentChatViewChanged(curView);
+
   if(prevView && autoMarkerLine())
     setMarkerLine(prevView, false);
 }
@@ -264,4 +268,11 @@ void BufferWidget::jumpToMarkerLine(ChatView *view, bool requestBacklog) {
     return;
 
   view->jumpToMarkerLine(requestBacklog);
+}
+
+ChatView *BufferWidget::currentChatView() const
+{
+  ChatView *curView = qobject_cast<ChatView *>(ui.stackedWidget->currentWidget());
+  qDebug() << "request currentChatView" << curView;
+  return curView;
 }

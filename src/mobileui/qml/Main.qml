@@ -64,7 +64,63 @@ Rectangle {
             //widget: ctxt.bufferContainer
 
             //model: ChatModel { }
+
+            pos: (chatview_flickable.visibleArea.yPosition < 0.1 ? 0.1 : chatview_flickable.visibleArea.yPosition) * chatview_flickable.contentHeight
         }
+
+        Flickable {
+          id: chatview_flickable
+          anchors.fill: parent
+          contentHeight: chatview_view.contentsHeight
+          contentWidth: width
+        }
+
+        Rectangle {
+            id: scrollbar
+            anchors.right: chatview_flickable.right
+            y: chatview_flickable.visibleArea.yPosition * chatview_flickable.height
+            width: 10
+            height: chatview_flickable.visibleArea.heightRatio * chatview_flickable.height
+
+            color: "black"
+            anchors.margins: 1
+            radius: 3
+            border.width: 2
+            border.color: "white"
+        }
+
+//        Item {
+//            id: chatViewScrollbar
+//            property variant orientation: Qt.Vertical
+
+//            anchors.right: chatview.right
+//            // y: scrollArea.visibleArea.yPosition * scrollArea.height
+//            y: chatview_view.scrollbarPos
+//            width: 10
+//            //height: scrollArea.visibleArea.heightRatio * scrollArea.height
+//            height: chatview_view.scrollbarHeight
+//            //opacity: 0
+
+//            Rectangle {
+//                anchors.fill: parent
+//                anchors.margins: 1
+//                color: "black"
+//                radius: 3
+//                border.width: 2
+//                border.color: "white"
+//            }
+
+//            states: State {
+//                name: "visible"
+//                when: chatview_view.scrollbar.moving || true
+//                PropertyChanges { target: scrollbar; opacity: 1.0 }
+//            }
+
+//            transitions: Transition {
+//                from: "visible"; to: ""
+//                NumberAnimation { properties: "opacity"; duration: 600 }
+//            }
+//        }
 
 //        Connections {
 //          target: ctxt.bufferContainer
