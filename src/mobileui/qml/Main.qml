@@ -150,7 +150,7 @@ Rectangle {
 
     Item {
         id: toolbar
-        height: 60
+        height: 110
         width: parent.width
         anchors.left: background.left
         anchors.right: background.right
@@ -158,50 +158,109 @@ Rectangle {
 
         z: 99
 
-        Item {
-            id: topicbar
-            height: parent.height
+        Rectangle {
+          anchors.fill: parent
+          smooth: true
+
+          gradient: Gradient {
+            GradientStop {
+              position: 0.0
+              color: "#666666"
+            }
+            GradientStop {
+              position:1.0
+              color: "#111111"
+            }
+          }
+        }
+
+       Column {
+          anchors.fill: parent
+
+          ChatListView {
             width: parent.width
-            x: parent.x
-            y: parent.y // parent.y - height
+            height: 50
+            clip: true
+            model: ctxt.allBuffersModel
 
-            ToolButton {
-                id: chatsBtn
-                // text: "Chats"
-                icon: "image://quassel/general_foldertree"
-                height: parent.height
-                anchors.left: parent.left
-                anchors.top: parent.top
-                onClicked: background.state="showChatList"
-            }
+            orientation: "Horizontal"
 
-            ToolButton {
-                id: nicksBtn
-                // text: "Nicks"
-                icon: "image://quassel/general_contacts_button" // general_conference_avatar
-                height: parent.height
-                anchors.right: parent.right
-                anchors.top: parent.top
-                onClicked: background.state="showNickList"
-            }
+            currentIndex: ctxt.currentBufferIndex
 
-            Text {
-                id: topicText
-                text: topicModel.currentTopic
-                color: "#ffffff"
-                anchors.verticalCenter: parent.verticalCenter
-                //height: parent.height
-                elide: Text.ElideRight
-                anchors.leftMargin: 10
-                anchors.rightMargin: 10
-                anchors.left: chatsBtn.right
-                anchors.right: nicksBtn.left
+            section.property: ""
+
+            delegate: Item {
+              height: parent.height
+              width: 80
+
+              Rectangle {
+                anchors.fill: parent
+                color: "#000000"
+                visible: listViewItem.currentIndex != index
+              }
+
+              ListItem {
+                anchors.fill: parent
+                text: display // type=="Network" ? plaintext : "   "+plaintext;
+                textColor: "#ffffff"
+                iconSource: "image://quassel/" + decorationIconName
+                // current: listViewItem.currentIndex == index
 
                 MouseArea {
-                    anchors.fill: parent
-                    onClicked: { background.state="TopicEditing"; }
+                  anchors.fill: parent
+                  onClicked: {
+                    ctxt.setCurrentBufferIndex(index)
+                  }
                 }
+              }
             }
+          }
+
+          Item {
+              id: topicbar
+              height: 60
+              width: parent.width
+              x: parent.x
+              y: parent.y // parent.y - height
+
+//              ToolButton {
+//                  id: chatsBtn
+//                  // text: "Chats"
+//                  icon: "image://quassel/general_foldertree"
+//                  height: parent.height
+//                  anchors.left: parent.left
+//                  anchors.top: parent.top
+//                  onClicked: background.state="showChatList"
+//              }
+
+              ToolButton {
+                  id: nicksBtn
+                  // text: "Nicks"
+                  icon: "image://quassel/general_contacts_button" // general_conference_avatar
+                  height: parent.height
+                  anchors.right: parent.right
+                  anchors.top: parent.top
+                  onClicked: background.state="showNickList"
+              }
+
+              Text {
+                  id: topicText
+                  text: topicModel.currentTopic
+                  color: "#ffffff"
+                  anchors.verticalCenter: parent.verticalCenter
+                  //height: parent.height
+                  elide: Text.ElideRight
+                  anchors.leftMargin: 10
+                  anchors.rightMargin: 10
+                  anchors.left: chatsBtn.right
+                  anchors.right: nicksBtn.left
+
+                  MouseArea {
+                      anchors.fill: parent
+                      onClicked: { background.state="TopicEditing"; }
+                  }
+              }
+          }
         }
 
 //        states: [

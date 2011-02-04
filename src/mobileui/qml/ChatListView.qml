@@ -10,8 +10,8 @@ import Qt 4.7
     //currentIndex:
 
     id: listViewItem
-    anchors.fill: parent
-    contentY:  10000
+    //anchors.fill: parent
+    //contentY:  10000
 
     section.property: "section_item"
     section.criteria: ViewSection.FullString

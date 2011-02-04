@@ -4,6 +4,7 @@ Item {
   id: lvItem
 
   property string text: ""
+  property string textColor: "#000000"
   property bool current: false
   property variant iconSource: ""
 
@@ -37,6 +38,7 @@ Item {
     Text {
       id: delegateTextSmall
       text: lvItem.text
+      color: lvItem.textColor
       elide: Text.ElideRight
       width: parent.width
       horizontalAlignment: "AlignHCenter"
