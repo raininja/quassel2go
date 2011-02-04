@@ -1,5 +1,8 @@
 #include "qmlchatview.h"
 #include <QDebug>
+#include "qmlscrollmodel.h"
+
+#include <QListWidget>
 
 #include "scrollareakineticscroller.h"
 
@@ -7,12 +10,21 @@ QWidget *QmlChatView::_bufferWidget = 0;
 
 QmlChatView::QmlChatView(QWidget *parent) :
     QGraphicsProxyWidget(),
-  _currentView(0) /*,
+  _currentView(0),
+  _scrollModel(new QmlScrollModel(this)) /*,
   _id(-1),
   _par(parent)*/
 {
-  setWidget(_bufferWidget);
-  connect(_bufferWidget, SIGNAL(currentChatViewChanged(ChatView*)), this, SLOT(currentChatViewChanged(ChatView*)));
+  if(_bufferWidget) {
+    setWidget(_bufferWidget);
+    if(qobject_cast<QAbstractScrollArea*>(_bufferWidget)) {
+      _scrollModel->setScrollArea(qobject_cast<QAbstractScrollArea*>(_bufferWidget));
+    }
+    connect(_bufferWidget, SIGNAL(currentChatViewChanged(ChatView*)), this, SLOT(currentChatViewChanged(ChatView*)));
+  } else {
+    qWarning() << "QmlChatView needs to be initialized first with ::setBufferWidget()";
+    setWidget(new QWidget());
+  }
 }
 
 void QmlChatView::setBufferWidget(QWidget *widget)
@@ -20,8 +32,16 @@ void QmlChatView::setBufferWidget(QWidget *widget)
   _bufferWidget = widget;
 }
 
+QmlScrollModel *QmlChatView::scrollModel() const
+{
+  return _scrollModel;
+}
+
 void QmlChatView::currentChatViewChanged(ChatView *view)
 {
+  if(!_bufferWidget)
+    return;
+
   if(_currentView == view)
     return;
 
@@ -29,6 +49,7 @@ void QmlChatView::currentChatViewChanged(ChatView *view)
     disconnect(_currentView);
   }
   _currentView = view;
+  _scrollModel->setScrollArea(view);
 
   if(view) {
     connect(view->scroller(), SIGNAL(scrollPositionChanged()), this, SIGNAL(scrollChanged()));
@@ -38,7 +59,7 @@ void QmlChatView::currentChatViewChanged(ChatView *view)
 
 int QmlChatView::scrollbarPos() const
 {
-  if(!_currentView)
+  if(!_bufferWidget || !_currentView)
     return 0;
 
   if(_currentView->scroller()->maximumScrollPosition().y() <= 0)
@@ -49,7 +70,7 @@ int QmlChatView::scrollbarPos() const
 
 int QmlChatView::scrollbarHeight() const
 {
-  if(!_currentView)
+  if(!_bufferWidget || !_currentView)
     return 15;
 
   return _currentView->scroller()->scrollbarHeight();
@@ -57,7 +78,7 @@ int QmlChatView::scrollbarHeight() const
 
 bool QmlChatView::scrollbarMoving() const
 {
-  if(!_currentView)
+  if(!_bufferWidget || !_currentView)
     return false;
 
   return _currentView->scroller()->moving();
@@ -65,7 +86,7 @@ bool QmlChatView::scrollbarMoving() const
 
 int QmlChatView::contentsHeight() const
 {
-  if(!_currentView)
+  if(!_bufferWidget || !_currentView || !_currentView->scroller())
     return 0;
 
   return _currentView->scroller()->maximumScrollPosition().y() + 10;
@@ -73,7 +94,7 @@ int QmlChatView::contentsHeight() const
 
 void QmlChatView::setPos(qreal pos)
 {
-  if(!_currentView)
+  if(!_bufferWidget || !_currentView || !_currentView->scroller())
     return;
 
   QPoint point = QPoint(0,pos);

@@ -3,7 +3,10 @@ import org.quassel 0.1
 
 Rectangle {
     id: background
-    anchors.fill:  parent
+    //anchors.fill:  parent
+
+    width: 800
+    height: 480
 
     color: "#000000"
 
@@ -35,8 +38,6 @@ Rectangle {
 
     Rectangle {
         id: chatview
-//        color: "#9999ff"
-//        opacity: 0.6
         border.width: 1
 
         anchors.top: toolbar.bottom
@@ -45,14 +46,6 @@ Rectangle {
         anchors.left: chatListDocked?bufferlist.right:background.left
         anchors.right: nickListDocked?nicklist.left:background.right
 
-        //x: chatListDocked?bufferlist.width:0
-        //width: background.width - (chatListDocked?bufferlist.width:0) - (nickListDocked?nicklist.width:0)
-
-//        Text{
-//            text: "chatview"
-//            anchors.centerIn: parent
-//        }
-
         QuasselChatView {
             id: chatview_view
             anchors.left: parent.left
@@ -60,72 +53,38 @@ Rectangle {
             anchors.top: parent.top
             anchors.bottom:parent.bottom
 
-            //bufferId: ctxt.bufferContainer.currentBuffer
-            //widget: ctxt.bufferContainer
+            //scrollModel.verticalPosition: chatview_flickable.visibleArea.yPosition * chatview_flickable.contentHeight
 
-            //model: ChatModel { }
+            scrollModel.verticalPosition: chatview_flickable.contentY
+            scrollModel.onVerticalPositionChanged: { if(!chatview_flickable.flicking) { chatview_flickable.contentY = scrollModel.verticalPosition } }
 
-            pos: (chatview_flickable.visibleArea.yPosition < 0.1 ? 0.1 : chatview_flickable.visibleArea.yPosition) * chatview_flickable.contentHeight
+            // pos: (chatview_flickable.visibleArea.yPosition < 0.1 ? 0.1 : chatview_flickable.visibleArea.yPosition) * chatview_flickable.contentHeight
         }
 
         Flickable {
           id: chatview_flickable
-          anchors.fill: parent
-          contentHeight: chatview_view.contentsHeight
+          x: chatview_view.scrollModel.viewportPosition.x
+          y: chatview_view.scrollModel.viewportPosition.y
+          //anchors.left: parent.left
+         // anchors.top: parent.top
+          //anchors.bottom: parent.bottom
+          height: chatview_view.scrollModel.viewportSize.height
+          width: chatview_view.scrollModel.viewportSize.width
+          contentHeight: height + (chatview_view.scrollModel.contentsSize.height <= 0 ? 0 : chatview_view.scrollModel.contentsSize.height)
           contentWidth: width
+          // boundsBehavior: "DragOverBounds"
         }
 
-        Rectangle {
-            id: scrollbar
-            anchors.right: chatview_flickable.right
-            y: chatview_flickable.visibleArea.yPosition * chatview_flickable.height
-            width: 10
-            height: chatview_flickable.visibleArea.heightRatio * chatview_flickable.height
+//        Text {
+//          anchors.fill: parent
+//          color: "blue"
+//          text:  "vppos y:" + chatview_flickable.y + " scrollModel: " + chatview_view.scrollModel.horizontalPosition + " flickContentHeight:" + chatview_flickable.contentHeight+ " flickHeight:" + chatview_flickable.height + " vp:" +  chatview_view.scrollModel.viewportSize.width + "/" + chatview_view.scrollModel.viewportSize.height + " c:" +  chatview_view.scrollModel.contentsSize.width + "/" + chatview_view.scrollModel.contentsSize.height + " x:" + chatview_view.scrollModel.horizontalPosition + " y:" + chatview_view.scrollModel.verticalPosition + " flickY:" + chatview_flickable.contentY;
+//        }
 
-            color: "black"
-            anchors.margins: 1
-            radius: 3
-            border.width: 2
-            border.color: "white"
+        ScrollBar {
+          scrollArea: chatview_flickable
+          //showAlways: true
         }
-
-//        Item {
-//            id: chatViewScrollbar
-//            property variant orientation: Qt.Vertical
-
-//            anchors.right: chatview.right
-//            // y: scrollArea.visibleArea.yPosition * scrollArea.height
-//            y: chatview_view.scrollbarPos
-//            width: 10
-//            //height: scrollArea.visibleArea.heightRatio * scrollArea.height
-//            height: chatview_view.scrollbarHeight
-//            //opacity: 0
-
-//            Rectangle {
-//                anchors.fill: parent
-//                anchors.margins: 1
-//                color: "black"
-//                radius: 3
-//                border.width: 2
-//                border.color: "white"
-//            }
-
-//            states: State {
-//                name: "visible"
-//                when: chatview_view.scrollbar.moving || true
-//                PropertyChanges { target: scrollbar; opacity: 1.0 }
-//            }
-
-//            transitions: Transition {
-//                from: "visible"; to: ""
-//                NumberAnimation { properties: "opacity"; duration: 600 }
-//            }
-//        }
-
-//        Connections {
-//          target: ctxt.bufferContainer
-//          onCurrentIdChanged: console.log("buffer Container current changed:" + id)
-//        }
     }
 
     Item {
@@ -329,6 +288,8 @@ Rectangle {
 //        }
     }
 
+
+
     Rectangle {
         id: bufferlist
         width: 300
@@ -339,7 +300,6 @@ Rectangle {
 
         ChatListView {
             anchors.fill: parent
-            // model: ChatListModel{}
             model: ctxt.allBuffersModel
 
             currentIndex: ctxt.currentBufferIndex

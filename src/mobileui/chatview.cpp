@@ -65,7 +65,7 @@ void ChatView::init(MessageFilter *filter) {
   _invalidateFilter = false;
 
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   setAlignment(Qt::AlignLeft|Qt::AlignBottom);
   setInteractive(true);
   //setOptimizationFlags(QGraphicsView::DontClipPainter | QGraphicsView::DontAdjustForAntialiasing);
@@ -133,7 +133,8 @@ bool ChatView::event(QEvent *event) {
     case Qt::Key_PageUp:
     case Qt::Key_PageDown:
       if(!verticalScrollBar()->isVisible()) {
-        scene()->requestBacklog();
+        // TODO: make this optionally dependent on manual gui request
+        //scene()->requestBacklog();
         return true;
       }
     default:
@@ -143,7 +144,9 @@ bool ChatView::event(QEvent *event) {
 
   if(event->type() == QEvent::Wheel) {
     if(!verticalScrollBar()->isVisible()) {
-      scene()->requestBacklog();
+
+      // TODO: make this optionally dependent on manual gui request
+      //scene()->requestBacklog();
       return true;
     }
   }
@@ -228,7 +231,9 @@ void ChatView::verticalScrollbarChanged(int newPos) {
       relativePos = (newPos - vbar->minimum()) * 100 / (vbar->maximum() - vbar->minimum());
 
     if(relativePos < 20) {
-      scene()->requestBacklog();
+
+      // TODO: make this optionally dependent on manual gui request
+      //scene()->requestBacklog();
     }
   }
   _lastScrollbarPos = newPos;

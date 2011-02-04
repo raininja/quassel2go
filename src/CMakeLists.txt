@@ -71,6 +71,17 @@ if(WANT_MOBILECLIENT)
                                       OUTPUT_NAME ../quassel2go)
   target_link_libraries(quassel2go ${LINK_KDE} mod_mobileui mod_uisupport mod_client mod_common ${CLIENT_LIBS}
                                       ${QUASSEL_QT_LIBRARIES} ${QUASSEL_SSL_LIBRARIES} ${CLIENT_LIBRARIES})
+
+  qt4_wrap_cpp(MOC_QMLPLUGIN "mobileui/qmlquasselplugin.h")
+  add_library(qmlquasselplugin SHARED "mobileui/qmlquasselplugin.cpp" ${MOC_QMLPLUGIN} ${COMMON_DEPS} ${CLIENT_DEPS})
+  add_dependencies(qmlquasselplugin genversion_run)
+  set_target_properties(qmlquasselplugin PROPERTIES
+                                      COMPILE_FLAGS "-DQT_PLUGIN -DQT_NO_DEBUG -DQT_SHARED -DQT_GUI_LIB -DQT_NETWORK_LIB ${CLIENT_COMPILE_FLAGS} -DBUILD_MOBILEUI")
+  target_link_libraries(qmlquasselplugin mod_mobileui mod_uisupport mod_client mod_common ${CLIENT_LIBS}
+                                      ${QUASSEL_QT_LIBRARIES} ${QUASSEL_SSL_LIBRARIES} ${CLIENT_LIBRARIES})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/mobileui/qml/org
+                                                             ${CMAKE_CURRENT_BINARY_DIR}/mobileui/qml/org)
+
   install(TARGETS quassel2go RUNTIME DESTINATION ${BIN_INSTALL_DIR})
 endif(WANT_MOBILECLIENT)
 

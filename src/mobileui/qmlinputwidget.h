@@ -2,7 +2,7 @@
 #define QMLINPUTWIDGET_H
 
 #include <QGraphicsProxyWidget>
-#include "inputwidget.h"
+#include <QWidget>
 
 class QmlInputWidget: public QGraphicsProxyWidget
 {

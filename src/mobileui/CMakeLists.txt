@@ -54,6 +54,7 @@ set(SOURCES
     qmlinputwidget.cpp
     qmlsectionproxymodel.cpp
     qmlthemeimageprovider.cpp
+    qmlscrollmodel.cpp
     mobileuiapplication.cpp
     qtuimessageprocessor.cpp
     qtuisettings.cpp
@@ -111,6 +112,7 @@ set(MOC_HDRS
     qmlcontextobject.h
     qmlinputwidget.h
     qmlsectionproxymodel.h
+    qmlscrollmodel.h
     qmlthemeimageprovider.h
     mobileuiapplication.h
     qtuimessageprocessor.h
@@ -232,7 +234,8 @@ add_dependencies(mod_mobileui mod_common mod_client mod_uisupport)
 
 add_dependencies(mod_mobileui
 qml/Button.qml         qml/ChatListView.qml  qml/ChatView.qml  qml/Main.qml
-qml/ChatListModel.qml  qml/ChatModel.qml     qml/Input.qml     qml/NickListView.qml  qml/ScrollBar.qml
+qml/Input.qml     qml/NickListView.qml  qml/ScrollBar.qml
 qml/ListSectionItem.qml
 qml/ListItem.qml
 qml/ToolButton.qml)
+

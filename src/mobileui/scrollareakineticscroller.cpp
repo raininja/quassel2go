@@ -62,6 +62,9 @@ void ScrollAreaKineticScroller::setScrollPosition( const QPoint & pos, const QPo
 {
     Q_UNUSED(overshoot)
 
+  if(!_scroll || !_scroll->viewport())
+    return;
+
   if(_scroll->horizontalScrollBar())
       _scroll->horizontalScrollBar()->setValue(pos.x() - maximumScrollPosition().x() + _scroll->horizontalScrollBar()->maximum());
   if(_scroll->verticalScrollBar())

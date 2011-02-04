@@ -136,6 +136,7 @@
 #include "qmlcontextobject.h"
 #include "qmlinputwidget.h"
 #include "qmlthemeimageprovider.h"
+#include "qmlscrollmodel.h"
 
 MainWin::MainWin(QWidget *parent)
 #ifdef HAVE_KDE
@@ -215,6 +216,7 @@ void MainWin::init() {
   qmlRegisterType<BufferWidget>();
   qmlRegisterType<TopicModel>();
   qmlRegisterType<QAbstractItemModel>();
+  qmlRegisterType<QmlScrollModel>();
   qmlRegisterType<QmlChatView>("org.quassel", 0, 1, "QuasselChatView");
   qmlRegisterType<QmlInputWidget>("org.quassel", 0, 1, "QuasselInputWidget");
   _declarativeView = new QDeclarativeView(this);
@@ -229,10 +231,8 @@ void MainWin::init() {
 #endif
   _declarativeView->setResizeMode(QDeclarativeView::SizeRootObjectToView);
   _qmlContextObject = new QmlContextObject(_declarativeView);
-  _qmlContextObject->setBufferContainer(_bufferWidget);
   _declarativeView->rootContext()->setContextObject(_qmlContextObject);
   _declarativeView->rootContext()->setContextProperty("ctxt", _qmlContextObject);
-  _declarativeView->rootContext()->setContextProperty("bufferWidget", _bufferWidget);
   _declarativeView->rootContext()->setContextProperty("topicModel", _topicModel);
   _declarativeView->setSource(QUrl("qrc:/qml/Main.qml"));
   setCentralWidget(_declarativeView);

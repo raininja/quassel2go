@@ -7,22 +7,14 @@
 
 #include "qmlcontextobject.h"
 
-QmlContextObject::QmlContextObject(QWidget *parent) :
+QmlContextObject::QmlContextObject(QObject *parent) :
     QObject(parent),
-  _bufferContainer(0),
+  //_bufferContainer(0),
   _fullScreen(false),
   _allBuffersModel(new QmlSectionProxyModel(this)),
   _channelUsersModel(new QmlSectionProxyModel(this)),
   _currentBufferIndex(-1)
 {
-}
-
-void QmlContextObject::setBufferContainer(BufferWidget *container)
-{
-  if(_bufferContainer != container) {
-    _bufferContainer = container;
-    emit bufferContainerChanged();
-  }
 }
 
 void QmlContextObject::setFullScreen(bool fullScreen)
@@ -64,7 +56,8 @@ void QmlContextObject::setChannelUsersRootIndex(const QModelIndex &index)
 
 int QmlContextObject::currentBufferIndex() const
 {
-  return _currentBufferIndex; }
+  return _currentBufferIndex;
+}
 
 void QmlContextObject::setCurrentBufferIndex(int index)
 {
