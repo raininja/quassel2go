@@ -1,4 +1,6 @@
 #include "qmlchatview.h"
+#include "chatscene.h"
+#include "chatview.h"
 #include <QDebug>
 #include "qmlscrollmodel.h"
 
@@ -107,4 +109,12 @@ void QmlChatView::setPos(qreal pos)
 //    over = QPoint(0,pos-contentsHeight());
 //  }
   _currentView->scroller()->setScrollPosition(point, QPoint());
+}
+
+void QmlChatView::requestBacklog()
+{
+  if(!_currentView)
+    return;
+
+  _currentView->scene()->requestBacklog();
 }

@@ -42,6 +42,7 @@ public:
   int contentsHeight() const;
 
 public slots:
+  void requestBacklog();
   //void setBufferId(BufferId id);
 
 signals:

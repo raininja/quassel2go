@@ -85,6 +85,19 @@ Rectangle {
           scrollArea: chatview_flickable
           //showAlways: true
         }
+
+        Button {
+          id: requestBacklogButton
+          text: "Older Messages"
+          visible: (chatview_flickable.height >= chatview_view.scrollModel.contentsSize.height) || (chatview_flickable.visibleArea.yPosition < 0.1)
+          anchors.top: parent.top
+          anchors.horizontalCenter: parent.horizontalCenter
+          anchors.margins: 10
+
+          onClicked: {
+            chatview_view.requestBacklog()
+          }
+        }
     }
 
     Item {

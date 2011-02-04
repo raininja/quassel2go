@@ -369,17 +369,20 @@ void MessageModel::requestBacklog(BufferId bufferId) {
   BacklogSettings backlogSettings;
   int requestCount = backlogSettings.dynamicBacklogAmount();
 
+  MsgId lastMessageId = -1;
   for(int i = 0; i < messageCount(); i++) {
     if(messageItemAt(i)->bufferId() == bufferId) {
-      _messagesWaiting[bufferId] = requestCount;
-      Client::backlogManager()->emitMessagesRequested(tr("Requesting %1 messages from backlog for buffer %2:%3")
-						      .arg(requestCount)
-						      .arg(Client::networkModel()->networkName(bufferId))
-						      .arg(Client::networkModel()->bufferName(bufferId)));
-      Client::backlogManager()->requestBacklog(bufferId, -1, messageItemAt(i)->msgId(), requestCount);
-      return;
+      lastMessageId = messageItemAt(i)->msgId();
+      break;
     }
   }
+
+  _messagesWaiting[bufferId] = requestCount;
+  Client::backlogManager()->emitMessagesRequested(tr("Requesting %1 messages from backlog for buffer %2:%3")
+                          .arg(requestCount)
+                          .arg(Client::networkModel()->networkName(bufferId))
+                          .arg(Client::networkModel()->bufferName(bufferId)));
+  Client::backlogManager()->requestBacklog(bufferId, -1, lastMessageId, requestCount);
 }
 
 void MessageModel::messagesReceived(BufferId bufferId, int count) {
