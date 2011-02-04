@@ -59,7 +59,7 @@
 #include "coreconfigwizard.h"
 #include "coreconnectdlg.h"
 #include "coreconnection.h"
-#include "coreconnectionstatuswidget.h"
+#include "coreconnectionstatusmodel.h"
 #include "coreinfodlg.h"
 #include "contextmenuactionprovider.h"
 #include "debugbufferviewoverlay.h"
@@ -71,7 +71,7 @@
 #include "irclistmodel.h"
 #include "ircconnectionwizard.h"
 #include "legacysystemtray.h"
-#include "msgprocessorstatuswidget.h"
+#include "msgprocessorstatusmodel.h"
 #include "nicklistwidget.h"
 #include "mobileuiapplication.h"
 #include "qtuimessageprocessor.h"
@@ -145,8 +145,8 @@ MainWin::MainWin(QWidget *parent)
     #else
   : QMainWindow(parent),
     #endif
-    _msgProcessorStatusWidget(new MsgProcessorStatusWidget(this)),
-    _coreConnectionStatusWidget(new CoreConnectionStatusWidget(Client::coreConnection(), this)),
+    _msgProcessorStatusModel(new MsgProcessorStatusModel(this)),
+    _coreConnectionStatusModel(new CoreConnectionStatusModel(Client::coreConnection(), this)),
     _titleSetter(this),
     _declarativeView(0),
     _qmlContextObject(0),
@@ -195,6 +195,8 @@ void MainWin::init() {
   connect(Client::coreConnection(), SIGNAL(handleSslErrors(const QSslSocket *, bool *, bool *)), SLOT(handleSslErrors(const QSslSocket *, bool *, bool *)));
 #endif
 
+  statusBar()->hide();
+
   // Order is sometimes important
   setupActions();
   setupBufferWidget();
@@ -204,7 +206,6 @@ void MainWin::init() {
   setupInputWidget();
   setupChatMonitor();
   setupViewMenuTail();
-  setupStatusBar();
   setupSystray();
   setupTitleSetter();
   setupHotList();
@@ -233,6 +234,10 @@ void MainWin::init() {
   _qmlContextObject = new QmlContextObject(_declarativeView);
   _declarativeView->rootContext()->setContextObject(_qmlContextObject);
   _declarativeView->rootContext()->setContextProperty("ctxt", _qmlContextObject);
+  _declarativeView->rootContext()->setContextProperty("coreConnection", Client::coreConnection());
+  _declarativeView->rootContext()->setContextProperty("coreConnectionStatus", _coreConnectionStatusModel);
+  _declarativeView->rootContext()->setContextProperty("backlogManager", Client::backlogManager());
+  _declarativeView->rootContext()->setContextProperty("backlogManagerStatus", _msgProcessorStatusModel);
   _declarativeView->rootContext()->setContextProperty("topicModel", _topicModel);
   _declarativeView->setSource(QUrl("qrc:/qml/Main.qml"));
   setCentralWidget(_declarativeView);
@@ -394,9 +399,6 @@ void MainWin::setupActions() {
   coll->addAction("ShowAwayLog", new MobileAction(tr("Show Away Log"), coll,
                                                   this, SLOT(showAwayLog())));
 
-  coll->addAction("ToggleStatusBar", new MobileAction(tr("Show Status &Bar"), coll,
-                                                      0, 0))->setCheckable(true);
-
   coll->addAction("ToggleChatMonitor", new MobileAction(tr("Show Chat Monitor"), coll,
                                                         0, 0))->setCheckable(true);
 
@@ -519,7 +521,6 @@ void MainWin::setupMenus() {
 
   //menuBar()->addAction(coll->action("ConfigureBufferViews"));
 
-  menuBar()->addAction(coll->action("ToggleStatusBar"));
   menuBar()->addAction(coll->action("ToggleChatMonitor"));
   menuBar()->addAction(coll->action("ToggleSearchBar"));
 
@@ -799,38 +800,10 @@ void MainWin::setupTitleSetter() {
   _titleSetter.setSelectionModel(Client::bufferModel()->standardSelectionModel());
 }
 
-void MainWin::setupStatusBar() {
-  // MessageProcessor progress
-  statusBar()->addPermanentWidget(_msgProcessorStatusWidget);
-
-  // Connection state
-  _coreConnectionStatusWidget->update();
-  statusBar()->addPermanentWidget(_coreConnectionStatusWidget);
-
-  QAction *showStatusbar = QtUi::actionCollection("General")->action("ToggleStatusBar");
-
-  QtUiSettings uiSettings;
-
-  bool enabled = uiSettings.value("ShowStatusBar", QVariant(true)).toBool();
-  showStatusbar->setChecked(enabled);
-  enabled ? statusBar()->show() : statusBar()->hide();
-
-  connect(showStatusbar, SIGNAL(toggled(bool)), statusBar(), SLOT(setVisible(bool)));
-  connect(showStatusbar, SIGNAL(toggled(bool)), this, SLOT(saveStatusBarStatus(bool)));
-
-  // TODO: use maemo info banner instead of statusBar.
-  connect(Client::coreConnection(), SIGNAL(connectionMsg(QString)), statusBar(), SLOT(showMessage(QString)));
-}
-
 void MainWin::setupHotList() {
   FlatProxyModel *flatProxy = new FlatProxyModel(this);
   flatProxy->setSourceModel(Client::bufferModel());
   _bufferHotList = new BufferHotListFilter(flatProxy);
-}
-
-void MainWin::saveStatusBarStatus(bool enabled) {
-  QtUiSettings uiSettings;
-  uiSettings.setValue("ShowStatusBar", enabled);
 }
 
 void MainWin::setupSystray() {
@@ -865,22 +838,23 @@ void MainWin::setConnectedState() {
       action->setVisible(!Client::internalCore());
   }
 
-  disconnect(Client::backlogManager(), SIGNAL(updateProgress(int, int)), _msgProcessorStatusWidget, SLOT(setProgress(int, int)));
+  disconnect(Client::backlogManager(), SIGNAL(updateProgress(int, int)), _msgProcessorStatusModel, SLOT(setProgress(int, int)));
   disconnect(Client::backlogManager(), SIGNAL(messagesRequested(const QString &)), this, SLOT(showStatusBarMessage(const QString &)));
   disconnect(Client::backlogManager(), SIGNAL(messagesProcessed(const QString &)), this, SLOT(showStatusBarMessage(const QString &)));
   if(!Client::internalCore()) {
-    connect(Client::backlogManager(), SIGNAL(updateProgress(int, int)), _msgProcessorStatusWidget, SLOT(setProgress(int, int)));
+    connect(Client::backlogManager(), SIGNAL(updateProgress(int, int)), _msgProcessorStatusModel, SLOT(setProgress(int, int)));
     connect(Client::backlogManager(), SIGNAL(messagesRequested(const QString &)), this, SLOT(showStatusBarMessage(const QString &)));
     connect(Client::backlogManager(), SIGNAL(messagesProcessed(const QString &)), this, SLOT(showStatusBarMessage(const QString &)));
   }
 
+  // TODO show msg in qml or maemo info banner
   // _viewMenu->setEnabled(true);
   if(!Client::internalCore())
     statusBar()->showMessage(tr("Connected to core."));
   else
     statusBar()->clearMessage();
 
-  _coreConnectionStatusWidget->setVisible(!Client::internalCore());
+  // _coreConnectionStatusModel->setVisible(!Client::internalCore());
   updateIcon();
   systemTray()->setState(SystemTray::Active);
 
@@ -961,9 +935,10 @@ void MainWin::setDisconnectedState() {
   coll->action("DisconnectCore")->setEnabled(false);
   coll->action("CoreInfo")->setEnabled(false);
   //_viewMenu->setEnabled(false);
+  // TODO: convert statusbar messages to UI-independent notification
   statusBar()->showMessage(tr("Not connected to core."));
-  if(_msgProcessorStatusWidget)
-    _msgProcessorStatusWidget->setProgress(0, 0);
+  if(_msgProcessorStatusModel)
+    _msgProcessorStatusModel->setProgress(0, 0);
   updateIcon();
   systemTray()->setState(SystemTray::Passive);
 }

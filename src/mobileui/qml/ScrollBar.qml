@@ -8,6 +8,7 @@ Item {
     property bool showAlways: false
 
     anchors.right: scrollArea.right
+    anchors.margins: 1
     y: scrollArea.visibleArea.yPosition * scrollArea.height
     width: 10
     height: scrollArea.visibleArea.heightRatio * scrollArea.height
@@ -15,9 +16,8 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        anchors.margins: 1
         color: "black"
-        radius: 2
+        radius: height < 4 ? 0 : 2
         border.width: 1
         border.color: "white"
         opacity: 0.85

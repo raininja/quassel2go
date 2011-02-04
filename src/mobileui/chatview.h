@@ -79,8 +79,6 @@ public:
    */
   void setHasCache(ChatLine *line, bool hasCache = true);
 
-  class ScrollAreaKineticScroller *scroller() const;
-
 public slots:
   inline virtual void clear() {}
   void zoomIn();
@@ -123,7 +121,6 @@ private:
   int _scrollOffset;
   bool _invalidateFilter;
   QSet<ChatLine *> _linesWithCache;
-  class ScrollAreaKineticScroller *_scroller;
 };
 
 

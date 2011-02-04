@@ -1,14 +1,16 @@
- <!DOCTYPE RCC><RCC version="1.0">
- <qresource prefix="/qml">
-     <file>Main.qml</file>
-     <file>Button.qml</file>
-     <file>ToolButton.qml</file>
-     <file>ChatListView.qml</file>
-     <file>ChatView.qml</file>
-     <file>NickListView.qml</file>
-     <file>ScrollBar.qml</file>
-     <file>Input.qml</file>
-     <file>ListSectionItem.qml</file>
-     <file>ListItem.qml</file>
- </qresource>
- </RCC>
+<RCC>
+    <qresource prefix="/qml">
+        <file>Main.qml</file>
+        <file>Button.qml</file>
+        <file>ToolButton.qml</file>
+        <file>ChatListView.qml</file>
+        <file>ChatView.qml</file>
+        <file>NickListView.qml</file>
+        <file>ScrollBar.qml</file>
+        <file>Input.qml</file>
+        <file>ListSectionItem.qml</file>
+        <file>ListItem.qml</file>
+        <file>ProgressWidget.qml</file>
+        <file>StatusMessageWidget.qml</file>
+    </qresource>
+</RCC>

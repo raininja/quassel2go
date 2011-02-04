@@ -50,6 +50,14 @@ class SignalProxy;
 class CoreConnection : public QObject {
   Q_OBJECT
 
+  Q_PROPERTY(QString progressText READ progressText NOTIFY progressTextChanged)
+  Q_PROPERTY(int progressMinimum READ progressMinimum NOTIFY progressRangeChanged)
+  Q_PROPERTY(int progressMaximum READ progressMaximum NOTIFY progressRangeChanged)
+  Q_PROPERTY(int progressValue READ progressValue NOTIFY progressValueChanged)
+  Q_PROPERTY(bool encrypted READ isEncrypted NOTIFY encrypted)
+  Q_PROPERTY(bool connected READ isConnected NOTIFY stateChanged)
+  Q_PROPERTY(ConnectionState state READ state NOTIFY stateChanged)
+
 public:
   enum ConnectionState {
     Disconnected,

@@ -31,7 +31,7 @@ set(SOURCES
     columnhandleitem.cpp
     coreconfigwizard.cpp
     coreconnectdlg.cpp
-    coreconnectionstatuswidget.cpp
+    coreconnectionstatusmodel.cpp
     coreinfodlg.cpp
     debugbufferviewoverlay.cpp
     debugconsole.cpp
@@ -46,7 +46,7 @@ set(SOURCES
     markerlineitem.cpp
     mobileaction.cpp
     mobilebufferview.cpp
-    msgprocessorstatuswidget.cpp
+    msgprocessorstatusmodel.cpp
     nicklistwidget.cpp
     qtui.cpp
     qmlchatview.cpp
@@ -90,7 +90,7 @@ set(MOC_HDRS
     columnhandleitem.h
     coreconfigwizard.h
     coreconnectdlg.h
-    coreconnectionstatuswidget.h
+    coreconnectionstatusmodel.h
     coreinfodlg.h
     debugbufferviewoverlay.h
     debugconsole.h
@@ -105,7 +105,7 @@ set(MOC_HDRS
     markerlineitem.h
     mobileaction.h
     mobilebufferview.h
-    msgprocessorstatuswidget.h
+    msgprocessorstatusmodel.h
     nicklistwidget.h
     qtui.h
     qmlchatview.h
@@ -237,5 +237,7 @@ qml/Button.qml         qml/ChatListView.qml  qml/ChatView.qml  qml/Main.qml
 qml/Input.qml     qml/NickListView.qml  qml/ScrollBar.qml
 qml/ListSectionItem.qml
 qml/ListItem.qml
-qml/ToolButton.qml)
+qml/ToolButton.qml
+qml/ProgressWidget.qml
+qml/StatusMessageWidget.qml)
 

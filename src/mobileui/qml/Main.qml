@@ -75,27 +75,75 @@ Rectangle {
           // boundsBehavior: "DragOverBounds"
         }
 
-//        Text {
-//          anchors.fill: parent
-//          color: "blue"
-//          text:  "vppos y:" + chatview_flickable.y + " scrollModel: " + chatview_view.scrollModel.horizontalPosition + " flickContentHeight:" + chatview_flickable.contentHeight+ " flickHeight:" + chatview_flickable.height + " vp:" +  chatview_view.scrollModel.viewportSize.width + "/" + chatview_view.scrollModel.viewportSize.height + " c:" +  chatview_view.scrollModel.contentsSize.width + "/" + chatview_view.scrollModel.contentsSize.height + " x:" + chatview_view.scrollModel.horizontalPosition + " y:" + chatview_view.scrollModel.verticalPosition + " flickY:" + chatview_flickable.contentY;
-//        }
-
         ScrollBar {
           scrollArea: chatview_flickable
-          //showAlways: true
         }
 
-        Button {
-          id: requestBacklogButton
-          text: "Older Messages"
-          visible: (chatview_flickable.height >= chatview_view.scrollModel.contentsSize.height) || (chatview_flickable.visibleArea.yPosition < 0.1)
+
+        Item {
+          id: statusWidget
           anchors.top: parent.top
           anchors.horizontalCenter: parent.horizontalCenter
           anchors.margins: 10
+          width: parent.width * 0.8
+          height: parent.height * 0.8
 
-          onClicked: {
-            chatview_view.requestBacklog()
+          Column {
+            id: statusWidget_col
+            anchors.fill: parent
+            anchors.margins: 10
+            spacing: 5
+
+            Button {
+              id: requestBacklogButton
+              text: "Get Older Messages"
+              visible: coreConnection.connected && ((chatview_flickable.height >= chatview_view.scrollModel.contentsSize.height) || (chatview_flickable.visibleArea.yPosition < 0.1))
+              anchors.horizontalCenter: parent.horizontalCenter
+              anchors.margins: 10
+
+              onClicked: {
+                chatview_view.requestBacklog()
+              }
+            }
+
+            ProgressWidget {
+              id: connectionProgress
+              text: coreConnection.progressText
+              progressMin: coreConnection.progressMinimum
+              progressMax: coreConnection.progressMaximum
+              progressValue: coreConnection.progressValue
+              visible: coreConnection.progressMaximum > 0
+              width: parent.width
+              height: 60
+            }
+
+            StatusMessageWidget {
+              id: connectionProgress_Error
+              width: parent.width
+              height: 60
+
+              text: ""
+              visible: false
+
+              Connections {
+                target: coreConnection
+                onConnectionError: {
+                  connectionProgress_Error.text = errorMsg
+                  connectionProgress_Error.visible = true
+                }
+              }
+            }
+
+            ProgressWidget {
+              id: backlogProgress
+              text: "Requesting Backlog ..." + backlogManagerStatus.progressMaximum
+              progressMin: backlogManagerStatus.progressMinimum
+              progressMax: backlogManagerStatus.progressMaximum
+              progressValue: backlogManagerStatus.progressValue
+              visible: backlogManagerStatus.progressActive
+              width: parent.width
+              height: 60
+            }
           }
         }
     }

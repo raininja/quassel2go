@@ -39,10 +39,10 @@ class MobileBufferView;
 class BufferViewConfig;
 class ClientBufferViewConfig;
 class CoreAccount;
-class CoreConnectionStatusWidget;
+class CoreConnectionStatusModel;
 class BufferWidget;
 class InputWidget;
-class MsgProcessorStatusWidget;
+class MsgProcessorStatusModel;
 class NickListWidget;
 class SystemTray;
 class ChatMonitorView;
@@ -150,8 +150,6 @@ class MainWin
     void clientNetworkUpdated();
     void connectOrDisconnectFromNet();
 
-    void saveStatusBarStatus(bool enabled);
-
     void loadLayout();
     void saveLayout();
 
@@ -168,8 +166,8 @@ class MainWin
     KHelpMenu *_kHelpMenu;
 #endif
 
-    MsgProcessorStatusWidget *_msgProcessorStatusWidget;
-    CoreConnectionStatusWidget *_coreConnectionStatusWidget;
+    MsgProcessorStatusModel*_msgProcessorStatusModel;
+    CoreConnectionStatusModel*_coreConnectionStatusModel;
     SystemTray *_systemTray;
 
     TitleSetter _titleSetter;
@@ -182,7 +180,6 @@ class MainWin
     void setupInputWidget();
     void setupTopicWidget();
     void setupViewMenuTail();
-    void setupStatusBar();
     void setupSystray();
     void setupTitleSetter();
     void setupHotList();

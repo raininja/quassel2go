@@ -32,8 +32,6 @@
 #include "qtuistyle.h"
 #include "clientignorelistmanager.h"
 
-#include "scrollareakineticscroller.h"
-
 #include "chatline.h"
 
 ChatView::ChatView(BufferId bufferId, QWidget *parent)
@@ -58,8 +56,6 @@ ChatView::~ChatView()
 }
 
 void ChatView::init(MessageFilter *filter) {
-  _scroller = new ScrollAreaKineticScroller(this);
-
   _bufferContainer = 0;
   _currentScaleFactor = 1;
   _invalidateFilter = false;
@@ -95,28 +91,11 @@ void ChatView::init(MessageFilter *filter) {
 }
 
 bool ChatView::viewportEvent ( QEvent * event ) {
-  // QAbstractKineticScroller
-  bool res = false;
-  if (true) {
-    switch (event->type()) {
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseMove:
-    case QEvent::MouseButtonRelease:
-    case QEvent::MouseButtonDblClick: {
-      //qDebug() << "ChatView::viewportEvent()" << "handle:" << event;
-
-      // from QAbstractKineticScroller
-      res = _scroller->handleMouseEvent(static_cast<QMouseEvent *>(event));
-      break;
-    }
-    default:
-      break;
-    }
-  }
   // prevent text selection and image dragging
   if (event->type() == QEvent::MouseMove)
     return true;
-  return res ? true : QGraphicsView::viewportEvent(event);
+
+  return QGraphicsView::viewportEvent(event);
 }
 
 void ChatView::paintEvent ( QPaintEvent * event )
@@ -394,10 +373,5 @@ void ChatView::checkChatLineCaches() {
     } else
       ++iter;
   }
-}
-
-ScrollAreaKineticScroller *ChatView::scroller() const
-{
-  return _scroller;
 }
 
