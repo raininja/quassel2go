@@ -28,10 +28,11 @@ void QmlContextObject::setFullScreen(bool fullScreen)
 
 void QmlContextObject::setAllBuffersModel(QAbstractItemModel *model)
 {
-  if(_allBuffersModel->sourceModel() == model)
-    return;
+//  if(_allBuffersModel->sourceModel() == model)
+//    return;
 
   _allBuffersModel->setSourceModel(model);
+  emit allBuffersModelChanged();
 }
 
 void QmlContextObject::setChannelUsersModel(QAbstractItemModel *model)

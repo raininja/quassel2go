@@ -25,9 +25,11 @@ public:
 //    void addMapping(int col, const QByteArray &role);
 //    void removeMapping(int col);
 //    void removeMapping(const QByteArray &role);
-protected:
+protected slots:
 //    virtual void updateRoleMappings();
 //    QModelIndex mapWithRole(const QModelIndex &idx, int role) const;
+
+    void _mdlReset();
 private:
   //  QMap<int, QByteArray> m_mappings;
     QModelIndex _root;

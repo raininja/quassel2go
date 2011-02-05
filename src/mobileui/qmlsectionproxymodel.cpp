@@ -86,14 +86,34 @@ int QmlSectionProxyModel::rowCount(const QModelIndex &parent) const
 
 void QmlSectionProxyModel::setSourceModel ( QAbstractItemModel * sourceModel )
 {
+  beginResetModel();
+
+  if(this->sourceModel()) {
+    disconnect(this->sourceModel());
+  }
+
   QAbstractProxyModel::setSourceModel(sourceModel);
-    if(sourceModel) {
-      QHash<int, QByteArray> roles = roleNames(); // = sourceModel->roleNames();
-      roles[Qt::UserRole+999] = "section_item";
-      setRoleNames(roles);
-    }
-    _root = QModelIndex();
-    reset();
+  if(sourceModel) {
+    QHash<int, QByteArray> roles = roleNames(); // = sourceModel->roleNames();
+    roles[Qt::UserRole+999] = "section_item";
+    setRoleNames(roles);
+
+    connect(sourceModel, SIGNAL(modelReset()), this, SLOT(_mdlReset()));
+    connect(sourceModel, SIGNAL(rowsInserted(const QModelIndex &, int, int)), this, SLOT(_mdlReset()));
+    connect(sourceModel, SIGNAL(rowsMoved(const QModelIndex &,int,int, const QModelIndex &, int)), this, SLOT(_mdlReset()));
+    connect(sourceModel, SIGNAL(rowsRemoved(const QModelIndex &, int, int)), this, SLOT(_mdlReset()));
+  }
+  _root = QModelIndex();
+
+  reset();
+
+  endResetModel();/*
+  reset();*/
+}
+
+void QmlSectionProxyModel::_mdlReset()
+{
+  reset();
 }
 
 QVariant QmlSectionProxyModel::data(const QModelIndex &proxyIndex, int role) const
