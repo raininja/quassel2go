@@ -178,6 +178,7 @@ Rectangle {
           anchors.fill: parent
 
           ChatListView {
+            id: chatListViewTop
             width: parent.width
             height: 50
             clip: true
@@ -192,13 +193,13 @@ Rectangle {
             section.property: ""
 
             delegate: Item {
-              height: parent.height
+              height: chatListViewTop.height
               width: 80
 
               Rectangle {
                 anchors.fill: parent
                 color: "#000000"
-                visible: listViewItem.currentIndex != index
+                visible: chatListViewTop.currentIndex != index
               }
 
               ListItem {
@@ -206,7 +207,9 @@ Rectangle {
                 text: display // type=="Network" ? plaintext : "   "+plaintext;
                 textColor: "#ffffff"
                 iconSource: decorationIconName ? "image://quassel/" + decorationIconName : ""
-                // current: listViewItem.currentIndex == index
+                // current: chatListViewTop.currentIndex == index
+
+                header: section_depth == 0
 
                 MouseArea {
                   anchors.fill: parent
@@ -420,32 +423,32 @@ Rectangle {
         x: chatListDocked ? background.x : background.x-width
         border.width: 1
 
-        ChatListView {
-            anchors.fill: parent
-            model: ctxt.allBuffersModel
+//        ChatListView {
+//            anchors.fill: parent
+//            model: ctxt.allBuffersModel
 
-            currentIndex: ctxt.currentBufferIndex
+//            currentIndex: ctxt.currentBufferIndex
 
-//            MouseArea {
-//                anchors.fill: parent
-//                property int dragStartSize: 0;
-//                property int dragStartX: 0;
+////            MouseArea {
+////                anchors.fill: parent
+////                property int dragStartSize: 0;
+////                property int dragStartX: 0;
 
-//                onPressed: {
-//                  console.log("pressed...");
-//                    dragStartSize = bufferlist.width
-//                    dragStartX = mapToItem(background,mouse.x,0).x
-//                }
+////                onPressed: {
+////                  console.log("pressed...");
+////                    dragStartSize = bufferlist.width
+////                    dragStartX = mapToItem(background,mouse.x,0).x
+////                }
 
-//                onReleased: {
-//                    dragStartX = -1
-//                }
+////                onReleased: {
+////                    dragStartX = -1
+////                }
 
-//                onMousePositionChanged: {
-//                        bufferlist.width = dragStartSize + (mapToItem(background,mouse.x,0).x - dragStartX)
-//                }
-//            }
-        }
+////                onMousePositionChanged: {
+////                        bufferlist.width = dragStartSize + (mapToItem(background,mouse.x,0).x - dragStartX)
+////                }
+////            }
+//        }
     }
 
     Rectangle {

@@ -8,16 +8,19 @@ Item {
   property bool current: false
   property variant iconSource: ""
 
+  property bool header: false
+
   width: parent.width;
-  height: delegateText.height>60 ? delegateText.height * 1.1 : 60
+  height: (lvItem.header&&vertItem.visible) ? delegateText.height * 1.2 : (delegateText.height>60 ? delegateText.height * 1.2 : 60)
 
   Rectangle {
     anchors.fill: parent
-    color: "#AAAAFF"
-    opacity: parent.current ? 1 : 0
+    color: lvItem.header ? "#AAAAAA" : "#AAAAFF"
+    opacity: (vertItem.visible&&lvItem.header) ? 1 : (parent.current ? 1 : 0)
   }
 
   Item {
+    id: horItem
     visible: parent.width <= 90
     anchors.margins: 5
     anchors.fill: parent
@@ -49,10 +52,13 @@ Item {
       anchors.horizontalCenter: parent.horizontalCenter
       anchors.bottom: parent.bottom
 //      anchors.margins: 10
+
+      font.bold: lvItem.header
     }
   }
 
   Item {
+    id: vertItem
     visible: parent.width > 90
     width: parent.width
     anchors.verticalCenter: parent.verticalCenter
@@ -62,6 +68,9 @@ Item {
       anchors.left: parent.left
       anchors.verticalCenter: parent.verticalCenter
       anchors.margins: 5
+
+      anchors.leftMargin: lvItem.header ? 5 : 15
+
       source: iconSource
       width: 16
       height: 16
@@ -77,6 +86,8 @@ Item {
       anchors.right: parent.right
       anchors.verticalCenter: parent.verticalCenter
       anchors.margins: 10
+
+      font.bold: lvItem.header
     }
   }
 

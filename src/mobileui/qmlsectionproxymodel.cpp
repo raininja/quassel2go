@@ -118,6 +118,9 @@ void QmlSectionProxyModel::setSourceModel ( QAbstractItemModel * sourceModel )
     connect(sourceModel, SIGNAL(rowsMoved(const QModelIndex &,int,int, const QModelIndex &, int)), this, SLOT(_mdlReset()));
     connect(sourceModel, SIGNAL(rowsRemoved(const QModelIndex &, int, int)), this, SLOT(_mdlReset()));
     connect(sourceModel, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(_mdlReset()));
+    connect(sourceModel, SIGNAL(layoutChanged()), this, SLOT(_mdlReset()));
+    connect(sourceModel, SIGNAL(headerDataChanged(Qt::Orientation, int, int)), this, SLOT(_mdlReset()));
+    connect(sourceModel, SIGNAL(columnsInserted (const QModelIndex &, int, int)), this, SLOT(_mdlReset()));
   }
   _root = QModelIndex();
 

@@ -1,45 +1,33 @@
 import Qt 4.7
 
-//Item {
+ListView {
+  id: listView
 
-//  property variant model
+  //    section.property: "section_item"
+  //    section.criteria: ViewSection.FullString
+  //    section.delegate: ListSectionItem {
+  //      width: parent.width
+  //      text: section // type=="Network" ? plaintext : "   "+plaintext;
+  //    }
 
-  ListView {
-    // property int currentIndex: -1
+  delegate: ListItem {
+    width: listView.width
+    text: display // type=="Network" ? plaintext : "   "+plaintext;
+    iconSource: decorationIconName ? "image://quassel/" + decorationIconName : ""
+    current: listView.currentIndex == index
 
-    //currentIndex:
+    header: section_depth == 0
 
-    id: listViewItem
-    //anchors.fill: parent
-    //contentY:  10000
-
-    section.property: "section_item"
-    section.criteria: ViewSection.FullString
-    section.delegate: ListSectionItem {
-      width: parent.width
-      text: section // type=="Network" ? plaintext : "   "+plaintext;
-    }
-
-    //model: parent.model
-
-    delegate: ListItem {
-      width: listViewItem.width
-      text: display // type=="Network" ? plaintext : "   "+plaintext;
-      iconSource: "image://quassel/" + decorationIconName
-      current: listViewItem.currentIndex == index
-
-      MouseArea {
-        anchors.fill: parent
-        onClicked: {
-          console.log("about to change current from " + listViewItem._cur)
-          //listViewItem.currentIndex = index
-          ctxt.setCurrentBufferIndex(index)
-        }
+    MouseArea {
+      anchors.fill: parent
+      onClicked: {
+        console.log("about to change current from " + listView._cur)
+        ctxt.setCurrentBufferIndex(index)
       }
     }
-
-    ScrollBar {
-      scrollArea: parent
-    }
   }
-//}
+
+  ScrollBar {
+    scrollArea: parent
+  }
+}

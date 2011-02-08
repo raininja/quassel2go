@@ -60,7 +60,7 @@ void QmlQuasselPlugin::initializeEngine(QDeclarativeEngine * engine, const char 
   for(int i = 0; i < 1; ++i) {
     QStandardItem *category = new QStandardItem();
     category->setData(QString("Network %1").arg(i), Qt::DisplayRole);
-    for(int j = 0; j < 2; ++j) {
+    for(int j = 0; j < 0; ++j) {
       QStandardItem *buf = new QStandardItem();
       buf->setData(QString("Buffer %1").arg(j), Qt::DisplayRole);
       buf->setData("irc-channel-active", NetworkModel::DecorationIconNameRole);
@@ -121,22 +121,29 @@ void QmlQuasselPlugin::initializeEngine(QDeclarativeEngine * engine, const char 
 
 void QmlQuasselPlugin::timeout() {
   // fake buffer list model
-  for(int i = 2; i < 3; ++i) {
-    QStandardItem *category = new QStandardItem();
-    category->setData(QString("Network %1").arg(i), Qt::DisplayRole);
-    for(int j = 0; j < 8; ++j) {
-      QStandardItem *buf = new QStandardItem();
-      buf->setData(QString("Buffer %1").arg(j), Qt::DisplayRole);
-      buf->setData("irc-channel-active", NetworkModel::DecorationIconNameRole);
-      category->appendRow(buf);
-    }
-    _bufferModel->appendRow(category);
-  }
+//  for(int i = 2; i < 3; ++i) {
+//    QStandardItem *category = new QStandardItem();
+//    category->setData(QString("Network %1").arg(i), Qt::DisplayRole);
+//    for(int j = 0; j < 8; ++j) {
+//      QStandardItem *buf = new QStandardItem();
+//      buf->setData(QString("Buffer %1").arg(j), Qt::DisplayRole);
+//      buf->setData("irc-channel-active", NetworkModel::DecorationIconNameRole);
+//      category->appendRow(buf);
+//    }
+//    _bufferModel->appendRow(category);
+//  }
 
   QStandardItem *modifyItem = _bufferModel->item(0, 0);
   qDebug() << "before modifying" << modifyItem << modifyItem->data(Qt::DisplayRole);
-  modifyItem->setData(QString("[mod]"), Qt::DisplayRole);
+  // modifyItem->setData(QString("[mod]"), Qt::DisplayRole);
   //_bufferModel->_reset();
+
+  for(int j = 0; j < 2; ++j) {
+    QStandardItem *buf = new QStandardItem();
+    buf->setData(QString("Buffer %1").arg(j), Qt::DisplayRole);
+    buf->setData("irc-channel-active", NetworkModel::DecorationIconNameRole);
+    modifyItem->appendRow(buf);
+  }
 
   // _qmlContextObject->setAllBuffersModel(_bufferModel);
 }
