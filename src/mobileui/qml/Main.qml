@@ -183,6 +183,8 @@ Rectangle {
             clip: true
             model: ctxt.allBuffersModel
 
+            boundsBehavior: "DragOverBounds"
+
             orientation: "Horizontal"
 
             currentIndex: ctxt.currentBufferIndex
@@ -203,7 +205,7 @@ Rectangle {
                 anchors.fill: parent
                 text: display // type=="Network" ? plaintext : "   "+plaintext;
                 textColor: "#ffffff"
-                iconSource: "image://quassel/" + decorationIconName
+                iconSource: decorationIconName ? "image://quassel/" + decorationIconName : ""
                 // current: listViewItem.currentIndex == index
 
                 MouseArea {

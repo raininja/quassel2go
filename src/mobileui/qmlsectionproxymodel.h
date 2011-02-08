@@ -31,6 +31,7 @@ protected slots:
 
     void _mdlReset();
 private:
+    QModelIndex _mapToSource(int row) const;
   //  QMap<int, QByteArray> m_mappings;
     QModelIndex _root;
 

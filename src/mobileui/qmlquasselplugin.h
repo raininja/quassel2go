@@ -18,6 +18,13 @@ signals:
 
 public slots:
 
+protected slots:
+  void timeout();
+
+private:
+  class QmlContextObject *_qmlContextObject;
+  class MyStandardItemModel *_bufferModel;
+
 };
 
 #endif // QMLQUASSELPLUGIN_H

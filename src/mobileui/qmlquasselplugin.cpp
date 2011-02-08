@@ -6,6 +6,8 @@
 #include <QStandardItem>
 #include <QStandardItemModel>
 
+#include <QTimer>
+
 #include "qmlchatview.h"
 
 #include "topicmodel.h"
@@ -29,16 +31,20 @@ public:
   }
 
   void setRoleNames(const QHash<int, QByteArray> &roleNames) { QStandardItemModel::setRoleNames(roleNames); };
+
+  void _reset() { reset(); }
 };
 
 QmlQuasselPlugin::QmlQuasselPlugin(QObject *parent)
-  : QDeclarativeExtensionPlugin(parent)
+  : QDeclarativeExtensionPlugin(parent),
+    _qmlContextObject(0)
 {
   qDebug() << "QmlQuasselPlugin:: create";
 }
 
 QmlQuasselPlugin::~QmlQuasselPlugin()
 {
+  qDebug() << "~QmlQuasselPlugin";
 }
 
 void QmlQuasselPlugin::initializeEngine(QDeclarativeEngine * engine, const char * uri)
@@ -46,32 +52,23 @@ void QmlQuasselPlugin::initializeEngine(QDeclarativeEngine * engine, const char 
   qDebug() << "QmlQuasselPlugin::initializeEngine" << uri;
   Q_ASSERT(uri == QLatin1String("org.quassel"));
 
-  // initializations...
-  //  BufferWidget *_bufferWidget = new BufferWidget(0);
-  //  _bufferWidget->setModel(Client::bufferModel());
-  //  _bufferWidget->setSelectionModel(Client::bufferModel()->standardSelectionModel());
+  _qmlContextObject = new QmlContextObject(this);
 
-  // fake buffer widget for debugging
-  QListWidget *w = new QListWidget(0);
-  w->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-  for(int i = 0; i < 50; ++i)
-    w->addItem(new QListWidgetItem(QString("Test %1").arg(i), w));
-  //_scrollModel->setScrollArea(w);
+  // fake buffer model
+  _bufferModel = new MyStandardItemModel(this);
 
-  // fake buffer list model
-  MyStandardItemModel *bufferModel = new MyStandardItemModel(this);
-  for(int i = 0; i < 3; ++i) {
+  for(int i = 0; i < 1; ++i) {
     QStandardItem *category = new QStandardItem();
     category->setData(QString("Network %1").arg(i), Qt::DisplayRole);
-    for(int j = 0; j < 8; ++j) {
+    for(int j = 0; j < 2; ++j) {
       QStandardItem *buf = new QStandardItem();
       buf->setData(QString("Buffer %1").arg(j), Qt::DisplayRole);
       buf->setData("irc-channel-active", NetworkModel::DecorationIconNameRole);
       category->appendRow(buf);
     }
-    bufferModel->appendRow(category);
+    _bufferModel->appendRow(category);
   }
-  QHash<int, QByteArray> roles = bufferModel->roleNames();
+  QHash<int, QByteArray> roles = _bufferModel->roleNames();
   // roles[Qt::DisplayRole] = "display"
   roles[NetworkModel::BufferTypeRole] = "bufferType";
   roles[NetworkModel::ItemActiveRole] = "itemActive";
@@ -86,7 +83,21 @@ void QmlQuasselPlugin::initializeEngine(QDeclarativeEngine * engine, const char 
   roles[NetworkModel::BufferFirstUnreadMsgIdRole] = "bufferFirstUnreadMsg";
   roles[NetworkModel::MarkerLineMsgIdRole] = "markerLineMsgId";
   roles[NetworkModel::DecorationIconNameRole] = "decorationIconName";
-  bufferModel->setRoleNames(roles);
+  _bufferModel->setRoleNames(roles);
+
+  // initializations...
+  //  BufferWidget *_bufferWidget = new BufferWidget(0);
+  //  _bufferWidget->setModel(Client::bufferModel());
+  //  _bufferWidget->setSelectionModel(Client::bufferModel()->standardSelectionModel());
+
+  // fake buffer widget for debugging
+  QListWidget *w = new QListWidget(0);
+  w->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+  for(int i = 0; i < 50; ++i)
+    w->addItem(new QListWidgetItem(QString("Test %1").arg(i), w));
+  //_scrollModel->setScrollArea(w);
+
+
 
   QmlChatView::setBufferWidget(w /*_bufferWidget*/);
   QmlInputWidget::setEmbeddedWidget(0 /*_inputWidget*/);
@@ -97,15 +108,37 @@ void QmlQuasselPlugin::initializeEngine(QDeclarativeEngine * engine, const char 
 
   qDebug() << "imgProvider test..." << (imgProvider->requestPixmap("irc-channel-active", 0, QSize(16,16)).size());
 
-  QmlContextObject *_qmlContextObject = new QmlContextObject(this);
+  _qmlContextObject->setAllBuffersModel(_bufferModel);
+  QTimer::singleShot(800, this, SLOT(timeout()));
 
-  _qmlContextObject->setAllBuffersModel(bufferModel);
   _qmlContextObject->setCurrentBufferIndex(0);
   qDebug() << "_qmlContextObject allBufMdl" << _qmlContextObject->allBuffersModel() << " idx:" << _qmlContextObject->currentBufferIndex();
   engine->rootContext()->setContextObject(_qmlContextObject);
   engine->rootContext()->setContextProperty("ctxt", _qmlContextObject);
   engine->rootContext()->setContextProperty("topicModel", new TopicModel(this) /*_topicModel*/);
   engine->rootContext()->setContextProperty("test", "abc");
+}
+
+void QmlQuasselPlugin::timeout() {
+  // fake buffer list model
+  for(int i = 2; i < 3; ++i) {
+    QStandardItem *category = new QStandardItem();
+    category->setData(QString("Network %1").arg(i), Qt::DisplayRole);
+    for(int j = 0; j < 8; ++j) {
+      QStandardItem *buf = new QStandardItem();
+      buf->setData(QString("Buffer %1").arg(j), Qt::DisplayRole);
+      buf->setData("irc-channel-active", NetworkModel::DecorationIconNameRole);
+      category->appendRow(buf);
+    }
+    _bufferModel->appendRow(category);
+  }
+
+  QStandardItem *modifyItem = _bufferModel->item(0, 0);
+  qDebug() << "before modifying" << modifyItem << modifyItem->data(Qt::DisplayRole);
+  modifyItem->setData(QString("[mod]"), Qt::DisplayRole);
+  //_bufferModel->_reset();
+
+  // _qmlContextObject->setAllBuffersModel(_bufferModel);
 }
 
 void QmlQuasselPlugin::registerTypes(const char *uri)

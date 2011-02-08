@@ -17,16 +17,16 @@ Item {
     opacity: parent.current ? 1 : 0
   }
 
-  Column {
+  Item {
     visible: parent.width <= 90
-    spacing: 5
-    anchors.margins: 10
+    anchors.margins: 5
     anchors.fill: parent
     anchors.horizontalCenter: parent.horizontalCenter
 
     Image {
       id: iconSmall
       //anchors.left: parent.left
+      anchors.top: parent.top
       anchors.horizontalCenter: parent.horizontalCenter
       //anchors.margins: 10
       source: iconSource
@@ -42,13 +42,13 @@ Item {
       elide: Text.ElideRight
       width: parent.width
       horizontalAlignment: "AlignHCenter"
-      font.pointSize: 9
+      font.pointSize: 10
 
 //      anchors.left: parent.left
 //      anchors.right: parent.right
       anchors.horizontalCenter: parent.horizontalCenter
+      anchors.bottom: parent.bottom
 //      anchors.margins: 10
-
     }
   }
 
@@ -61,7 +61,7 @@ Item {
       id: icon
       anchors.left: parent.left
       anchors.verticalCenter: parent.verticalCenter
-      anchors.margins: 10
+      anchors.margins: 5
       source: iconSource
       width: 16
       height: 16
@@ -72,7 +72,7 @@ Item {
       id: delegateText
       text: lvItem.text
       elide: Text.ElideRight;
-      font.pointSize: 11
+      font.pointSize: 10
       anchors.left: icon.visible ? icon.right : parent.left
       anchors.right: parent.right
       anchors.verticalCenter: parent.verticalCenter
