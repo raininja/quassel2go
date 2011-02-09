@@ -37,6 +37,7 @@ set(SOURCES
     debugconsole.cpp
     debuglogwidget.cpp
     debugmessagemodelfilter.cpp
+    inputpresenter.cpp
     inputwidget.cpp
     ircconnectionwizard.cpp
     itemviewkinetictapsuppressor.cpp
@@ -96,6 +97,7 @@ set(MOC_HDRS
     debugconsole.h
     debuglogwidget.h
     debugmessagemodelfilter.h
+    inputpresenter.h
     inputwidget.h
     ircconnectionwizard.h
     itemviewkinetictapsuppressor.h

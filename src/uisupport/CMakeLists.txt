@@ -10,6 +10,7 @@ endif (QCA2_FOUND)
 
 set(SOURCES
     abstractbuffercontainer.cpp
+    abstractitempresenter.cpp
     abstractitemview.cpp
     action.cpp
     actioncollection.cpp
@@ -43,6 +44,7 @@ set(SOURCES
 
 set(MOC_HDRS
     abstractbuffercontainer.h
+    abstractitempresenter.h
     abstractitemview.h
     abstractnotificationbackend.h
     action.h

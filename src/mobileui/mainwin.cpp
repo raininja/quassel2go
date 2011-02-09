@@ -67,6 +67,7 @@
 #include "debugmessagemodelfilter.h"
 #include "flatproxymodel.h"
 #include "iconloader.h"
+#include "inputpresenter.h"
 #include "inputwidget.h"
 #include "irclistmodel.h"
 #include "ircconnectionwizard.h"
@@ -152,6 +153,7 @@ MainWin::MainWin(QWidget *parent)
     _qmlContextObject(0),
     _bufferWidget(0),
     _nickListWidget(0),
+    _inputPresenter(0),
     _inputWidget(0),
     _chatMonitorView(0),
     _topicModel(0),
@@ -771,7 +773,15 @@ void MainWin::setupChatMonitor() {
 }
 
 void MainWin::setupInputWidget() {
+  // TODO: make multilineedit available in QML
+  MultiLineEdit *w = new MultiLineEdit(this);
+  w->hide();
+  _inputPresenter = new InputPresenter(w, this);
+
   _inputWidget = new InputWidget(0);
+
+  _inputPresenter->setModel(Client::bufferModel());
+  _inputPresenter->setSelectionModel(Client::bufferModel()->standardSelectionModel());
 
   _inputWidget->setModel(Client::bufferModel());
   _inputWidget->setSelectionModel(Client::bufferModel()->standardSelectionModel());

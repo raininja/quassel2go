@@ -5,6 +5,7 @@
 #include <QListWidget>
 #include <QStandardItem>
 #include <QStandardItemModel>
+#include <QLineEdit>
 
 #include <QTimer>
 
@@ -100,7 +101,9 @@ void QmlQuasselPlugin::initializeEngine(QDeclarativeEngine * engine, const char 
 
 
   QmlChatView::setBufferWidget(w /*_bufferWidget*/);
-  QmlInputWidget::setEmbeddedWidget(0 /*_inputWidget*/);
+  QLineEdit *testInput = new QLineEdit();
+  testInput->setFocus();
+  QmlInputWidget::setEmbeddedWidget(testInput /*_inputWidget*/);
 
   qDebug() << "current icon theme" << IconLoader::global()->theme();
   QmlThemeImageProvider *imgProvider = new QmlThemeImageProvider(engine);
