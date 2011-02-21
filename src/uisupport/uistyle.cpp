@@ -20,6 +20,7 @@
 #include <QApplication>
 
 #include "buffersettings.h"
+#include "bufferviewfilter.h"
 #include "iconloader.h"
 #include "qssparser.h"
 #include "quassel.h"
@@ -328,8 +329,12 @@ QVariant UiStyle::itemData(int role, const QTextCharFormat &format) const {
   switch(role) {
     case Qt::FontRole:
       return format.font();
+    case BufferViewFilter::ForegroundBrushColorRole:
+      return format.property(QTextFormat::ForegroundBrush).value<QColor>().name();
     case Qt::ForegroundRole:
       return format.property(QTextFormat::ForegroundBrush);
+    case BufferViewFilter::BackgroundBrushColorRole:
+    return format.property(QTextFormat::BackgroundBrush).value<QColor>().name();
     case Qt::BackgroundRole:
       return format.property(QTextFormat::BackgroundBrush);
     default:

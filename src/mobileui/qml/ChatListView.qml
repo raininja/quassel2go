@@ -2,6 +2,7 @@ import Qt 4.7
 
 ListView {
   id: listView
+  orientation: "Vertical"
 
   //    section.property: "section_item"
   //    section.criteria: ViewSection.FullString
@@ -29,5 +30,6 @@ ListView {
 
   ScrollBar {
     scrollArea: parent
+    orientation: listView.orientation == "Horizontal" ? Qt.Vertical : Qt.Horizontal
   }
 }

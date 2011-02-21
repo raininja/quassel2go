@@ -150,7 +150,7 @@ Rectangle {
 
     Item {
         id: toolbar
-        height: 110
+        height: 120
         width: parent.width
         anchors.left: background.left
         anchors.right: background.right
@@ -180,7 +180,7 @@ Rectangle {
           ChatListView {
             id: chatListViewTop
             width: parent.width
-            height: 50
+            height: 60
             clip: true
             model: ctxt.allBuffersModel
 
@@ -204,12 +204,47 @@ Rectangle {
 
               ListItem {
                 anchors.fill: parent
-                text: display // type=="Network" ? plaintext : "   "+plaintext;
-                textColor: "#ffffff"
+                text:  display // type=="Network" ? plaintext : "   "+plaintext;
+                textColor: "#ffffff" //
                 iconSource: decorationIconName ? "image://quassel/" + decorationIconName : ""
                 // current: chatListViewTop.currentIndex == index
 
                 header: section_depth == 0
+
+                Rectangle {
+                  anchors.margins: 2
+                  anchors.left: parent.left
+                  anchors.right: parent.right
+                  anchors.bottom: parent.bottom
+                  height: 6
+                  radius: 2
+
+                  function isHighlight(act) {
+                    var noActivity = 0;
+                    var otherActivity = 1;
+                    var newMessage = 2;
+                    var highlight = 4;
+                    return (act & (otherActivity + newMessage + highlight));
+                  }
+
+                  function fgColor(act) {
+                    var noActivity = 0;
+                    var otherActivity = 1;
+                    var newMessage = 2;
+                    var highlight = 4;
+                    if(act & highlight)
+                      return "#FF9647";
+                    else if(act & newMessage)
+                      return "#003BFF";
+                    else if(act & otherActivity)
+                      return "#008000";
+                    else
+                      return "#000000"
+                  }
+
+                  color: fgColor(bufferActivity)
+                  visible: isHighlight(bufferActivity)
+                }
 
                 MouseArea {
                   anchors.fill: parent

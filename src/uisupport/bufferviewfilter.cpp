@@ -31,7 +31,6 @@
 #include "clientbufferviewconfig.h"
 #include "graphicalui.h"
 #include "iconloader.h"
-#include "networkmodel.h"
 #include "uistyle.h"
 
 class CheckRemovalEvent : public QEvent {
@@ -66,6 +65,11 @@ BufferViewFilter::BufferViewFilter(QAbstractItemModel *model, BufferViewConfig *
   BufferSettings defaultSettings;
   defaultSettings.notify("ServerNoticesTarget", this, SLOT(showServerQueriesChanged()));
   showServerQueriesChanged();
+
+  QHash<int, QByteArray> roles = roleNames();
+  roles[ForegroundBrushColorRole] = "foregroundBrushColor";
+  roles[BackgroundBrushColorRole] = "backgroundBrushColor";
+  setRoleNames(roles);
 }
 
 void BufferViewFilter::setConfig(BufferViewConfig *config) {
@@ -416,6 +420,8 @@ QVariant BufferViewFilter::data(const QModelIndex &index, int role) const {
   case Qt::ForegroundRole:
   case Qt::BackgroundRole:
   case Qt::DecorationRole:
+  case BufferViewFilter::ForegroundBrushColorRole:
+  case BufferViewFilter::BackgroundBrushColorRole:
   case NetworkModel::DecorationIconNameRole:
     if((config() && config()->disableDecoration()))
       return QVariant();

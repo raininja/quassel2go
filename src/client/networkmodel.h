@@ -278,7 +278,8 @@ public:
     IrcChannelRole,
     BufferFirstUnreadMsgIdRole,
     MarkerLineMsgIdRole,
-    DecorationIconNameRole
+    DecorationIconNameRole,
+    UserRole
   };
 
   enum ItemType {

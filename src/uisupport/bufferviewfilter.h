@@ -30,6 +30,7 @@
 
 #include "types.h"
 #include "bufferviewconfig.h"
+#include "networkmodel.h"
 
 /*****************************************
  * Buffer View Filter
@@ -49,6 +50,11 @@ public:
     FullCustom = 0x80
   };
   Q_DECLARE_FLAGS(Modes, Mode)
+
+  enum Role {
+    ForegroundBrushColorRole = NetworkModel::UserRole,
+    BackgroundBrushColorRole
+  };
 
   BufferViewFilter(QAbstractItemModel *model, BufferViewConfig *config = 0);
 

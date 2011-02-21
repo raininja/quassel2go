@@ -29,8 +29,8 @@ Item {
     Image {
       id: iconSmall
       //anchors.left: parent.left
-      anchors.top: parent.top
       anchors.horizontalCenter: parent.horizontalCenter
+      y: delegateTextSmall.y - height - 4
       //anchors.margins: 10
       source: iconSource
       width: 16
@@ -51,7 +51,7 @@ Item {
 //      anchors.right: parent.right
       anchors.horizontalCenter: parent.horizontalCenter
       anchors.bottom: parent.bottom
-//      anchors.margins: 10
+      anchors.margins: 5
 
       font.bold: lvItem.header
     }
