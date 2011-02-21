@@ -38,6 +38,7 @@ set(SOURCES
     debuglogwidget.cpp
     debugmessagemodelfilter.cpp
     inputpresenter.cpp
+    inputnickpresenter.cpp
     inputwidget.cpp
     ircconnectionwizard.cpp
     itemviewkinetictapsuppressor.cpp
@@ -53,6 +54,7 @@ set(SOURCES
     qmlchatview.cpp
     qmlcontextobject.cpp
     qmlinputwidget.cpp
+    qmlnickwidget.cpp
     qmlsectionproxymodel.cpp
     qmlthemeimageprovider.cpp
     qmlscrollmodel.cpp
@@ -98,6 +100,7 @@ set(MOC_HDRS
     debuglogwidget.h
     debugmessagemodelfilter.h
     inputpresenter.h
+    inputnickpresenter.h
     inputwidget.h
     ircconnectionwizard.h
     itemviewkinetictapsuppressor.h
@@ -113,6 +116,7 @@ set(MOC_HDRS
     qmlchatview.h
     qmlcontextobject.h
     qmlinputwidget.h
+    qmlnickwidget.h
     qmlsectionproxymodel.h
     qmlscrollmodel.h
     qmlthemeimageprovider.h

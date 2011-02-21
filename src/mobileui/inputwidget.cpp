@@ -31,6 +31,7 @@
 #include "qtuisettings.h"
 #include "tabcompleter.h"
 #include <QPainter>
+#include <QDebug>
 
 const int leftMargin = 3;
 
@@ -414,6 +415,7 @@ void InputWidget::changeNick(const QString &newNick) const {
 }
 
 void InputWidget::on_inputEdit_textEntered(const QString &text) {
+  qDebug() << "InputWidget::on_inputEdit_textEntered";
   Client::userInput(currentBufferInfo(), text);
   ui.boldButton->setChecked(false);
   ui.underlineButton->setChecked(false);

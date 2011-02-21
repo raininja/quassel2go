@@ -67,8 +67,6 @@
 #include "debugmessagemodelfilter.h"
 #include "flatproxymodel.h"
 #include "iconloader.h"
-#include "inputpresenter.h"
-#include "inputwidget.h"
 #include "irclistmodel.h"
 #include "ircconnectionwizard.h"
 #include "legacysystemtray.h"
@@ -136,6 +134,7 @@
 #include "qmlchatview.h"
 #include "qmlcontextobject.h"
 #include "qmlinputwidget.h"
+#include "qmlnickwidget.h"
 #include "qmlthemeimageprovider.h"
 #include "qmlscrollmodel.h"
 
@@ -153,8 +152,6 @@ MainWin::MainWin(QWidget *parent)
     _qmlContextObject(0),
     _bufferWidget(0),
     _nickListWidget(0),
-    _inputPresenter(0),
-    _inputWidget(0),
     _chatMonitorView(0),
     _topicModel(0),
     _awayLog(0),
@@ -214,7 +211,6 @@ void MainWin::init() {
 
   // try setup qml... (needs _bufferWidget already initialized)
   QmlChatView::setBufferWidget(_bufferWidget);
-  QmlInputWidget::setEmbeddedWidget(_inputWidget);
   qmlRegisterType<ChatView>();
   qmlRegisterType<BufferWidget>();
   qmlRegisterType<TopicModel>();
@@ -222,6 +218,7 @@ void MainWin::init() {
   qmlRegisterType<QmlScrollModel>();
   qmlRegisterType<QmlChatView>("org.quassel", 0, 1, "QuasselChatView");
   qmlRegisterType<QmlInputWidget>("org.quassel", 0, 1, "QuasselInputWidget");
+  qmlRegisterType<QmlNickWidget>("org.quassel", 0, 1, "QuasselNickWidget");
   _declarativeView = new QDeclarativeView(this);
   QmlThemeImageProvider *imgProvider = new QmlThemeImageProvider(this);
   qDebug() << "imgProvider test..." << (imgProvider->requestPixmap("irc-channel-active", 0, QSize(16,16)).size());
@@ -571,7 +568,7 @@ void MainWin::addBufferView(ClientBufferViewConfig *config) {
 #endif
 
   view->setFilteredModel(Client::bufferModel(), config);
-  view->installEventFilter(_inputWidget); // for key presses
+  // view->installEventFilter(_inputWidget); // for key presses
 
   menuBar()->addAction(view->toggleVisibleAction() );
 
@@ -765,7 +762,7 @@ void MainWin::setupChatMonitor() {
 #ifdef Q_WS_MAEMO_5
   _chatMonitorView->setAttribute(Qt::WA_Maemo5StackedWindow);
 #endif
-  _chatMonitorView->setFocusProxy(_inputWidget);
+  // _chatMonitorView->setFocusProxy(_inputWidget);
   _chatMonitorView->hide();
 
   QAction *action = QtUi::actionCollection("General")->action("ToggleChatMonitor");
@@ -773,22 +770,16 @@ void MainWin::setupChatMonitor() {
 }
 
 void MainWin::setupInputWidget() {
-  // TODO: make multilineedit available in QML
-  MultiLineEdit *w = new MultiLineEdit(this);
-  w->hide();
-  _inputPresenter = new InputPresenter(w, this);
+//  // TODO: remove inputwidget
+//  _inputWidget = new InputWidget(0);
+//  _inputWidget->show();
 
-  _inputWidget = new InputWidget(0);
+//  _inputWidget->setModel(Client::bufferModel());
+//  _inputWidget->setSelectionModel(Client::bufferModel()->standardSelectionModel());
 
-  _inputPresenter->setModel(Client::bufferModel());
-  _inputPresenter->setSelectionModel(Client::bufferModel()->standardSelectionModel());
+//  _bufferWidget->setFocusProxy(_inputWidget);
 
-  _inputWidget->setModel(Client::bufferModel());
-  _inputWidget->setSelectionModel(Client::bufferModel()->standardSelectionModel());
-
-  _bufferWidget->setFocusProxy(_inputWidget);
-
-  _inputWidget->inputLine()->installEventFilter(_bufferWidget);
+//  _inputWidget->inputLine()->installEventFilter(_bufferWidget);
 }
 
 void MainWin::setupTopicWidget() {

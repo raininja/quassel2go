@@ -67,6 +67,7 @@ InputPresenter::InputPresenter(MultiLineEdit *input, QObject *parent)
   activateInputline->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L));
 
   connect(inputLine(), SIGNAL(currentCharFormatChanged(QTextCharFormat)), this, SLOT(currentCharFormatChanged(QTextCharFormat)));
+  connect(inputLine(), SIGNAL(textEntered(QString)), this, SLOT(textEntered(QString)));
 }
 
 InputPresenter::~InputPresenter() {
@@ -84,11 +85,12 @@ void InputPresenter::setCustomFont(const QVariant &v) {
   QFont font = v.value<QFont>();
   if(font.family().isEmpty())
     font = QApplication::font();
-  // we don't want font styles as this conflics with mirc code richtext editing
-  setFontBold(false);
-  setFontItalic(false);
-  setFontUnderline(false);
-  setFontStrikeout(false);
+  // TODO check wether changes propagate through inputLine->prop sync
+//  // we don't want font styles as this conflics with mirc code richtext editing
+//  setFontBold(false);
+//  setFontItalic(false);
+//  setFontUnderline(false);
+//  setFontStrikeout(false);
   _inputLine->setCustomFont(font);
 }
 
@@ -172,11 +174,18 @@ void InputPresenter::currentChanged(const QModelIndex &current, const QModelInde
   }
 }
 
-void InputPresenter::on_inputEdit_textEntered(const QString &text) {
-  // TODO!! Client::userInput(currentBufferInfo(), text);
-  setFontBold(false);
-  setFontUnderline(false);
-  setFontItalic(false);
+BufferInfo InputPresenter::currentBufferInfo() const {
+  return selectionModel()->currentIndex().data(NetworkModel::BufferInfoRole).value<BufferInfo>();
+};
+
+void InputPresenter::textEntered(const QString &text) {
+  qDebug() << "textEntered";
+  Client::userInput(currentBufferInfo(), text);
+
+  // TODO check wether inputLine->property sync works
+//  setFontBold(false);
+//  setFontUnderline(false);
+//  setFontItalic(false);
 
   QTextCharFormat fmt;
   fmt.setFontWeight(QFont::Normal);
@@ -211,33 +220,44 @@ QTextCharFormat InputPresenter::getFormatOfWordOrSelection() {
 }
 
 void InputPresenter::currentCharFormatChanged(const QTextCharFormat &format) {
-  fontChanged(format.font());
+  emit fontChanged(format.font());
 }
-
-void InputPresenter::fontChanged(const QFont &f)
-{
-  setFontBold(f.bold());
-  setFontItalic(f.italic());
-  setFontUnderline(f.underline());
-}
-
 
 void InputPresenter::setFontBold(bool bold)
 {
-  // TODO
+  QTextCharFormat fmt;
+  fmt.setFontWeight(bold ? QFont::Bold : QFont::Normal);
+  mergeFormatOnSelection(fmt);
 }
 
 void InputPresenter::setFontUnderline(bool underline)
 {
-  // TODO
+  QTextCharFormat fmt;
+  fmt.setFontUnderline(underline);
+  mergeFormatOnSelection(fmt);
 }
 
 void InputPresenter::setFontItalic(bool italic)
 {
-  // TODO
+  QTextCharFormat fmt;
+  fmt.setFontItalic(italic);
+  mergeFormatOnSelection(fmt);
 }
 
-void InputPresenter::setFontStrikeout(bool strikeout)
+const QFont &InputPresenter::currentFont() const
 {
-  // TODO
+  return _inputLine->currentCharFormat().font();
+}
+
+bool InputPresenter::boldText() const
+{
+  return currentFont().bold();
+}
+bool InputPresenter::underlineText() const
+{
+  return currentFont().underline();
+}
+bool InputPresenter::italicText() const
+{
+  return currentFont().italic();
 }

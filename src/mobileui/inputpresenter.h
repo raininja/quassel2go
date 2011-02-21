@@ -19,6 +19,10 @@ class InputPresenter : public AbstractItemPresenter
 {
     Q_OBJECT
 
+  Q_PROPERTY(bool boldText READ boldText WRITE setFontBold NOTIFY fontChanged)
+  Q_PROPERTY(bool underlineText READ underlineText WRITE setFontUnderline NOTIFY fontChanged)
+  Q_PROPERTY(bool italicText READ italicText WRITE setFontItalic NOTIFY fontChanged)
+
   // TODO: Properties (font etc.)
 public:
     explicit InputPresenter(MultiLineEdit *inputLine, QObject *parent = 0);
@@ -26,11 +30,18 @@ public:
 
   inline MultiLineEdit* inputLine() const { return _inputLine; }
 
+  const QFont &currentFont() const;
+  bool boldText() const;
+  bool underlineText() const;
+  bool italicText() const;
+
 public slots:
   void setFontBold(bool bold);
   void setFontUnderline(bool underline);
   void setFontItalic(bool italic);
-  void setFontStrikeout(bool strikeout);
+
+signals:
+  void fontChanged(const QFont &font);
 
 protected:
   virtual bool eventFilter(QObject *watched, QEvent *event);
@@ -49,11 +60,13 @@ private slots:
   void setMaxLines(const QVariant &);
   void setMultiLineEnabled(const QVariant &);
   void setScrollBarsEnabled(const QVariant &);
-  void on_inputEdit_textEntered(const QString &text);
+  void textEntered(const QString &text);
 
   void currentCharFormatChanged(const QTextCharFormat &format);
 
 private:
+  BufferInfo currentBufferInfo() const;
+
   MultiLineEdit *_inputLine;
 
   NetworkId _networkId;
@@ -61,7 +74,6 @@ private:
   QMenu *_colorMenu, *_colorFillMenu;
 
   void mergeFormatOnSelection(const QTextCharFormat &format);
-  void fontChanged(const QFont &f);
   QTextCharFormat getFormatOfWordOrSelection();
   void setFormatOnSelection(const QTextCharFormat &format);
 

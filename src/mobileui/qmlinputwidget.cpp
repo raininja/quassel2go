@@ -1,8 +1,13 @@
 #include "qmlinputwidget.h"
 #include "inputwidget.h"
+#include "inputpresenter.h"
+#include "multilineedit.h"
+
+#include "client.h"
+
 #include <QDebug>
 
-QWidget *QmlInputWidget::_widget = 0;
+//QWidget *QmlInputWidget::_widget = 0;
 
 QmlInputWidget::QmlInputWidget(QWidget *parent) :
     QGraphicsProxyWidget()
@@ -10,22 +15,20 @@ QmlInputWidget::QmlInputWidget(QWidget *parent) :
   //setFocusPolicy(Qt::StrongFocus);
   setFocus(Qt::OtherFocusReason);
 
-  if(_widget) {
-    //_widget->setAttribute(Qt::WA_NoSystemBackground);
+  _input = new MultiLineEdit(parent);
+  _input->setAttribute(Qt::WA_NoSystemBackground, true);
+  _input->setFocus();
+  setWidget(_input);
+  _presenter = new InputPresenter(_input, parent);
 
-    InputWidget* iw = qobject_cast<InputWidget*>(_widget);
-    if(iw) {
-      iw->inputLine()->setFocus();
-    }
+  _presenter->setModel(Client::bufferModel());
+  _presenter->setSelectionModel(Client::bufferModel()->standardSelectionModel());
 
-    setWidget(_widget);
-  } else {
-    qWarning() << "QmlChatView needs to be initialized first with ::setBufferWidget()";
-    setWidget(new QWidget());
-  }
+  connect(_input, SIGNAL(textChanged()), this, SIGNAL(heightHintChanged()));
 }
 
-void QmlInputWidget::setEmbeddedWidget(QWidget *widget)
+int QmlInputWidget::heightHint() const
 {
-  _widget = widget;
+  return _input->sizeHint().height();
 }
+

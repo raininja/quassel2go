@@ -56,7 +56,7 @@ Rectangle {
             //scrollModel.verticalPosition: chatview_flickable.visibleArea.yPosition * chatview_flickable.contentHeight
 
             scrollModel.verticalPosition: chatview_flickable.contentY
-            scrollModel.onVerticalPositionChanged: { if(!chatview_flickable.flicking) { chatview_flickable.contentY = scrollModel.verticalPosition } }
+            scrollModel.onVerticalPositionChanged: { if(!chatview_flickable.flicking && !chatview_flickable.moving) { chatview_flickable.contentY = scrollModel.verticalPosition } }
 
             // pos: (chatview_flickable.visibleArea.yPosition < 0.1 ? 0.1 : chatview_flickable.visibleArea.yPosition) * chatview_flickable.contentHeight
         }
@@ -228,16 +228,6 @@ Rectangle {
               x: parent.x
               y: parent.y // parent.y - height
 
-//              ToolButton {
-//                  id: chatsBtn
-//                  // text: "Chats"
-//                  icon: "image://quassel/general_foldertree"
-//                  height: parent.height
-//                  anchors.left: parent.left
-//                  anchors.top: parent.top
-//                  onClicked: background.state="showChatList"
-//              }
-
               ToolButton {
                   id: nicksBtn
                   // text: "Nicks"
@@ -253,11 +243,15 @@ Rectangle {
                   text: topicModel.currentTopic
                   color: "#ffffff"
                   anchors.verticalCenter: parent.verticalCenter
+                  horizontalAlignment: "AlignLeft"
+                  verticalAlignment: "AlignVCenter"
                   //height: parent.height
                   elide: Text.ElideRight
                   anchors.leftMargin: 10
                   anchors.rightMargin: 10
-                  anchors.left: chatsBtn.right
+                  anchors.top:  parent.top
+                  anchors.bottom: parent.bottom
+                  anchors.left: parent.left
                   anchors.right: nicksBtn.left
 
                   MouseArea {
@@ -375,12 +369,28 @@ Rectangle {
 
         z: 99
 
-        QuasselInputWidget {
-          id: quassel_input_widget
+        QuasselNickWidget {
+          id: quassel_nick_widget
           anchors.top: parent.top
           height: parent.height
           anchors.left: parent.left
+          width: parent.width * 0.2
+        }
+
+        QuasselInputWidget {
+          id: quassel_input_widget
+          //anchors.top: parent.top
+          y: parent.height > quassel_input_widget.heightHint ? 0 : (parent.height - quassel_input_widget.heightHint)
+          height: parent.height > quassel_input_widget.heightHint ? parent.height : quassel_input_widget.heightHint
+          Behavior on y {
+            NumberAnimation { duration: 200 }
+          }
+          Behavior on height {
+            NumberAnimation { duration: 200 }
+          }
+          anchors.left: quassel_nick_widget.right
           anchors.right: rightInputBtnRow.left
+          //anchors.bottom: parent.bottom
         }
 
         Row {

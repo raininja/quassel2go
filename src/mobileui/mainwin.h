@@ -41,7 +41,6 @@ class ClientBufferViewConfig;
 class CoreAccount;
 class CoreConnectionStatusModel;
 class BufferWidget;
-class InputWidget;
 class MsgProcessorStatusModel;
 class NickListWidget;
 class SystemTray;
@@ -194,8 +193,6 @@ class MainWin
     QList<MobileBufferView *> _bufferViews;
     BufferWidget *_bufferWidget;
     NickListWidget *_nickListWidget;
-    class InputPresenter *_inputPresenter;
-    InputWidget *_inputWidget;
     ChatMonitorView *_chatMonitorView;
     TopicModel *_topicModel;
 

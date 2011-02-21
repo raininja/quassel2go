@@ -8,19 +8,23 @@ class QmlInputWidget: public QGraphicsProxyWidget
 {
     Q_OBJECT
 
-  Q_PROPERTY(QWidget *widget READ widget WRITE setWidget)
+  Q_PROPERTY(int heightHint READ heightHint NOTIFY heightHintChanged)
 
 public:
     explicit QmlInputWidget(QWidget *parent = 0);
 
-  static void setEmbeddedWidget(QWidget *widget);
+  //static void setEmbeddedWidget(QWidget *widget);
+
+  int heightHint() const;
 
 public slots:
 
 signals:
+  void heightHintChanged();
 
 private:
-  static QWidget *_widget;
+  class MultiLineEdit *_input;
+  class InputPresenter *_presenter;
 };
 
 #endif // QMLINPUTWIDGET_H

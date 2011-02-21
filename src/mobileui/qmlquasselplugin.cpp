@@ -22,6 +22,9 @@
 #include "qmlthemeimageprovider.h"
 #include "iconloader.h"
 
+
+//#  include "mobileuiapplication.h"
+
 #include <QDebug>
 
 class MyStandardItemModel : public QStandardItemModel
@@ -41,6 +44,20 @@ QmlQuasselPlugin::QmlQuasselPlugin(QObject *parent)
     _qmlContextObject(0)
 {
   qDebug() << "QmlQuasselPlugin:: create";
+
+//# include "version.gen"
+
+//  buildinfo.append(QString(",%1,%2").arg(__DATE__, __TIME__));
+
+//  Quassel::setupBuildInfo(buildinfo, "quassel2go");
+
+//  MobileUiApplication* app = qobject_cast<MobileUiApplication*> qApp;
+
+//  QCoreApplication::setApplicationName(Quassel::buildInfo().applicationName);
+//  QCoreApplication::setOrganizationName(Quassel::buildInfo().organizationName);
+//  QCoreApplication::setOrganizationDomain(Quassel::buildInfo().organizationDomain);
+
+//  //app->init();
 }
 
 QmlQuasselPlugin::~QmlQuasselPlugin()
@@ -103,7 +120,7 @@ void QmlQuasselPlugin::initializeEngine(QDeclarativeEngine * engine, const char 
   QmlChatView::setBufferWidget(w /*_bufferWidget*/);
   QLineEdit *testInput = new QLineEdit();
   testInput->setFocus();
-  QmlInputWidget::setEmbeddedWidget(testInput /*_inputWidget*/);
+  //QmlInputWidget::setEmbeddedWidget(testInput /*_inputWidget*/);
 
   qDebug() << "current icon theme" << IconLoader::global()->theme();
   QmlThemeImageProvider *imgProvider = new QmlThemeImageProvider(engine);
