@@ -5,7 +5,8 @@
 #include "qmlsectionproxymodel.h"
 
 QmlSectionProxyModel::QmlSectionProxyModel(QObject *parent) :
-    QAbstractProxyModel(parent)
+    QAbstractProxyModel(parent),
+    _countBeforeLayoutChange(0)
 {
 }
 
@@ -113,14 +114,24 @@ void QmlSectionProxyModel::setSourceModel ( QAbstractItemModel * sourceModel )
 
     connect(sourceModel, SIGNAL(modelReset()), this, SLOT(_mdlReset()));
 
+    connect(sourceModel, SIGNAL(rowsAboutToBeInserted (const QModelIndex &, int, int)),
+            this, SLOT(srcRowsAboutToBeInserted(QModelIndex,int,int)));
+    connect(sourceModel, SIGNAL(rowsAboutToBeRemoved ( const QModelIndex &, int, int )),
+            this, SLOT(srcRowsAboutToBeRemoved(const QModelIndex &, int, int)));
+    connect(sourceModel, SIGNAL(rowsInserted(const QModelIndex &, int, int)),
+            this, SLOT(srcRowsInserted(QModelIndex,int,int)));
+    connect(sourceModel, SIGNAL(rowsRemoved(const QModelIndex &, int, int)),
+            this, SLOT(srcRowsRemoved(QModelIndex,int,int)));
+    connect(sourceModel, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)),
+            this, SLOT(srcDataChanged(QModelIndex,QModelIndex)));
+
+    connect(sourceModel, SIGNAL(layoutChanged()), this, SLOT(srcLayoutChanged()));
+    connect(sourceModel, SIGNAL(layoutAboutToBeChanged()), this, SLOT(srcLayoutAboutToBeChanged()));
+
     // this is likely to be rather inefficient for larger source models
-    connect(sourceModel, SIGNAL(rowsInserted(const QModelIndex &, int, int)), this, SLOT(_mdlReset()));
-    connect(sourceModel, SIGNAL(rowsMoved(const QModelIndex &,int,int, const QModelIndex &, int)), this, SLOT(_mdlReset()));
-    connect(sourceModel, SIGNAL(rowsRemoved(const QModelIndex &, int, int)), this, SLOT(_mdlReset()));
-    connect(sourceModel, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this, SLOT(_mdlReset()));
-    connect(sourceModel, SIGNAL(layoutChanged()), this, SLOT(_mdlReset()));
-    connect(sourceModel, SIGNAL(headerDataChanged(Qt::Orientation, int, int)), this, SLOT(_mdlReset()));
-    connect(sourceModel, SIGNAL(columnsInserted (const QModelIndex &, int, int)), this, SLOT(_mdlReset()));
+    //    connect(sourceModel, SIGNAL(rowsMoved(const QModelIndex &,int,int, const QModelIndex &, int)), this, SLOT(_mdlReset()));
+    // connect(sourceModel, SIGNAL(headerDataChanged(Qt::Orientation, int, int)), this, SLOT(_mdlReset()));
+    // connect(sourceModel, SIGNAL(columnsInserted (const QModelIndex &, int, int)), this, SLOT(_mdlReset()));
   }
   _root = QModelIndex();
 
@@ -172,7 +183,7 @@ QModelIndex QmlSectionProxyModel::index(int row, int column, const QModelIndex &
 {
     if(!sourceModel() || parent.isValid())
         return QModelIndex();
-    return createIndex(row, column, _mapToSource(row).internalPointer());
+    return createIndex(row, column);
 }
 
 void QmlSectionProxyModel::setSourceRootIndex(const QModelIndex &root)
@@ -185,4 +196,97 @@ void QmlSectionProxyModel::setSourceRootIndex(const QModelIndex &root)
   _root = root;
 
   endResetModel();
+}
+
+void QmlSectionProxyModel::srcLayoutAboutToBeChanged()
+{
+  emit layoutAboutToBeChanged();
+//  beginRemoveRows(QModelIndex(), 0, rowCount(QModelIndex()));
+//  endRemoveRows();
+
+  _countBeforeLayoutChange = rowCount(QModelIndex());
+}
+
+void QmlSectionProxyModel::srcLayoutChanged()
+{
+  int newCnt = rowCount(QModelIndex());
+  if(newCnt > _countBeforeLayoutChange) {
+    emit dataChanged(index(0,0), index(_countBeforeLayoutChange-1,0));
+    beginInsertRows(QModelIndex(), _countBeforeLayoutChange, newCnt-1);
+    endInsertRows();
+  } else if(newCnt < _countBeforeLayoutChange) {
+    emit dataChanged(index(0,0), index(newCnt-1,0));
+    beginInsertRows(QModelIndex(), newCnt, _countBeforeLayoutChange-1);
+    endInsertRows();
+  } else {
+    emit dataChanged(index(0,0), index(_countBeforeLayoutChange-1,0));
+  }
+  _countBeforeLayoutChange = 0;
+
+  emit layoutChanged();
+}
+
+void QmlSectionProxyModel::srcRowsAboutToBeInserted ( const QModelIndex & parent, int start, int end )
+{
+  Q_UNUSED(parent)
+  Q_UNUSED(start)
+  Q_UNUSED(end)
+}
+
+void QmlSectionProxyModel::srcRowsAboutToBeMoved ( const QModelIndex & sourceParent, int sourceStart, int sourceEnd, const QModelIndex & destinationParent, int destinationColumn )
+{
+  Q_UNUSED(sourceParent)
+  Q_UNUSED(sourceStart)
+  Q_UNUSED(sourceEnd)
+  Q_UNUSED(destinationParent)
+  Q_UNUSED(destinationColumn)
+}
+
+void QmlSectionProxyModel::srcRowsAboutToBeRemoved ( const QModelIndex & parent, int start, int end )
+{
+  Q_UNUSED(parent)
+  Q_UNUSED(start)
+  Q_UNUSED(end)
+}
+
+void QmlSectionProxyModel::srcRowsInserted ( const QModelIndex & parent, int start, int end )
+{
+  Q_UNUSED(parent)
+  Q_UNUSED(start)
+  Q_UNUSED(end)
+
+  // TODO: more efficiently calculate the index range and call inserted etc.
+_mdlReset();
+}
+
+void QmlSectionProxyModel::srcRowsMoved ( const QModelIndex & sourceParent, int sourceStart, int sourceEnd, const QModelIndex & destinationParent, int destinationColumn )
+{
+  Q_UNUSED(sourceParent)
+  Q_UNUSED(sourceStart)
+  Q_UNUSED(sourceEnd)
+  Q_UNUSED(destinationParent)
+  Q_UNUSED(destinationColumn)
+  // TODO: more efficiently calculate the index range and call moved etc.
+_mdlReset();
+}
+
+void QmlSectionProxyModel::srcRowsRemoved ( const QModelIndex & parent, int start, int end )
+{
+  Q_UNUSED(parent)
+  Q_UNUSED(start)
+  Q_UNUSED(end)
+
+  // TODO: more efficiently calculate the index range and call remove etc.
+_mdlReset();
+}
+
+void QmlSectionProxyModel::srcDataChanged ( const QModelIndex & topLeft, const QModelIndex & bottomRight )
+{
+  if(topLeft.parent() == bottomRight.parent()) {
+    QModelIndex tl = mapFromSource(topLeft);
+    QModelIndex br = mapFromSource(bottomRight);
+  } else {
+    qWarning() << "Handling unexpected case in QmlSectionProxyModel::srcDataChanged!!";
+    _mdlReset();
+  }
 }

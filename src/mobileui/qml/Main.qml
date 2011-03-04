@@ -321,7 +321,7 @@ Rectangle {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             anchors.right: columnWidget_rect.left
-            anchors.margins: 3
+            anchors.margins: 2
             color: "#000000"
             border.width: 1
             border.color: "#ffffff"
@@ -379,7 +379,7 @@ Rectangle {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             anchors.right: columnWidget2_rect.left
-            anchors.margins: 3
+            anchors.margins: 2
             color: "#000000"
             border.width: 1
             border.color: "#ffffff"
@@ -651,6 +651,11 @@ Rectangle {
         opacity: 0
         visible: false
 
+        MouseArea {
+            anchors.fill: topicTextFull
+            onClicked: { background.state="default"; }
+        }
+
         Column {
             id: topicTextFullTextLayout
             anchors.fill: parent
@@ -663,16 +668,34 @@ Rectangle {
                 width: parent.width
                 wrapMode: Text.WordWrap
             }
+            TextInput {
+              id: topicTextFullTextEdit
+              text: topicModel.currentTopic
+              width: parent.width
+              visible: false
+            }
+
             Button {
                 id: topicTextFullBtn
                 visible: topicModel.readOnly
-                text: "edit"
-            }
-        }
+                height: 60
+                text: "Edit"
+                iconSource: "image://quassel/edit-rename"
 
-        MouseArea {
-            anchors.fill: topicTextFull
-            onClicked: { background.state="default"; }
+                onClicked: {
+                  if(text == "Edit") {
+                    topicTextFullTextEdit.text = topicModel.currentTopic
+                    topicTextFullText.visible = false
+                    topicTextFullTextEdit.visible = true
+                    topicTextFullBtn.text = "Save"
+                  } else {
+                    topicModel.currentTopic = topicTextFullTextEdit.text
+                    topicTextFullText.visible = true
+                    topicTextFullTextEdit.visible = false
+                    topicTextFullBtn.text = "Edit"
+                  }
+                }
+            }
         }
     }
 

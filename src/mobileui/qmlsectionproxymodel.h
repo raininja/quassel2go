@@ -30,10 +30,24 @@ protected slots:
 //    QModelIndex mapWithRole(const QModelIndex &idx, int role) const;
 
     void _mdlReset();
+
+  private slots:
+    void srcLayoutAboutToBeChanged();
+    void srcLayoutChanged();
+    void srcRowsAboutToBeInserted ( const QModelIndex & parent, int start, int end );
+    void srcRowsAboutToBeMoved ( const QModelIndex & sourceParent, int sourceStart, int sourceEnd, const QModelIndex & destinationParent, int destinationColumn );
+    void srcRowsAboutToBeRemoved ( const QModelIndex & parent, int start, int end );
+    void srcRowsInserted ( const QModelIndex & parent, int start, int end );
+    void srcRowsMoved ( const QModelIndex & sourceParent, int sourceStart, int sourceEnd, const QModelIndex & destinationParent, int destinationColumn );
+    void srcRowsRemoved ( const QModelIndex & parent, int start, int end );
+    void srcDataChanged ( const QModelIndex & topLeft, const QModelIndex & bottomRight );
+
 private:
     QModelIndex _mapToSource(int row) const;
   //  QMap<int, QByteArray> m_mappings;
     QModelIndex _root;
+
+    int _countBeforeLayoutChange;
 
 signals:
 

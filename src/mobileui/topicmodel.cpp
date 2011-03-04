@@ -40,10 +40,10 @@ void TopicModel::setModel(QAbstractItemModel *model) {
   _model = model;
   connect(model, SIGNAL(dataChanged(QModelIndex, QModelIndex)),
       this, SLOT(dataChanged(QModelIndex, QModelIndex)));
-  connect(model, SIGNAL(rowsAboutToBeRemoved(QModelIndex, int, int)),
-      this, SLOT(rowsAboutToBeRemoved(QModelIndex, int, int)));
-  connect(model, SIGNAL(rowsInserted(QModelIndex, int, int)),
-      this, SLOT(rowsInserted(QModelIndex, int, int)));
+//  connect(model, SIGNAL(rowsAboutToBeRemoved(QModelIndex, int, int)),
+//      this, SLOT(rowsAboutToBeRemoved(QModelIndex, int, int)));
+//  connect(model, SIGNAL(rowsInserted(QModelIndex, int, int)),
+//      this, SLOT(rowsInserted(QModelIndex, int, int)));
 }
 
 void TopicModel::setSelectionModel(QItemSelectionModel *selectionModel) {
@@ -53,8 +53,8 @@ void TopicModel::setSelectionModel(QItemSelectionModel *selectionModel) {
   _selectionModel = selectionModel;
   connect(selectionModel, SIGNAL(currentChanged(QModelIndex, QModelIndex)),
       this, SLOT(currentChanged(QModelIndex, QModelIndex)));
-  connect(selectionModel, SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
-      this, SLOT(selectionChanged(QItemSelection, QItemSelection)));
+//  connect(selectionModel, SIGNAL(selectionChanged(QItemSelection, QItemSelection)),
+//      this, SLOT(selectionChanged(QItemSelection, QItemSelection)));
 }
 
 void TopicModel::currentChanged(const QModelIndex &current, const QModelIndex &previous) {

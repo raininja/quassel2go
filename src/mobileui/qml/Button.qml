@@ -49,7 +49,7 @@ Item {
         anchors.left: icon.visible ? icon.right : parent.left
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        anchors.leftMargin: icon.visible ? 5 : 0
+        anchors.leftMargin: icon.visible ? 5 : anchors.margins
 
         horizontalAlignment: "AlignHCenter"
         verticalAlignment: "AlignVCenter"

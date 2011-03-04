@@ -273,6 +273,5 @@ void BufferWidget::jumpToMarkerLine(ChatView *view, bool requestBacklog) {
 ChatView *BufferWidget::currentChatView() const
 {
   ChatView *curView = qobject_cast<ChatView *>(ui.stackedWidget->currentWidget());
-  qDebug() << "request currentChatView" << curView;
   return curView;
 }
