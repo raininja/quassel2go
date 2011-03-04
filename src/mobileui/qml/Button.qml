@@ -10,7 +10,9 @@ Item {
 
     property bool checked: false
 
-    width: btnText.width+2*rect.radius
+    property variant iconSource: ""
+
+    width: btnText.width+2*rect.radius + (icon.visible ? (5 + icon.width) : 0)
     height: btnText.height * 1.5
 
     Rectangle {
@@ -28,10 +30,30 @@ Item {
         anchors.fill: rect
         onClicked: { container.clicked(); }
     }
+
+    Image {
+      id: icon
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+      anchors.margins: 5
+
+      source: iconSource
+      width: 48
+      height: 48
+      visible: iconSource != ""
+    }
+
     Text {
         id: btnText
         color: if(container.keyUsing){"#D0D0D0";} else {"#FFFFFF";}
-        anchors.centerIn: rect; font.bold: true
+        anchors.left: icon.visible ? icon.right : parent.left
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: icon.visible ? 5 : 0
+
+        horizontalAlignment: "AlignHCenter"
+        verticalAlignment: "AlignVCenter"
+        font.bold: true
         text: container.text; /*style: Text.Raised;*/ styleColor: "black"
         //font.pixelSize: 12
     }

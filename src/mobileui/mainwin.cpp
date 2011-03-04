@@ -254,6 +254,8 @@ void MainWin::init() {
   connect(_qmlContextObject, SIGNAL(requestZoomOut()),
           _bufferWidget, SLOT(zoomOut()));
 
+  connect(_qmlContextObject, SIGNAL(requestSearch()), QtUi::actionCollection("General")->action("ToggleSearchBar"), SLOT(trigger()));
+
 
   //#ifndef HAVE_KDE
   //#  ifdef HAVE_PHONON
@@ -401,6 +403,7 @@ void MainWin::setupActions() {
 
   coll->addAction("ToggleSearchBar", new MobileAction(SmallIcon("edit-find"), tr("Show &Search Bar"), coll,
                                                       0, 0, QKeySequence::Find))->setCheckable(true);
+
   coll->addAction("ShowAwayLog", new MobileAction(tr("Show Away Log"), coll,
                                                   this, SLOT(showAwayLog())));
 

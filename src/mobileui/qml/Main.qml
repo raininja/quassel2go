@@ -73,9 +73,14 @@ Rectangle {
 
           MouseArea {
             id: chatview_tap
-            property bool tap_on: false
+            property bool pressed: false
             anchors.fill: parent
-            onClicked: { tap_on = !tap_on }
+            //onPressed: pressed = true
+            //onReleased: pressed = false
+            onClicked: {
+              pressed = true
+              pressed = false
+            }
           }
         }
 
@@ -84,21 +89,41 @@ Rectangle {
           scrollArea: chatview_flickable
         }
 
-        Rectangle {
+        Item {
           // TODO: make a component from this.
 
           id: chatview_flickable_scroll_handle
           height: 60
           width: 60
-          radius: 10
-          border.width: 2
-          border.color: "#ffffff"
           opacity: 0.00
-          anchors.right: chatview_flickable_scroll.left
+          anchors.left: chatview_flickable.left
+          anchors.margins: 1
 
           y: chatview_flickable.contentY / (chatview_flickable.contentHeight-chatview_flickable.height) * (chatview_flickable.height-chatview_flickable_scroll_handle.height)
 
-          color: "#000000"
+          Rectangle {
+            anchors.fill: parent
+            radius: 10
+            border.width: 1
+            border.color: "#ffffff"
+            color: "#000000"
+            opacity: 0.5
+          }
+
+          Image {
+            anchors.top: parent.top
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 22
+            height: 22
+            source: "image://quassel/keyboard_move_up"
+          }
+          Image {
+            anchors.bottom: parent.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 22
+            height: 22
+            source: "image://quassel/keyboard_move_down"
+          }
 
           MouseArea {
               anchors {
@@ -125,7 +150,7 @@ Rectangle {
           states: State {
               name: "visible"
               when: chatview_flickable.moving
-              PropertyChanges { target: chatview_flickable_scroll_handle; opacity: 0.5 }
+              PropertyChanges { target: chatview_flickable_scroll_handle; opacity: 1.0 }
           }
 
           transitions: Transition {
@@ -153,9 +178,11 @@ Rectangle {
               id: requestBacklogButton
               text: "Get Older Messages"
               visible: coreConnection.connected && ((chatview_flickable.height >= chatview_view.scrollModel.contentsSize.height) || (chatview_flickable.visibleArea.yPosition < 0.1))
-              height: 40
+              height: 60
               anchors.horizontalCenter: parent.horizontalCenter
               anchors.margins: 10
+
+              iconSource: "image://quassel/general_refresh"
 
               onClicked: {
                 chatview_view.requestBacklog()
@@ -205,119 +232,240 @@ Rectangle {
 
         Item {
           id: menuWidget
-          anchors.top: parent.top
-          anchors.left: parent.left
-          anchors.margins: 10
-          width: menuWidget_row.width * 1.2
-          height: menuWidget_row.height * 1.2
-          visible: chatview_tap.tap_on // chatview_flickable_scroll.visible
+          anchors.bottom: chatview_flickable.bottom
+          anchors.right: fullscreenMenuWidget.left
+          anchors.margins: 5
+          width: menuWidget_row.width + 10
+          height: menuWidget_row.height + 10
+          opacity: 0.00
 
-          Row {
-            id: menuWidget_row
-            spacing: 5
+        Rectangle {
+          anchors.fill: parent
+          color: "#000000"
+          opacity: 0.5
+          radius: 10
+          border.width: 1
+          border.color: "#ffffff"
+        }
 
-            Button {
-              id: zoomInButton
-              // text: "+"
-              width: 60
-              height: 60
-              onClicked: {
-                ctxt.zoomIn()
-              }
+        Row {
+          id: menuWidget_row
+          anchors.centerIn: parent
+          spacing: 5
 
-              Image {
-                anchors.centerIn: parent
-                width: 48
-                height: 48
-                source: "image://quassel/pdf_zoomin"
-              }
+          ToolButton {
+            id: searchButton
+            // text: "+"
+            width: 60
+            height: 60
+            onClicked: {
+              ctxt.search()
             }
-            Button {
-              id: zoomOutButton
-              // text: "-"
-              width: 60
-              height: 60
-              onClicked: {
-                ctxt.zoomOut()
-              }
 
-              Image {
-                anchors.centerIn: parent
-                width: 48
-                height: 48
-                source: "image://quassel/pdf_zoomout"
-              }
+            icon: "image://quassel/general_search"
+          }
+
+          ToolButton {
+            id: zoomInButton
+            // text: "+"
+            width: 60
+            height: 60
+            onClicked: {
+              ctxt.zoomIn()
             }
+
+            icon: "image://quassel/pdf_zoomin"
+          }
+          ToolButton {
+            id: zoomOutButton
+            // text: "-"
+            width: 60
+            height: 60
+            onClicked: {
+              ctxt.zoomOut()
+            }
+
+              icon: "image://quassel/pdf_zoomout"
           }
         }
 
-        Rectangle {
+
+        states: State {
+            name: "visible"
+            when: chatview_tap.pressed
+            PropertyChanges { target: menuWidget; opacity: 1.0 }
+        }
+
+        transitions: Transition {
+            from: "visible"; to: ""
+            SequentialAnimation {
+              PauseAnimation { duration: 1500 }
+              NumberAnimation { properties: "opacity"; duration: 600 }
+            }
+        }
+      }
+
+        Item {
           id: columnWidget
 
-          visible: ctxt.firstColumn != undefined && chatview_tap.tap_on
+          visible: (ctxt.firstColumn != undefined) //&& chatview_tap.tap_on
+          opacity: menuWidget.opacity
 
-          x: ctxt.firstColumn != undefined ? (ctxt.firstColumn.columnPos-width/2) : 0
-
-          height: 60
+          anchors.top: chatview_flickable.top
+          anchors.bottom: chatview_flickable.bottom
+          x: ctxt.firstColumn != undefined ? ctxt.firstColumn.columnPos : 0
           width: 60
-          radius: 10
-          border.width: 2
-          border.color: "#ffffff"
-          color: "#000000"
-          opacity: 0.50
-          anchors.top: menuWidget.bottom
-          anchors.margins: 10
+
+          Rectangle {
+            width: 3
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.right: columnWidget_rect.left
+            anchors.margins: 3
+            color: "#000000"
+            border.width: 1
+            border.color: "#ffffff"
+            opacity: 0.8
+          }
+
+          Rectangle {
+            id: columnWidget_rect
+            height: 60
+            width: 60
+            radius: 10
+            border.width: 1
+            border.color: "#ffffff"
+            color: "#000000"
+            opacity: 0.5
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.margins: 10
+            anchors.leftMargin: 4
+          }
+
+          MouseArea {
+            anchors.fill: columnWidget_rect
+            drag {
+              target: parent
+              axis: Drag.XAxis
+            }
+            onPositionChanged: {
+              ctxt.firstColumn.columnPos = parent.x
+            }
+          }
 
           Image {
-            anchors.centerIn: parent
+            anchors.centerIn: columnWidget_rect
             width: 32
             height: 32
             source: "image://quassel/browser_mover"
           }
 
-          MouseArea {
-              anchors.fill: parent
-              drag {
-                  target: parent
-                  axis: Drag.XAxis
-              }
-              onPositionChanged: {
-                ctxt.firstColumn.columnPos = parent.x + parent.width/2
-              }
-          }
         }
-        Rectangle {
+
+        Item {
           id: columnWidget2
 
-          visible: ctxt.firstColumn != undefined && chatview_tap.tap_on
+          visible: (ctxt.secondColumn != undefined) //&& chatview_tap.tap_on
+          opacity: menuWidget.opacity
 
-          x: ctxt.secondColumn != undefined ? (ctxt.secondColumn.columnPos-width/2) : 0
-
-          height: 60
+          anchors.top: chatview_flickable.top
+          anchors.bottom: chatview_flickable.bottom
+          x: ctxt.secondColumn != undefined ? ctxt.secondColumn.columnPos : 0
           width: 60
-          radius: 10
-          border.width: 2
-          border.color: "#ffffff"
-          color: "#000000"
-          opacity: 0.50
-          anchors.top: menuWidget.bottom
-          anchors.margins: 10
+
+          Rectangle {
+            width: 3
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.right: columnWidget2_rect.left
+            anchors.margins: 3
+            color: "#000000"
+            border.width: 1
+            border.color: "#ffffff"
+            opacity: 0.8
+          }
+
+          Rectangle {
+            id: columnWidget2_rect
+            height: 60
+            width: 60
+            radius: 10
+            border.width: 1
+            border.color: "#ffffff"
+            color: "#000000"
+            opacity: 0.5
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.margins: 10
+            anchors.leftMargin: 4
+          }
+
+          MouseArea {
+            anchors.fill: columnWidget2_rect
+            drag {
+              target: parent
+              axis: Drag.XAxis
+            }
+            onPositionChanged: {
+              ctxt.secondColumn.columnPos = parent.x
+            }
+          }
 
           Image {
-            anchors.centerIn: parent
+            anchors.centerIn: columnWidget2_rect
             width: 32
             height: 32
             source: "image://quassel/browser_mover"
           }
 
-          MouseArea {
-              anchors.fill: parent
-              drag {
-                  target: parent
-                  axis: Drag.XAxis
+        }
+
+        Item {
+          id: fullscreenMenuWidget
+          anchors.bottom: chatview_flickable.bottom
+          anchors.right: chatview_flickable.right
+          anchors.margins: 5
+          anchors.rightMargin: 15
+          width: fullScreenMenuWidget_row.width + 10
+          height: fullScreenMenuWidget_row.height + 10
+          // visible: chatview_tap.tap_on // chatview_flickable_scroll.visible
+          opacity: 0.0
+
+          Rectangle {
+            anchors.fill: parent
+            color: "#000000"
+            opacity: 0.5
+            radius: 10
+            border.width: 1
+            border.color: "#ffffff"
+          }
+
+          Row {
+            id: fullScreenMenuWidget_row
+            anchors.centerIn: parent
+            spacing: 5
+
+              ToolButton {
+                id: fullScreenButton
+                width: 60
+                height: 60
+                icon: "image://quassel/general_fullsize"
+                onClicked: { ctxt.fullScreen = !ctxt.fullScreen; }
               }
-              onPositionChanged: {
-                ctxt.secondColumn.columnPos = parent.x + parent.width/2
+          }
+
+          states: State {
+              name: "visible"
+              when: chatview_tap.pressed || ctxt.fullScreen
+              PropertyChanges { target: fullscreenMenuWidget; opacity: 1.0 }
+          }
+
+          transitions: Transition {
+              from: "visible"; to: ""
+              SequentialAnimation {
+                PauseAnimation { duration: 1500 }
+                NumberAnimation { properties: "opacity"; duration: 600 }
               }
           }
         }
@@ -442,7 +590,7 @@ Rectangle {
                   id: topicText
                   text: topicModel.currentTopic
                   color: "#ffffff"
-                  anchors.verticalCenter: parent.verticalCenter
+                  // anchors.verticalCenter: parent.verticalCenter
                   horizontalAlignment: "AlignLeft"
                   verticalAlignment: "AlignVCenter"
                   //height: parent.height
@@ -559,20 +707,8 @@ Rectangle {
             NumberAnimation { duration: 200 }
           }
           anchors.left: quassel_nick_widget.right
-          anchors.right: rightInputBtnRow.left
-          //anchors.bottom: parent.bottom
-        }
-
-        Row {
-          id: rightInputBtnRow
-          anchors.bottom: parent.bottom
           anchors.right: parent.right
-          height: 60
-          // TODO: actions for zoomin/zoomout
-          ToolButton {
-            icon: "image://quassel/general_fullsize"
-            onClicked: { ctxt.fullScreen = !ctxt.fullScreen; }
-          }
+          //anchors.bottom: parent.bottom
         }
     }
 

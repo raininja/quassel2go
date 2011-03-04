@@ -45,6 +45,7 @@ signals:
 
   void requestZoomIn();
   void requestZoomOut();
+  void requestSearch();
 
   void firstColumnChanged();
   void secondColumnChanged();
@@ -62,6 +63,7 @@ public slots:
 
   void zoomIn();
   void zoomOut();
+  void search();
 
 protected:
 

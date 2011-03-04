@@ -88,6 +88,10 @@ void QmlContextObject::zoomOut()
 {
   emit requestZoomOut();
 }
+void QmlContextObject::search()
+{
+  emit requestSearch();
+}
 
 void QmlContextObject::setFirstColumn(QObject *obj)
 {

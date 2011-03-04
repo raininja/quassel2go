@@ -62,7 +62,7 @@ InputPresenter::InputPresenter(MultiLineEdit *input, QObject *parent)
   ActionCollection *coll = QtUi::actionCollection();
 
   Action *activateInputline = coll->add<Action>("FocusInputLine");
-  connect(activateInputline, SIGNAL(triggered()), SLOT(setFocus()));
+  connect(activateInputline, SIGNAL(triggered()), inputLine(), SLOT(setFocus()));
   activateInputline->setText(tr("Focus Input Line"));
   activateInputline->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L));
 
