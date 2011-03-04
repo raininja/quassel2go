@@ -162,7 +162,7 @@ void Quassel::setupBuildInfo(const QString &generated, const QString &clientAppN
   _buildInfo.coreApplicationName = "quasselcore";
   _buildInfo.clientApplicationName = clientAppName;
   _buildInfo.organizationName = "Quassel Project";
-  _buildInfo.organizationDomain = "quassel-irc.org";
+  _buildInfo.organizationDomain = clientAppName == "quassel2go" ? "org.quasselirc.quassel2go" : "quassel-irc.org";
 
   QStringList gen = generated.split(',');
   Q_ASSERT(gen.count() == 10);

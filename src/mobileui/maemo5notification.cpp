@@ -42,6 +42,10 @@ bool Maemo5Notification::information(const QString &title, const QString &text, 
 
     return successful;
 #else
+    Q_UNUSED(title)
+    Q_UNUSED(text)
+    Q_UNUSED(icon)
+    Q_UNUSED(timeout)
     return false;
 #endif
 }

@@ -13,10 +13,10 @@ QWidget *QmlChatView::_bufferWidget = 0;
 QmlChatView::QmlChatView(QWidget *parent) :
     QGraphicsProxyWidget(),
   _currentView(0),
-  _scrollModel(new QmlScrollModel(this)) /*,
-  _id(-1),
-  _par(parent)*/
+  _scrollModel(new QmlScrollModel(this))
 {
+  Q_UNUSED(parent)
+
   if(_bufferWidget) {
     setWidget(_bufferWidget);
     if(qobject_cast<QAbstractScrollArea*>(_bufferWidget)) {

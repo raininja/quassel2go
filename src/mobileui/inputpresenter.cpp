@@ -243,7 +243,7 @@ void InputPresenter::setFontItalic(bool italic)
   mergeFormatOnSelection(fmt);
 }
 
-const QFont &InputPresenter::currentFont() const
+const QFont InputPresenter::currentFont() const
 {
   return _inputLine->currentCharFormat().font();
 }

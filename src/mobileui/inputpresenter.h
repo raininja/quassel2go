@@ -30,7 +30,7 @@ public:
 
   inline MultiLineEdit* inputLine() const { return _inputLine; }
 
-  const QFont &currentFont() const;
+  const QFont currentFont() const;
   bool boldText() const;
   bool underlineText() const;
   bool italicText() const;

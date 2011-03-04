@@ -50,12 +50,15 @@ bool ScrollAreaKineticScroller::handleMouseEvent ( QMouseEvent * event )
 #if defined(Q_WS_MAEMO_5)
     return QAbstractKineticScroller::handleMouseEvent(event);
 #else
+    Q_UNUSED(event)
     return false;
 #endif
 }
 
 void ScrollAreaKineticScroller::paintEvent(QPaintEvent *e)
 {
+  Q_UNUSED(e)
+
     if(_showBars && maximumScrollPosition().y() > 0) {
         QPainter p(_scroll->viewport());
         int barThickness = 5;

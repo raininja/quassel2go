@@ -76,6 +76,8 @@ bool ItemViewKineticTapSuppressor::handleMouseEvent(QEvent *event)
         ;
     }
 
+#else
+    Q_UNUSED(event)
 #endif
 
     return false;
