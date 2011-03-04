@@ -53,10 +53,15 @@ ColumnHandleItem::ColumnHandleItem(qreal w, QGraphicsItem *parent)
 }
 
 void ColumnHandleItem::setXPos(qreal xpos) {
+  qreal oldX = x();
+
   setPos(xpos, 0);
   QRectF sceneBRect = _boundingRect.translated(x(), 0);
   _sceneLeft = sceneBRect.left();
   _sceneRight = sceneBRect.right();
+
+  if(x() != oldX)
+    emit positionChanged(x());
 }
 
 void ColumnHandleItem::setXLimits(qreal min, qreal max) {

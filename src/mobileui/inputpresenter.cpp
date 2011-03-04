@@ -179,7 +179,6 @@ BufferInfo InputPresenter::currentBufferInfo() const {
 };
 
 void InputPresenter::textEntered(const QString &text) {
-  qDebug() << "textEntered";
   Client::userInput(currentBufferInfo(), text);
 
   // TODO check wether inputLine->property sync works

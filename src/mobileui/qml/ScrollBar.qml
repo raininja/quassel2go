@@ -10,7 +10,7 @@ Item {
     //anchors.right: scrollArea.right
     // anchors.margins: 1
     x: scrollbar.orientation == Qt.Vertical ? (scrollArea.width - width -2) : scrollArea.visibleArea.xPosition * scrollArea.width
-    y: scrollbar.orientation == Qt.Vertical ? scrollArea.visibleArea.yPosition * scrollArea.height : (scrollArea.height - heght +2)
+    y: scrollbar.orientation == Qt.Vertical ? scrollArea.visibleArea.yPosition * scrollArea.height : (scrollArea.height - height +2)
     width: scrollbar.orientation == Qt.Vertical ? 10 : scrollArea.visibleArea.widthRatio * scrollArea.width
     height: scrollbar.orientation == Qt.Vertical ? scrollArea.visibleArea.heightRatio * scrollArea.height : 10
     opacity: 0.0
@@ -21,7 +21,7 @@ Item {
         radius: (height < 4 || width < 4) ? 0 : 2
         border.width: 1
         border.color: "white"
-        opacity: 0.85
+        opacity: 0.5
     }
 
     states: State {

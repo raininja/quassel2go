@@ -13,6 +13,8 @@ QmlContextObject::QmlContextObject(QObject *parent) :
   _fullScreen(false),
   _allBuffersModel(new QmlSectionProxyModel(this)),
   _channelUsersModel(new QmlSectionProxyModel(this)),
+  _firstColumn(0),
+  _secondColumn(0),
   _currentBufferIndex(-1)
 {
 }
@@ -75,4 +77,26 @@ void QmlContextObject::setCurrentBufferIndex(int index)
 void QmlContextObject::setCurrentBufferModelIndex(const QModelIndex &index)
 {
   setCurrentBufferIndex(_allBuffersModel->mapFromSource(index).row());
+}
+
+void QmlContextObject::zoomIn()
+{
+  emit requestZoomIn();
+}
+
+void QmlContextObject::zoomOut()
+{
+  emit requestZoomOut();
+}
+
+void QmlContextObject::setFirstColumn(QObject *obj)
+{
+  _firstColumn = obj;
+  emit firstColumnChanged();
+}
+
+void QmlContextObject::setSecondColumn(QObject *obj)
+{
+  _secondColumn = obj;
+  emit secondColumnChanged();
 }

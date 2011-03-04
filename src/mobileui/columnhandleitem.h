@@ -31,6 +31,8 @@ class ColumnHandleItem : public QGraphicsObject {
   Q_OBJECT
   Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
 
+  Q_PROPERTY(qreal columnPos READ x WRITE setXPos NOTIFY positionChanged)
+
 public:
   ColumnHandleItem(qreal width, QGraphicsItem *parent = 0);
   virtual inline int type() const { return ChatScene::ColumnHandleType; }

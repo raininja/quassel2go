@@ -20,6 +20,9 @@ class QmlContextObject : public QObject
   Q_PROPERTY(QModelIndex channelUsersRootIndex READ channelUsersRootIndex NOTIFY channelUsersRootIndexChanged)
   Q_PROPERTY(bool fullScreen READ fullScreen WRITE setFullScreen NOTIFY fullScreenChanged)
   Q_PROPERTY(int currentBufferIndex READ currentBufferIndex WRITE setCurrentBufferIndex NOTIFY currentBufferIndexChanged)
+
+  Q_PROPERTY(QObject *firstColumn READ firstColumn NOTIFY firstColumnChanged)
+  Q_PROPERTY(QObject *secondColumn READ secondColumn NOTIFY secondColumnChanged)
 public:
     explicit QmlContextObject(QObject *parent = 0);
 
@@ -29,6 +32,9 @@ public:
   QModelIndex channelUsersRootIndex() const { return _channelUsersRootIndex; }
   int currentBufferIndex() const;
 
+  QObject *firstColumn() const { return _firstColumn; }
+  QObject *secondColumn() const { return _secondColumn; }
+
 signals:
   void fullScreenChanged(bool fullScreen);
   void allBuffersModelChanged();
@@ -36,6 +42,12 @@ signals:
   void channelUsersRootIndexChanged();
   void currentBufferIndexChanged();
   void currentBufferModelIndexChanged(const QModelIndex &index, QItemSelectionModel::SelectionFlags flags);
+
+  void requestZoomIn();
+  void requestZoomOut();
+
+  void firstColumnChanged();
+  void secondColumnChanged();
 
 public slots:
   void setFullScreen(bool fullScreen);
@@ -45,12 +57,20 @@ public slots:
   void setCurrentBufferIndex(int index);
   void setCurrentBufferModelIndex(const QModelIndex &index);
 
+  void setFirstColumn(QObject *obj);
+  void setSecondColumn(QObject *obj);
+
+  void zoomIn();
+  void zoomOut();
+
 protected:
 
 private:
   bool _fullScreen;
   QPointer<QAbstractProxyModel> _allBuffersModel;
   QPointer<QmlSectionProxyModel> _channelUsersModel;
+  QObject* _firstColumn;
+  QObject* _secondColumn;
   QModelIndex _channelUsersRootIndex;
   int _currentBufferIndex;
 };

@@ -48,6 +48,7 @@
 #include "bufferwidget.h"
 #include "channellistdlg.h"
 #include "chatlinemodel.h"
+#include "chatscene.h"
 #include "chatmonitorfilter.h"
 #include "chatmonitorview.h"
 #include "chatview.h"
@@ -56,6 +57,7 @@
 #include "clientbufferviewconfig.h"
 #include "clientbufferviewmanager.h"
 #include "clientignorelistmanager.h"
+#include "columnhandleitem.h"
 #include "coreconfigwizard.h"
 #include "coreconnectdlg.h"
 #include "coreconnection.h"
@@ -247,6 +249,10 @@ void MainWin::init() {
   connect(_nickListWidget, SIGNAL(currentNickRootIndexChanged(QModelIndex)),
           _qmlContextObject, SLOT(setChannelUsersRootIndex(QModelIndex)));
 
+  connect(_qmlContextObject, SIGNAL(requestZoomIn()),
+          _bufferWidget, SLOT(zoomIn()));
+  connect(_qmlContextObject, SIGNAL(requestZoomOut()),
+          _bufferWidget, SLOT(zoomOut()));
 
 
   //#ifndef HAVE_KDE
@@ -1218,6 +1224,11 @@ void MainWin::messagesInserted(const QModelIndex &parent, int start, int end) {
 void MainWin::currentBufferChanged(BufferId buffer) {
   if(buffer.isValid())
     Client::instance()->markBufferAsRead(buffer);
+
+  if(_bufferWidget) {
+    _qmlContextObject->setFirstColumn( _bufferWidget->currentChatView()->scene()->firstColumnHandle() );
+    _qmlContextObject->setSecondColumn( _bufferWidget->currentChatView()->scene()->secondColumnHandle() );
+  }
 }
 
 void MainWin::clientNetworkCreated(NetworkId id) {

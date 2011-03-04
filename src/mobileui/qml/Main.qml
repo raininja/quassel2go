@@ -10,9 +10,6 @@ Rectangle {
 
     color: "#000000"
 
-    property bool chatListDocked: false;
-    property bool nickListDocked: false;
-
     state:"default"
 
     Rectangle {
@@ -43,8 +40,8 @@ Rectangle {
         anchors.top: toolbar.bottom
         anchors.bottom: inputbar.top
 
-        anchors.left: chatListDocked?bufferlist.right:background.left
-        anchors.right: nickListDocked?nicklist.left:background.right
+        anchors.left: background.left
+        anchors.right: background.right
 
         QuasselChatView {
             id: chatview_view
@@ -73,10 +70,68 @@ Rectangle {
           contentHeight: height + (chatview_view.scrollModel.contentsSize.height <= 0 ? 0 : chatview_view.scrollModel.contentsSize.height)
           contentWidth: width
           // boundsBehavior: "DragOverBounds"
+
+          MouseArea {
+            id: chatview_tap
+            property bool tap_on: false
+            anchors.fill: parent
+            onClicked: { tap_on = !tap_on }
+          }
         }
 
         ScrollBar {
+          id: chatview_flickable_scroll
           scrollArea: chatview_flickable
+        }
+
+        Rectangle {
+          // TODO: make a component from this.
+
+          id: chatview_flickable_scroll_handle
+          height: 60
+          width: 60
+          radius: 10
+          border.width: 2
+          border.color: "#ffffff"
+          opacity: 0.00
+          anchors.right: chatview_flickable_scroll.left
+
+          y: chatview_flickable.contentY / (chatview_flickable.contentHeight-chatview_flickable.height) * (chatview_flickable.height-chatview_flickable_scroll_handle.height)
+
+          color: "#000000"
+
+          MouseArea {
+              anchors {
+                  fill: chatview_flickable_scroll_handle
+                  verticalCenter: chatview_flickable_scroll_handle.verticalCenter
+                  horizontalCenter: chatview_flickable_scroll_handle.horizontalCenter
+              }
+
+              drag {
+                  target: chatview_flickable_scroll_handle
+                  axis: Drag.YAxis
+                  minimumY: 0
+                  maximumY: chatview_flickable.height - chatview_flickable_scroll_handle.height
+              }
+
+              onPositionChanged: {
+                chatview_flickable.contentY = chatview_flickable_scroll_handle.y * (chatview_flickable.contentHeight-chatview_flickable.height)  / (chatview_flickable.height-chatview_flickable_scroll_handle.height)
+              }
+              Component.onCompleted: {
+                      chatview_flickable.contentY = Math.max(0, chatview_flickable_scroll_handle.y / chatview_flickable_scroll.height * chatview_flickable.contentHeight)
+              }
+          }
+
+          states: State {
+              name: "visible"
+              when: chatview_flickable.moving
+              PropertyChanges { target: chatview_flickable_scroll_handle; opacity: 0.5 }
+          }
+
+          transitions: Transition {
+              from: "visible"; to: ""
+              NumberAnimation { properties: "opacity"; duration: 600 }
+          }
         }
 
 
@@ -98,6 +153,7 @@ Rectangle {
               id: requestBacklogButton
               text: "Get Older Messages"
               visible: coreConnection.connected && ((chatview_flickable.height >= chatview_view.scrollModel.contentsSize.height) || (chatview_flickable.visibleArea.yPosition < 0.1))
+              height: 40
               anchors.horizontalCenter: parent.horizontalCenter
               anchors.margins: 10
 
@@ -146,11 +202,130 @@ Rectangle {
             }
           }
         }
+
+        Item {
+          id: menuWidget
+          anchors.top: parent.top
+          anchors.left: parent.left
+          anchors.margins: 10
+          width: menuWidget_row.width * 1.2
+          height: menuWidget_row.height * 1.2
+          visible: chatview_tap.tap_on // chatview_flickable_scroll.visible
+
+          Row {
+            id: menuWidget_row
+            spacing: 5
+
+            Button {
+              id: zoomInButton
+              // text: "+"
+              width: 60
+              height: 60
+              onClicked: {
+                ctxt.zoomIn()
+              }
+
+              Image {
+                anchors.centerIn: parent
+                width: 48
+                height: 48
+                source: "image://quassel/pdf_zoomin"
+              }
+            }
+            Button {
+              id: zoomOutButton
+              // text: "-"
+              width: 60
+              height: 60
+              onClicked: {
+                ctxt.zoomOut()
+              }
+
+              Image {
+                anchors.centerIn: parent
+                width: 48
+                height: 48
+                source: "image://quassel/pdf_zoomout"
+              }
+            }
+          }
+        }
+
+        Rectangle {
+          id: columnWidget
+
+          visible: ctxt.firstColumn != undefined && chatview_tap.tap_on
+
+          x: ctxt.firstColumn != undefined ? (ctxt.firstColumn.columnPos-width/2) : 0
+
+          height: 60
+          width: 60
+          radius: 10
+          border.width: 2
+          border.color: "#ffffff"
+          color: "#000000"
+          opacity: 0.50
+          anchors.top: menuWidget.bottom
+          anchors.margins: 10
+
+          Image {
+            anchors.centerIn: parent
+            width: 32
+            height: 32
+            source: "image://quassel/browser_mover"
+          }
+
+          MouseArea {
+              anchors.fill: parent
+              drag {
+                  target: parent
+                  axis: Drag.XAxis
+              }
+              onPositionChanged: {
+                ctxt.firstColumn.columnPos = parent.x + parent.width/2
+              }
+          }
+        }
+        Rectangle {
+          id: columnWidget2
+
+          visible: ctxt.firstColumn != undefined && chatview_tap.tap_on
+
+          x: ctxt.secondColumn != undefined ? (ctxt.secondColumn.columnPos-width/2) : 0
+
+          height: 60
+          width: 60
+          radius: 10
+          border.width: 2
+          border.color: "#ffffff"
+          color: "#000000"
+          opacity: 0.50
+          anchors.top: menuWidget.bottom
+          anchors.margins: 10
+
+          Image {
+            anchors.centerIn: parent
+            width: 32
+            height: 32
+            source: "image://quassel/browser_mover"
+          }
+
+          MouseArea {
+              anchors.fill: parent
+              drag {
+                  target: parent
+                  axis: Drag.XAxis
+              }
+              onPositionChanged: {
+                ctxt.secondColumn.columnPos = parent.x + parent.width/2
+              }
+          }
+        }
     }
 
     Item {
         id: toolbar
-        height: 120
+        height: 100
         width: parent.width
         anchors.left: background.left
         anchors.right: background.right
@@ -184,7 +359,7 @@ Rectangle {
             clip: true
             model: ctxt.allBuffersModel
 
-            boundsBehavior: "DragOverBounds"
+            boundsBehavior: "StopAtBounds"
 
             orientation: "Horizontal"
 
@@ -258,20 +433,10 @@ Rectangle {
 
           Item {
               id: topicbar
-              height: 60
+              height: 40
               width: parent.width
               x: parent.x
               y: parent.y // parent.y - height
-
-              ToolButton {
-                  id: nicksBtn
-                  // text: "Nicks"
-                  icon: "image://quassel/general_contacts_button" // general_conference_avatar
-                  height: parent.height
-                  anchors.right: parent.right
-                  anchors.top: parent.top
-                  onClicked: background.state="showNickList"
-              }
 
               Text {
                   id: topicText
@@ -287,7 +452,7 @@ Rectangle {
                   anchors.top:  parent.top
                   anchors.bottom: parent.bottom
                   anchors.left: parent.left
-                  anchors.right: nicksBtn.left
+                  anchors.right: parent.right // nicksBtn.left
 
                   MouseArea {
                       anchors.fill: parent
@@ -296,24 +461,6 @@ Rectangle {
               }
           }
         }
-
-//        states: [
-//            State {
-//                name: "showChatList";
-//                PropertyChanges { target: topicbar; y:parent.y-parent.height}
-//                PropertyChanges { target: chatlistbar; y:parent.y}
-//            },
-//            State {
-//                name: "showNickList";
-//                PropertyChanges { target: topicbar; y:parent.y-parent.height}
-//                PropertyChanges { target: nicklistbar; y:parent.y}
-//            }
-//        ]
-
-
-//        transitions: [
-//            Transition { NumberAnimation { properties: "x,y,opacity"; duration: 150; easing.type: Easing.InOutQuad } }
-//        ]
 
         transitions: [
             Transition {
@@ -326,22 +473,10 @@ Rectangle {
                         properties: "y,x"
                     }
 
-                    NumberAnimation {
-                        duration: 150
-                        easing.type: Easing.InOutQuad
-                        targets: [nicklistbar, chatlistbar]
-                        properties: "y,x"
-                    }
                 }
             },
             Transition {
                 to: "default"
-                NumberAnimation {
-                    duration: 150
-                    easing.type: Easing.InOutQuad
-                    targets: [nicklistbar, chatlistbar]
-                    properties: "y"
-                }
                 SequentialAnimation {
                     NumberAnimation {
                         duration: 150
@@ -396,7 +531,7 @@ Rectangle {
     Item {
         id: inputbar
 //        color: "#99ff99"
-        height: 60
+        height: quassel_input_widget.height > 60 ? quassel_input_widget.height : 60
         width: parent.width
         y: parent.y+parent.height-height
         // opacity: 0.6
@@ -407,19 +542,19 @@ Rectangle {
         QuasselNickWidget {
           id: quassel_nick_widget
           anchors.top: parent.top
-          height: parent.height
           anchors.left: parent.left
+          anchors.bottom: parent.bottom
           width: parent.width * 0.2
         }
 
         QuasselInputWidget {
           id: quassel_input_widget
           //anchors.top: parent.top
-          y: parent.height > quassel_input_widget.heightHint ? 0 : (parent.height - quassel_input_widget.heightHint)
-          height: parent.height > quassel_input_widget.heightHint ? parent.height : quassel_input_widget.heightHint
-          Behavior on y {
-            NumberAnimation { duration: 200 }
-          }
+          y: 0 // parent.height > quassel_input_widget.heightHint ? 0 : (parent.height - quassel_input_widget.heightHint)
+          height: 60 > quassel_input_widget.heightHint ? 60 : quassel_input_widget.heightHint
+//          Behavior on y {
+//            NumberAnimation { duration: 200 }
+//          }
           Behavior on height {
             NumberAnimation { duration: 200 }
           }
@@ -430,211 +565,18 @@ Rectangle {
 
         Row {
           id: rightInputBtnRow
-          anchors.top: parent.top
+          anchors.bottom: parent.bottom
           anchors.right: parent.right
-          height: parent.height
+          height: 60
           // TODO: actions for zoomin/zoomout
           ToolButton {
             icon: "image://quassel/general_fullsize"
             onClicked: { ctxt.fullScreen = !ctxt.fullScreen; }
           }
         }
-
-//        Button {
-//            id: nickSelectBtn
-//            text: "nick"
-//            height: parent.height
-//            anchors.left: parent.left
-//            anchors.top: parent.top
-//            anchors.bottom: parent.bottom
-//        }
-//        Input {
-//            text: "text input"
-//            anchors.right: parent.right
-//            anchors.top: parent.top
-//            anchors.bottom: parent.bottom
-//            anchors.left: nickSelectBtn.right
-//            focus:true
-//        }
-    }
-
-
-
-    Rectangle {
-        id: bufferlist
-        width: 300
-        anchors.top: toolbar.bottom
-        anchors.bottom: inputbar.top
-        x: chatListDocked ? background.x : background.x-width
-        border.width: 1
-
-//        ChatListView {
-//            anchors.fill: parent
-//            model: ctxt.allBuffersModel
-
-//            currentIndex: ctxt.currentBufferIndex
-
-////            MouseArea {
-////                anchors.fill: parent
-////                property int dragStartSize: 0;
-////                property int dragStartX: 0;
-
-////                onPressed: {
-////                  console.log("pressed...");
-////                    dragStartSize = bufferlist.width
-////                    dragStartX = mapToItem(background,mouse.x,0).x
-////                }
-
-////                onReleased: {
-////                    dragStartX = -1
-////                }
-
-////                onMousePositionChanged: {
-////                        bufferlist.width = dragStartSize + (mapToItem(background,mouse.x,0).x - dragStartX)
-////                }
-////            }
-//        }
-    }
-
-    Rectangle {
-        id: bufferlistGrip
-        width: 60
-        anchors.left: bufferlist.right
-        anchors.top: toolbar.bottom
-        anchors.bottom: inputbar.top
-        border.width: 1
-        opacity: 0
-        visible: false
-
-        ToolButton {
-            id: bufferlistGripDockBtn
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.right: parent.right
-            height: toolbar.height
-            icon: "image://quassel/general_locked"
-            // text: "Dock"
-            checked: background.chatListDocked
-            onClicked: {
-                background.chatListDocked = !background.chatListDocked;
-                if(background.chatListDocked){background.state="default";}
-            }
-        }
-        Item {
-            anchors.left: parent.left
-            anchors.top: bufferlistGripDockBtn.bottom
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            Text {
-                anchors.centerIn: parent
-                text: "<>"
-            }
-            MouseArea {
-                anchors.fill: parent
-                property int dragStartSize: 0;
-                property int dragStartX: 0;
-
-                onPressed: {
-                    dragStartSize = bufferlist.width
-                    dragStartX = mapToItem(background,mouse.x,0).x
-                }
-
-                onReleased: {
-                    dragStartX = -1
-                }
-
-                onMousePositionChanged: {
-                        bufferlist.width = dragStartSize + (mapToItem(background,mouse.x,0).x - dragStartX)
-                }
-            }
-        }
-    }
-
-    Rectangle {
-        id: nicklistGrip
-        width: 60
-        anchors.right: nicklist.left
-        anchors.top: toolbar.bottom
-        anchors.bottom: inputbar.top
-        border.width: 1
-        opacity: 0
-        visible: false
-
-        ToolButton {
-            id: nickGripDockBtn
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.right: parent.right
-            height: toolbar.height
-            // text: "Dock"
-            icon: "image://quassel/general_locked"
-            checked: background.nickListDocked
-            onClicked: {
-                background.nickListDocked = !background.nickListDocked;
-                if(background.nickListDocked){background.state="default";}
-            }
-        }
-        Item {
-            anchors.left: parent.left
-            anchors.top: nickGripDockBtn.bottom
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            Text {
-                anchors.centerIn: parent
-                text: "<>"
-            }
-            MouseArea {
-                anchors.fill: parent
-                property int dragStartSize: 0;
-                property int dragStartX: 0;
-
-                onPressed: {
-                    dragStartSize = nicklist.width
-                    dragStartX = mapToItem(background,mouse.x,0).x
-                }
-
-                onReleased: {
-                    dragStartX = -1
-                }
-
-                onMousePositionChanged: {
-                        nicklist.width = dragStartSize - (mapToItem(background,mouse.x,0).x - dragStartX)
-                }
-            }
-        }
-    }
-
-    Rectangle {
-        id: nicklist
-        width: 300
-        anchors.top: toolbar.bottom
-        anchors.bottom: inputbar.top
-        x: nickListDocked ? background.x+background.width-width : background.x+background.width
-        border.width: 1
-
-        NickListView {
-            anchors.fill: parent
-            model:  ctxt.channelUsersModel
-        }
     }
 
     states: [
-        State {
-            name: "showChatList";
-            PropertyChanges { target: toolbar; y:background.y-toolbar.height}
-            PropertyChanges { target: inputbar; y:background.y+background.height}
-            PropertyChanges { target: bufferlist; x: 0; opacity: 0.9; z: 96}
-            PropertyChanges { target: bufferlistGrip; visible: true; opacity: 0.9; z: 96}
-            PropertyChanges { target: modalblur; anchors.left:bufferlistGrip.right; opacity: 0.6}
-        },
-        State {
-            name: "showNickList";
-            PropertyChanges { target: toolbar; y:background.y-toolbar.height}
-            PropertyChanges { target: inputbar; y:background.y+background.height}
-            PropertyChanges { target: nicklist; x: background.x+background.width-nicklist.width; opacity: 0.9; z: 96}
-            PropertyChanges { target: nicklistGrip; visible: true; opacity: 0.9; z: 96}
-            PropertyChanges { target: modalblur; anchors.right:nicklistGrip.left; opacity: 0.6}
-        },
         State {
             name: "TopicEditing";
             PropertyChanges { target: toolbar; y:background.y-toolbar.height}
