@@ -21,10 +21,14 @@ class QmlContextObject : public QObject
   Q_PROPERTY(bool fullScreen READ fullScreen WRITE setFullScreen NOTIFY fullScreenChanged)
   Q_PROPERTY(int currentBufferIndex READ currentBufferIndex WRITE setCurrentBufferIndex NOTIFY currentBufferIndexChanged)
 
+  Q_PROPERTY(bool searchBarVisible READ searchBarVisible NOTIFY searchBarVisibleChanged)
+
   Q_PROPERTY(QObject *firstColumn READ firstColumn NOTIFY firstColumnChanged)
   Q_PROPERTY(QObject *secondColumn READ secondColumn NOTIFY secondColumnChanged)
 public:
     explicit QmlContextObject(QObject *parent = 0);
+
+  void setBufferWidget(class BufferWidget* widget);
 
   bool fullScreen() const { return _fullScreen; }
   QAbstractItemModel* allBuffersModel() const { return _allBuffersModel; }
@@ -34,6 +38,8 @@ public:
 
   QObject *firstColumn() const { return _firstColumn; }
   QObject *secondColumn() const { return _secondColumn; }
+
+  bool searchBarVisible() const;
 
 signals:
   void fullScreenChanged(bool fullScreen);
@@ -49,6 +55,8 @@ signals:
 
   void firstColumnChanged();
   void secondColumnChanged();
+
+  void searchBarVisibleChanged();
 
 public slots:
   void setFullScreen(bool fullScreen);
@@ -75,6 +83,8 @@ private:
   QObject* _secondColumn;
   QModelIndex _channelUsersRootIndex;
   int _currentBufferIndex;
+
+  QPointer<BufferWidget> _bufferWidget;
 };
 
 #endif // QMLCONTEXTOBJECT_H

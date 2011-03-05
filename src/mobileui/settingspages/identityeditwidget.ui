@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>565</width>
-    <height>776</height>
+    <height>850</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -361,8 +361,6 @@
      <zorder>awayNickLabel</zorder>
      <zorder>autoAwayEnabled</zorder>
      <zorder>detachAwayEnabled</zorder>
-     <zorder>autoAwayEnabled</zorder>
-     <zorder>detachAwayEnabled</zorder>
     </widget>
    </item>
    <item>
@@ -424,7 +422,7 @@
          <number>0</number>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="pageNoSsl">
          <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -544,9 +542,9 @@ Proceeding will cause an unencrypted transfer of your SSL Key and SSL Certificat
             <property name="checked">
              <bool>false</bool>
             </property>
-            <layout class="QVBoxLayout" name="verticalLayout_5">
+            <layout class="QVBoxLayout" name="verticalLayout_4">
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <layout class="QHBoxLayout" name="horizontalLayout_7">
                <item>
                 <widget class="QLabel" name="label_6">
                  <property name="text">
@@ -562,7 +560,113 @@ Proceeding will cause an unencrypted transfer of your SSL Key and SSL Certificat
                 </widget>
                </item>
                <item>
-                <spacer name="horizontalSpacer_2">
+                <spacer name="horizontalSpacer_6">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QSplitter" name="splitter">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <widget class="QPushButton" name="clearOrLoadKeyButton">
+                <property name="text">
+                 <string>Load</string>
+                </property>
+               </widget>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="sslCertGroupBox">
+            <property name="title">
+             <string>Use SSL Certificate</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="0" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <property name="spacing">
+                <number>8</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_9">
+                 <property name="text">
+                  <string>Organisation:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="certOrgLabel">
+                 <property name="text">
+                  <string>No Certificate loaded</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item row="1" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_5">
+               <property name="spacing">
+                <number>8</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="label_10">
+                 <property name="text">
+                  <string>CommonName:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="certCNameLabel">
+                 <property name="text">
+                  <string>No Certificate loaded</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_5">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_6">
+               <item>
+                <spacer name="verticalSpacer_2">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
                  </property>
@@ -575,122 +679,11 @@ Proceeding will cause an unencrypted transfer of your SSL Key and SSL Certificat
                 </spacer>
                </item>
                <item>
-                <widget class="QPushButton" name="clearOrLoadKeyButton">
-                 <property name="text">
-                  <string>Load</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item>
-           <widget class="QGroupBox" name="sslCertGroupBox">
-            <property name="title">
-             <string>Use SSL Certificate</string>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_10">
-               <property name="spacing">
-                <number>0</number>
-               </property>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_4">
-                 <property name="spacing">
-                  <number>8</number>
-                 </property>
-                 <item>
-                  <widget class="QLabel" name="label_9">
-                   <property name="text">
-                    <string>Organisation:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="certOrgLabel">
-                   <property name="text">
-                    <string>No Certificate loaded</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacer_4">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_5">
-                 <property name="spacing">
-                  <number>8</number>
-                 </property>
-                 <item>
-                  <widget class="QLabel" name="label_10">
-                   <property name="text">
-                    <string>CommonName:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="certCNameLabel">
-                   <property name="text">
-                    <string>No Certificate loaded</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacer_5">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QVBoxLayout" name="verticalLayout_14">
-               <item>
                 <widget class="QPushButton" name="clearOrLoadCertButton">
                  <property name="text">
                   <string>Load</string>
                  </property>
                 </widget>
-               </item>
-               <item>
-                <spacer name="verticalSpacer_2">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
                </item>
               </layout>
              </item>
@@ -704,22 +697,12 @@ Proceeding will cause an unencrypted transfer of your SSL Key and SSL Certificat
      </layout>
      <zorder>ident</zorder>
      <zorder>label_2</zorder>
-     <zorder>kickReason</zorder>
-     <zorder>label_4</zorder>
-     <zorder>groupBox_6</zorder>
-     <zorder>label_5</zorder>
      <zorder>quitReason</zorder>
-     <zorder>partReason</zorder>
-     <zorder>label_3</zorder>
-     <zorder>quitReason</zorder>
-     <zorder>sslCertGroupBox</zorder>
      <zorder>label_4</zorder>
      <zorder>label_5</zorder>
-     <zorder>sslKeyGroupBox</zorder>
      <zorder>kickReason</zorder>
      <zorder>label_3</zorder>
      <zorder>partReason</zorder>
-     <zorder></zorder>
      <zorder>keyAndCertSettings</zorder>
     </widget>
    </item>
@@ -741,8 +724,6 @@ Proceeding will cause an unencrypted transfer of your SSL Key and SSL Certificat
   <tabstop>partReason</tabstop>
   <tabstop>quitReason</tabstop>
   <tabstop>continueUnsecured</tabstop>
-  <tabstop>clearOrLoadKeyButton</tabstop>
-  <tabstop>clearOrLoadCertButton</tabstop>
  </tabstops>
  <resources/>
  <connections/>

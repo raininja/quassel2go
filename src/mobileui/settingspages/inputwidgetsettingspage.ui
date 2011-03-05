@@ -74,38 +74,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QCheckBox" name="showNickSelector">
-     <property name="text">
-      <string>Show nick selector</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-     <property name="settingsKey" stdset="0">
-      <string notr="true">ShowNickSelector</string>
-     </property>
-     <property name="defaultValue" stdset="0">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="showStyleButtons">
-     <property name="text">
-      <string>Show style buttons</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-     <property name="settingsKey" stdset="0">
-      <string notr="true">ShowStyleButtons</string>
-     </property>
-     <property name="defaultValue" stdset="0">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QCheckBox" name="enableEmacsMode">
      <property name="toolTip">
       <string>Enables (limited) Emacs key bindings in the input field.</string>
@@ -283,7 +251,6 @@
  <tabstops>
   <tabstop>customFont</tabstop>
   <tabstop>enableSpellCheck</tabstop>
-  <tabstop>showNickSelector</tabstop>
   <tabstop>groupBox</tabstop>
   <tabstop>maxNumLines</tabstop>
   <tabstop>enableScrollBars</tabstop>

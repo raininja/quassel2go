@@ -12,7 +12,7 @@ class QmlChatView : public QGraphicsProxyWidget
 
   Q_PROPERTY(QWidget *widget READ widget WRITE setWidget NOTIFY widgetChanged)
   Q_PROPERTY(QmlScrollModel *scrollModel READ scrollModel NOTIFY scrollModelChanged);
-  Q_PROPERTY(bool focus READ hasFocus WRITE setWidgetFocus NOTIFY widgetFocusChanged)
+  Q_PROPERTY(bool focus READ hasFocus NOTIFY widgetFocusChanged) //  WRITE setWidgetFocus
 
 public:
     explicit QmlChatView(QWidget *parent = 0);

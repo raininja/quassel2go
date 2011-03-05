@@ -699,59 +699,65 @@ Rectangle {
         id: topicTextFull
 
         color: "#ffffff"
-        ///border.width: 1
         radius: 5
 
         y: topicText.y
         anchors.fill: background
-        anchors.margins: 60
+        anchors.margins: 100
         opacity: 0
         visible: false
 
-        MouseArea {
-            anchors.fill: topicTextFull
-            onClicked: { background.state="default"; }
+        Connections {
+          target: topicModel
+          onCurrentTopicChanged: {
+            topicTextFullTextEdit = topicModel.currentTopic
+          }
         }
 
-        Column {
-            id: topicTextFullTextLayout
-            anchors.fill: parent
+        TextEdit {
+          id: topicTextFullTextEdit
+          anchors.verticalCenter: parent.verticalCenter
+          anchors.top:  parent.top
+          anchors.left:  parent.left
+          anchors.right: parent.right
+          anchors.bottom: topicTextFullBtnEdit.top
+          anchors.margins: 10
+          wrapMode: "WordWrap"
+          text: topicModel.currentTopic
+          width: parent.width
+          enabled: false
+        }
+
+        Button {
+            id: topicTextFullBtnEdit
+            visible: !topicTextFullTextEdit.enabled && !topicModel.readOnly
+            height: 60
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
             anchors.margins: 10
-            width: parent.width
-            spacing: 10
-            Text {
-                id: topicTextFullText
-                text: topicModel.currentTopic
-                width: parent.width
-                wrapMode: Text.WordWrap
-            }
-            TextInput {
-              id: topicTextFullTextEdit
-              text: topicModel.currentTopic
-              width: parent.width
-              visible: false
-            }
+            text: "Edit"
+            iconSource: "image://quassel/edit-rename"
 
-            Button {
-                id: topicTextFullBtn
-                visible: topicModel.readOnly
-                height: 60
-                text: "Edit"
-                iconSource: "image://quassel/edit-rename"
+            onClicked: {
+                topicTextFullTextEdit.enabled = true
+              topicTextFullTextEdit.focus = true
+            }
+        }
 
-                onClicked: {
-                  if(text == "Edit") {
-                    topicTextFullTextEdit.text = topicModel.currentTopic
-                    topicTextFullText.visible = false
-                    topicTextFullTextEdit.visible = true
-                    topicTextFullBtn.text = "Save"
-                  } else {
-                    topicModel.currentTopic = topicTextFullTextEdit.text
-                    topicTextFullText.visible = true
-                    topicTextFullTextEdit.visible = false
-                    topicTextFullBtn.text = "Edit"
-                  }
-                }
+        Button {
+            id: topicTextFullBtnSave
+            visible: topicTextFullTextEdit.enabled && !topicModel.readOnly
+            height: 60
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.margins: 10
+            text: "Save"
+            iconSource: "image://quassel/edit-rename"
+
+            onClicked: {
+              topicModel.currentTopic = topicTextFullTextEdit.text
+                topicTextFullTextEdit.enabled = false
+                background.state="default"
             }
         }
     }
@@ -759,13 +765,9 @@ Rectangle {
 
       Item {
         id: inputbar
-        //        color: "#99ff99"
         height: quassel_input_widget.height > 60 ? quassel_input_widget.height : 60
         width: parent.width
         y: parent.y+parent.height-height
-        // opacity: 0.6
-        // border.width: 1
-
 
         z: 99
 
@@ -811,12 +813,17 @@ Rectangle {
     states: [
         State {
             name: "TopicEditing";
-            PropertyChanges { target: toolbar; y:background.y-toolbar.height}
-            PropertyChanges { target: inputbar; y:background.y+background.height}
+//            PropertyChanges { target: toolbar; y:background.y-toolbar.height}
+//            PropertyChanges { target: inputbar; y:background.y+background.height}
             PropertyChanges { target: toolbar; state: "TopicEditing"}
             PropertyChanges { target: topicTextFull; y: background.y+10; visible: true; opacity:0.9;  z: 199}
             PropertyChanges { target: modalblur; anchors.top: background.top; opacity: 0.6; z: 198}
-        }
+        },
+      State {
+          name: "SearchBarVisible";
+          when: ctxt.searchBarVisible
+            PropertyChanges { target: inputbar; y:background.y+background.height}
+      }
     ]
     transitions: [
         Transition { NumberAnimation { properties: "x,y,opacity"; duration: 150; easing.type: Easing.InOutQuad } }

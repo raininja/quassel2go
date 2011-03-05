@@ -3,6 +3,8 @@
 #include <QWidget>
 #include <QDebug>
 
+#include "bufferwidget.h"
+
 #include "qmlsectionproxymodel.h"
 
 #include "qmlcontextobject.h"
@@ -15,8 +17,30 @@ QmlContextObject::QmlContextObject(QObject *parent) :
   _channelUsersModel(new QmlSectionProxyModel(this)),
   _firstColumn(0),
   _secondColumn(0),
-  _currentBufferIndex(-1)
+  _currentBufferIndex(-1),
+  _bufferWidget(0)
 {
+}
+
+void QmlContextObject::setBufferWidget(class BufferWidget* widget)
+{
+  if(_bufferWidget) {
+    disconnect(_bufferWidget);
+  }
+
+  _bufferWidget = widget;
+
+  if(_bufferWidget) {
+    connect(_bufferWidget, SIGNAL(searchBarVisibleChanged()), this, SIGNAL(searchBarVisibleChanged()));
+  }
+}
+
+bool QmlContextObject::searchBarVisible() const
+{
+  if(!_bufferWidget)
+    return false;
+
+  return _bufferWidget->searchBarVisible();
 }
 
 void QmlContextObject::setFullScreen(bool fullScreen)

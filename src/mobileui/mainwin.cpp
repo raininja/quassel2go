@@ -233,6 +233,7 @@ void MainWin::init() {
 #endif
   _declarativeView->setResizeMode(QDeclarativeView::SizeRootObjectToView);
   _qmlContextObject = new QmlContextObject(_declarativeView);
+  _qmlContextObject->setBufferWidget(_bufferWidget);
   _declarativeView->rootContext()->setContextObject(_qmlContextObject);
   _declarativeView->rootContext()->setContextProperty("ctxt", _qmlContextObject);
   _declarativeView->rootContext()->setContextProperty("coreConnection", Client::coreConnection());
@@ -1087,7 +1088,7 @@ void MainWin::showSettingsDlg() {
   dlg->registerSettingsPage(new ItemViewSettingsPage(dlg));
   dlg->registerSettingsPage(new BufferViewSettingsPage(dlg));
   dlg->registerSettingsPage(new InputWidgetSettingsPage(dlg));
-  dlg->registerSettingsPage(new TopicWidgetSettingsPage(dlg));
+  // dlg->registerSettingsPage(new TopicWidgetSettingsPage(dlg));
   dlg->registerSettingsPage(new HighlightSettingsPage(dlg));
   dlg->registerSettingsPage(new NotificationsSettingsPage(dlg));
   dlg->registerSettingsPage(new BacklogSettingsPage(dlg));

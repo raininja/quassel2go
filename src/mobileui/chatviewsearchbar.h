@@ -48,6 +48,7 @@ public slots:
 signals:
   void searchChanged(const QString &);
   void hidden();
+  void visibilityChanged();
 
 private slots:
   void delaySearch();

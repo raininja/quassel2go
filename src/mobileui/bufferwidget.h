@@ -35,6 +35,7 @@ class BufferWidget : public AbstractBufferContainer {
 
   Q_PROPERTY(BufferId currentBuffer READ currentBuffer NOTIFY currentIdChanged)
   Q_PROPERTY(ChatView *currentChatView READ currentChatView NOTIFY currentChatViewChanged)
+  Q_PROPERTY(bool searchBarVisible READ searchBarVisible NOTIFY searchBarVisibleChanged)
 
 public:
   BufferWidget(QWidget *parent);
@@ -46,6 +47,8 @@ public:
   void addActionsToMenu(QMenu *, const QPointF &pos);
 
   ChatView *currentChatView() const;
+
+  bool searchBarVisible() const { return searchBar()->isVisible(); }
 
 public slots:
   virtual void setMarkerLine(ChatView *view = 0, bool allowGoingBack = true);
@@ -71,6 +74,8 @@ private slots:
 signals:
   void currentIdChanged(BufferId id);
   void currentChatViewChanged(ChatView *view);
+
+  void searchBarVisibleChanged();
 
 private:
   Ui::BufferWidget ui;
