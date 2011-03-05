@@ -26,16 +26,18 @@ void QmlScrollModel::setScrollArea(QAbstractScrollArea *scrollArea)
 
   // connect
   _scrollArea = scrollArea;
-  if(_scrollArea->horizontalScrollBar()) {
-    connect(_scrollArea->horizontalScrollBar(), SIGNAL(rangeChanged(int,int)), this, SIGNAL(contentsSizeChanged()));
-    connect(_scrollArea->horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SIGNAL(horizontalPositionChanged()));
-  }
-  if(_scrollArea->verticalScrollBar()) {
-    connect(_scrollArea->verticalScrollBar(), SIGNAL(rangeChanged(int,int)), this, SIGNAL(contentsSizeChanged()));
-    connect(_scrollArea->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SIGNAL(verticalPositionChanged()));
-  }
+  if(_scrollArea) {
+    if(_scrollArea->horizontalScrollBar()) {
+      connect(_scrollArea->horizontalScrollBar(), SIGNAL(rangeChanged(int,int)), this, SIGNAL(contentsSizeChanged()));
+      connect(_scrollArea->horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SIGNAL(horizontalPositionChanged()));
+    }
+    if(_scrollArea->verticalScrollBar()) {
+      connect(_scrollArea->verticalScrollBar(), SIGNAL(rangeChanged(int,int)), this, SIGNAL(contentsSizeChanged()));
+      connect(_scrollArea->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SIGNAL(verticalPositionChanged()));
+    }
 
-  _scrollArea->viewport()->installEventFilter(this);
+    _scrollArea->viewport()->installEventFilter(this);
+  }
 
   // notify
   emit contentsSizeChanged();
@@ -139,7 +141,7 @@ QSize QmlScrollModel::contentsSize() const
 
 bool QmlScrollModel::eventFilter(QObject *object, QEvent *event)
 {
-  if(!object || !event || object != _scrollArea->viewport())
+  if(!object || !event || !_scrollArea || object != _scrollArea->viewport())
     return false;
 
   switch(event->type()) {

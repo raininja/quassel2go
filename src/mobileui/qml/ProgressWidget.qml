@@ -19,6 +19,7 @@ Item {
 
   Row {
     anchors.fill:  parent
+    anchors.margins: 10
     spacing: 10
 
     Rectangle {

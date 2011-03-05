@@ -126,6 +126,7 @@ Rectangle {
           }
 
           MouseArea {
+            id: chatview_flickable_scroll_handle_mouse
               anchors {
                   fill: chatview_flickable_scroll_handle
                   verticalCenter: chatview_flickable_scroll_handle.verticalCenter
@@ -149,7 +150,7 @@ Rectangle {
 
           states: State {
               name: "visible"
-              when: chatview_flickable.moving
+              when: chatview_flickable.moving || chatview_flickable_scroll_handle_mouse.pressed
               PropertyChanges { target: chatview_flickable_scroll_handle; opacity: 1.0 }
           }
 
@@ -171,7 +172,6 @@ Rectangle {
           Column {
             id: statusWidget_col
             anchors.fill: parent
-            anchors.margins: 10
             spacing: 5
 
             Button {
@@ -292,7 +292,7 @@ Rectangle {
 
         states: State {
             name: "visible"
-            when: chatview_tap.pressed
+            when: chatview_tap.pressed || columnWidget.pressed || columnWidget2.pressed
             PropertyChanges { target: menuWidget; opacity: 1.0 }
         }
 
@@ -307,6 +307,8 @@ Rectangle {
 
         Item {
           id: columnWidget
+
+          property bool pressed : columnWidget_mouse.pressed;
 
           visible: (ctxt.firstColumn != undefined) //&& chatview_tap.tap_on
           opacity: menuWidget.opacity
@@ -325,7 +327,7 @@ Rectangle {
             color: "#000000"
             border.width: 1
             border.color: "#ffffff"
-            opacity: 0.8
+            opacity: 0.3
           }
 
           Rectangle {
@@ -344,6 +346,7 @@ Rectangle {
           }
 
           MouseArea {
+            id: columnWidget_mouse
             anchors.fill: columnWidget_rect
             drag {
               target: parent
@@ -366,6 +369,8 @@ Rectangle {
         Item {
           id: columnWidget2
 
+          property bool pressed : columnWidget2_mouse.pressed;
+
           visible: (ctxt.secondColumn != undefined) //&& chatview_tap.tap_on
           opacity: menuWidget.opacity
 
@@ -383,7 +388,7 @@ Rectangle {
             color: "#000000"
             border.width: 1
             border.color: "#ffffff"
-            opacity: 0.8
+            opacity: 0.3
           }
 
           Rectangle {
@@ -402,6 +407,7 @@ Rectangle {
           }
 
           MouseArea {
+            id: columnWidget2_mouse
             anchors.fill: columnWidget2_rect
             drag {
               target: parent
@@ -488,7 +494,19 @@ Rectangle {
           gradient: Gradient {
             GradientStop {
               position: 0.0
-              color: "#666666"
+              color: "#000000"
+            }
+            GradientStop {
+              position: 0.595
+              color: "#101010"
+            }
+            GradientStop {
+              position: 0.6
+              color: "#444444"
+            }
+            GradientStop {
+              position: 0.65
+              color: "#444444"
             }
             GradientStop {
               position:1.0
@@ -515,15 +533,54 @@ Rectangle {
 
             section.property: ""
 
+            highlightMoveSpeed: 800
+            highlight: Item {
+              clip: true
+              height: chatListViewTop.height
+              Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                height: parent.height + 10
+                radius: 10
+
+                gradient: Gradient {
+                  GradientStop {
+                    position: 0.0
+                    color: "#BBBBBB"
+                  }
+                  GradientStop {
+                    position: 0.1
+                    color: "#999999"
+                  }
+                  GradientStop {
+                    position: 0.25
+                    color: "#666666"
+                  }
+                  GradientStop {
+                    position: 0.50
+                    color: "#333333"
+                  }
+                  GradientStop {
+                    position: 0.60
+                    color: "#333333"
+                  }
+                  GradientStop {
+                    position: 0.85
+                    color: "#444444"
+                  }
+                  GradientStop {
+                    position: 1.0
+                    color: "#444444"
+                  }
+                }
+              }
+
+            }
+
             delegate: Item {
               height: chatListViewTop.height
               width: 80
-
-              Rectangle {
-                anchors.fill: parent
-                color: "#000000"
-                visible: chatListViewTop.currentIndex != index
-              }
 
               ListItem {
                 anchors.fill: parent
@@ -699,41 +756,57 @@ Rectangle {
         }
     }
 
-    Item {
+
+      Item {
         id: inputbar
-//        color: "#99ff99"
+        //        color: "#99ff99"
         height: quassel_input_widget.height > 60 ? quassel_input_widget.height : 60
         width: parent.width
         y: parent.y+parent.height-height
         // opacity: 0.6
         // border.width: 1
 
+
         z: 99
 
-        QuasselNickWidget {
-          id: quassel_nick_widget
-          anchors.top: parent.top
-          anchors.left: parent.left
-          anchors.bottom: parent.bottom
-          width: parent.width * 0.2
-        }
-
-        QuasselInputWidget {
-          id: quassel_input_widget
-          //anchors.top: parent.top
-          y: 0 // parent.height > quassel_input_widget.heightHint ? 0 : (parent.height - quassel_input_widget.heightHint)
-          height: 60 > quassel_input_widget.heightHint ? 60 : quassel_input_widget.heightHint
-//          Behavior on y {
-//            NumberAnimation { duration: 200 }
-//          }
-          Behavior on height {
-            NumberAnimation { duration: 200 }
+          QuasselNickWidget {
+            id: quassel_nick_widget
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            width: parent.width * 0.2
           }
-          anchors.left: quassel_nick_widget.right
-          anchors.right: parent.right
-          //anchors.bottom: parent.bottom
+
+          ToolButton {
+            id: quassel_input_widget_completer
+            icon: "image://quassel/general_forward"
+            width: 60
+            anchors.top: parent.top
+            anchors.left: quassel_nick_widget.right
+            anchors.bottom: parent.bottom
+            onClicked: {
+              quassel_input_widget.completeNick();
+            }
+          }
+
+          QuasselInputWidget {
+            id: quassel_input_widget
+            //anchors.top: parent.top
+            y: 0 // parent.height > quassel_input_widget.heightHint ? 0 : (parent.height - quassel_input_widget.heightHint)
+            height: 60 > quassel_input_widget.heightHint ? 60 : quassel_input_widget.heightHint
+            //          Behavior on y {
+            //            NumberAnimation { duration: 200 }
+            //          }
+            focus: true
+
+            Behavior on height {
+              NumberAnimation { duration: 200 }
+            }
+            anchors.left: quassel_input_widget_completer.right
+            anchors.right: parent.right
+
+          }
         }
-    }
 
     states: [
         State {

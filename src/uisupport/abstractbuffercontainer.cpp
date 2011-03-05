@@ -118,5 +118,7 @@ void AbstractBufferContainer::setCurrentBuffer(BufferId bufferId) {
   Client::networkModel()->clearBufferActivity(bufferId);
   Client::setBufferLastSeenMsg(bufferId, _chatViews[bufferId]->lastMsgId());
   Client::backlogManager()->checkForBacklog(bufferId);
-  setFocus();
+
+  // TODO: whis should not be here... what's the effect for quasselclient if it is removed?
+  // setFocus();
 }

@@ -29,7 +29,7 @@ InputPresenter::InputPresenter(MultiLineEdit *input, QObject *parent)
   _inputLine->setMode(MultiLineEdit::MultiLine);
   _inputLine->setPasteProtectionEnabled(true);
 
-  new TabCompleter(_inputLine);
+  _tabCompleter = new TabCompleter(_inputLine);
 
   UiStyleSettings fs("Fonts");
   fs.notify("UseCustomInputWidgetFont", this, SLOT(setUseCustomFont(QVariant)));
@@ -259,4 +259,9 @@ bool InputPresenter::underlineText() const
 bool InputPresenter::italicText() const
 {
   return currentFont().italic();
+}
+
+void InputPresenter::completeNick()
+{
+  _tabCompleter->complete();
 }

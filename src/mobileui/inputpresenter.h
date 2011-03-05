@@ -40,6 +40,8 @@ public slots:
   void setFontUnderline(bool underline);
   void setFontItalic(bool italic);
 
+  void completeNick();
+
 signals:
   void fontChanged(const QFont &font);
 
@@ -72,6 +74,8 @@ private:
   NetworkId _networkId;
   IdentityId _identityId;
   QMenu *_colorMenu, *_colorFillMenu;
+
+  class TabCompleter *_tabCompleter;
 
   void mergeFormatOnSelection(const QTextCharFormat &format);
   QTextCharFormat getFormatOfWordOrSelection();

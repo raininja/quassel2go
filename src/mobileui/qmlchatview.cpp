@@ -65,3 +65,34 @@ void QmlChatView::requestBacklog()
 
   _currentView->scene()->requestBacklog();
 }
+
+void QmlChatView::setWidgetFocus(bool focus)
+{
+  if(focus) {
+    setFocus();
+    if(_bufferWidget)
+      _bufferWidget->setFocus();
+  } else {
+    clearFocus();
+    if(_bufferWidget)
+      _bufferWidget->clearFocus();
+  }
+}
+
+void QmlChatView::focusInEvent ( QFocusEvent * event )
+{
+  emit widgetFocusChanged();
+  QGraphicsProxyWidget::focusInEvent(event);
+}
+
+bool QmlChatView::focusNextPrevChild ( bool next )
+{
+  emit widgetFocusChanged();
+  return QGraphicsProxyWidget::focusNextPrevChild(next);
+}
+
+void QmlChatView::focusOutEvent ( QFocusEvent * event )
+{
+  emit widgetFocusChanged();
+  QGraphicsProxyWidget::focusOutEvent(event);
+}

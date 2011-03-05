@@ -1228,9 +1228,12 @@ void MainWin::currentBufferChanged(BufferId buffer) {
   if(buffer.isValid())
     Client::instance()->markBufferAsRead(buffer);
 
-  if(_bufferWidget) {
+  if(_bufferWidget && _bufferWidget->currentChatView() && _bufferWidget->currentChatView()->scene()) {
     _qmlContextObject->setFirstColumn( _bufferWidget->currentChatView()->scene()->firstColumnHandle() );
     _qmlContextObject->setSecondColumn( _bufferWidget->currentChatView()->scene()->secondColumnHandle() );
+  } else {
+    _qmlContextObject->setFirstColumn(0);
+    _qmlContextObject->setSecondColumn(0);
   }
 }
 
