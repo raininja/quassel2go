@@ -21,11 +21,7 @@ Rectangle {
 
         property int shadowOrientation: 1;
 
-        anchors.top: toolbar.bottom
-        anchors.bottom: inputbar.top
-
-        anchors.left: background.left
-        anchors.right: background.right
+        anchors.fill: parent
 
         MouseArea {
             anchors.fill: parent
@@ -533,7 +529,7 @@ Rectangle {
 
             section.property: ""
 
-            highlightMoveSpeed: 800
+            highlightMoveDuration: 200
             highlight: Item {
               clip: true
               height: chatListViewTop.height
@@ -703,7 +699,7 @@ Rectangle {
 
         y: topicText.y
         anchors.fill: background
-        anchors.margins: 100
+        anchors.margins: 80
         opacity: 0
         visible: false
 
@@ -714,23 +710,29 @@ Rectangle {
           }
         }
 
-        TextEdit {
-          id: topicTextFullTextEdit
-          anchors.verticalCenter: parent.verticalCenter
+        Flickable {
           anchors.top:  parent.top
           anchors.left:  parent.left
           anchors.right: parent.right
           anchors.bottom: topicTextFullBtnEdit.top
           anchors.margins: 10
-          wrapMode: "WordWrap"
-          text: topicModel.currentTopic
-          width: parent.width
-          enabled: false
+          clip: true
+          contentHeight: topicTextFullTextEdit.height < height ? height : topicTextFullTextEdit.height
+          contentWidth: width
+
+          TextEdit {
+            id: topicTextFullTextEdit
+            width: parent.width
+            wrapMode: "WordWrap"
+            verticalAlignment: "AlignVCenter"
+            text: topicModel.currentTopic
+            readOnly: true
+          }
         }
 
         Button {
             id: topicTextFullBtnEdit
-            visible: !topicTextFullTextEdit.enabled && !topicModel.readOnly
+            visible: topicTextFullTextEdit.readOnly && !topicModel.readOnly
             height: 60
             anchors.right: parent.right
             anchors.bottom: parent.bottom
@@ -739,14 +741,14 @@ Rectangle {
             iconSource: "image://quassel/edit-rename"
 
             onClicked: {
-                topicTextFullTextEdit.enabled = true
+                topicTextFullTextEdit.readOnly = false
               topicTextFullTextEdit.focus = true
             }
         }
 
         Button {
             id: topicTextFullBtnSave
-            visible: topicTextFullTextEdit.enabled && !topicModel.readOnly
+            visible: !topicTextFullTextEdit.readOnly && !topicModel.readOnly
             height: 60
             anchors.right: parent.right
             anchors.bottom: parent.bottom
@@ -756,7 +758,7 @@ Rectangle {
 
             onClicked: {
               topicModel.currentTopic = topicTextFullTextEdit.text
-                topicTextFullTextEdit.enabled = false
+                topicTextFullTextEdit.readOnly = true
                 background.state="default"
             }
         }
@@ -817,7 +819,7 @@ Rectangle {
 //            PropertyChanges { target: inputbar; y:background.y+background.height}
             PropertyChanges { target: toolbar; state: "TopicEditing"}
             PropertyChanges { target: topicTextFull; y: background.y+10; visible: true; opacity:0.9;  z: 199}
-            PropertyChanges { target: modalblur; anchors.top: background.top; opacity: 0.6; z: 198}
+            PropertyChanges { target: modalblur; opacity: 0.6; z: 198}
         },
       State {
           name: "SearchBarVisible";
