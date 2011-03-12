@@ -79,8 +79,8 @@ private:
   bool _fullScreen;
   QPointer<QAbstractProxyModel> _allBuffersModel;
   QPointer<QmlSectionProxyModel> _channelUsersModel;
-  QObject* _firstColumn;
-  QObject* _secondColumn;
+  QPointer<QObject> _firstColumn;
+  QPointer<QObject> _secondColumn;
   QModelIndex _channelUsersRootIndex;
   int _currentBufferIndex;
 

@@ -98,12 +98,8 @@ void QmlScrollModel::setVerticalPosition(int pos)
       scrollRangeY() <= 0)
     return;
 
-  // qDebug() << "QmlScrollModel::setVerticalPosition" << pos;
-
   int scrollPos = (pos + _scrollArea->verticalScrollBar()->minimum());
   _scrollArea->verticalScrollBar()->setValue(scrollPos);
-
-  // qDebug() << "     ->" << verticalPosition();
 }
 
 QPoint QmlScrollModel::viewportPosition() const

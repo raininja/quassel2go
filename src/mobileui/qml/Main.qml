@@ -46,12 +46,12 @@ Rectangle {
             anchors.top: parent.top
             anchors.bottom:parent.bottom
 
-            //scrollModel.verticalPosition: chatview_flickable.visibleArea.yPosition * chatview_flickable.contentHeight
-
             scrollModel.verticalPosition: chatview_flickable.contentY
             scrollModel.onVerticalPositionChanged: { if(!chatview_flickable.flicking && !chatview_flickable.moving) { chatview_flickable.contentY = scrollModel.verticalPosition } }
 
-            // pos: (chatview_flickable.visibleArea.yPosition < 0.1 ? 0.1 : chatview_flickable.visibleArea.yPosition) * chatview_flickable.contentHeight
+//            scrollModel.onContentsSizeChanged: {
+//              console.log: "contentsSizeChanged"
+//            }
         }
 
         Flickable {
@@ -63,7 +63,7 @@ Rectangle {
           //anchors.bottom: parent.bottom
           height: chatview_view.scrollModel.viewportSize.height
           width: chatview_view.scrollModel.viewportSize.width
-          contentHeight: height + (chatview_view.scrollModel.contentsSize.height <= 0 ? 0 : chatview_view.scrollModel.contentsSize.height)
+          contentHeight: height + (chatview_view.scrollModel.contentsSize.height <= 0 ? 1 : chatview_view.scrollModel.contentsSize.height)
           contentWidth: width
           // boundsBehavior: "DragOverBounds"
 

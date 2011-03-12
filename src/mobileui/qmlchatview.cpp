@@ -60,7 +60,7 @@ void QmlChatView::currentChatViewChanged(ChatView *view)
 
 void QmlChatView::requestBacklog()
 {
-  if(!_currentView)
+  if(!_currentView || !_currentView->scene())
     return;
 
   _currentView->scene()->requestBacklog();

@@ -2,6 +2,7 @@
 #define QMLSCROLLMODEL_H
 
 #include <QObject>
+#include <QPointer>
 #include <QAbstractScrollArea>
 
 class QAbstractScrollArea;
@@ -43,7 +44,7 @@ signals:
 private:
     int scrollRangeX() const;
     int scrollRangeY() const;
-    QAbstractScrollArea *_scrollArea;
+    QPointer<QAbstractScrollArea> _scrollArea;
 };
 
 #endif // QMLSCROLLMODEL_H
