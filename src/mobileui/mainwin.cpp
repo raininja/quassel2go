@@ -42,7 +42,7 @@
 #include "actioncollection.h"
 #include "bufferhotlistfilter.h"
 #include "buffermodel.h"
-#include "mobilebufferview.h"
+#include "mobilebufferviewwindow.h"
 #include "bufferviewoverlay.h"
 #include "bufferviewoverlayfilter.h"
 #include "bufferwidget.h"
@@ -569,31 +569,24 @@ void MainWin::addBufferView(ClientBufferViewConfig *config) {
   config->setLocked(true);
 
   //create the view and initialize it's filter
-  MobileBufferView *view = new MobileBufferView(this);
+  MobileBufferViewWindow *view = new MobileBufferViewWindow(this);
 
   view->setWindowFlags(view->windowFlags() | Qt::Window);
 #if defined(Q_WS_MAEMO_5)
   view->setAttribute(Qt::WA_Maemo5StackedWindow);
 #endif
 
-  view->setFilteredModel(Client::bufferModel(), config);
+  view->view()->setFilteredModel(Client::bufferModel(), config);
   // view->installEventFilter(_inputWidget); // for key presses
 
   menuBar()->addAction(view->toggleVisibleAction() );
+  connect(view, SIGNAL(requestActivation(int)), this, SLOT(setActiveBufferView(int)));
 
-  Client::bufferModel()->synchronizeView(view);
+  Client::bufferModel()->synchronizeView(view->view());
 
   view->setVisible(_layoutLoaded);
 
   _bufferViews.append(view);
-
-  if(_bufferViews.count() == 1) {
-    _qmlContextObject->setAllBuffersModel(view->model());
-    connect(view->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-            _qmlContextObject, SLOT(setCurrentBufferModelIndex(QModelIndex)));
-    connect(_qmlContextObject, SIGNAL(currentBufferModelIndexChanged(QModelIndex, QItemSelectionModel::SelectionFlags)),
-            view->selectionModel(), SLOT(setCurrentIndex(QModelIndex,QItemSelectionModel::SelectionFlags)));
-  }
 
   if(!activeBufferView())
     nextBufferView();
@@ -601,21 +594,20 @@ void MainWin::addBufferView(ClientBufferViewConfig *config) {
 
 void MainWin::removeBufferView(int bufferViewConfigId) {
   QVariant actionData;
-  MobileBufferView *view;
+  MobileBufferViewWindow *view;
   foreach(QAction *action, menuBar()->actions()) {
     actionData = action->data();
     if(!actionData.isValid())
       continue;
 
-    view = qobject_cast<MobileBufferView *>(action->parent());
+    view = qobject_cast<MobileBufferViewWindow *>(action->parent());
     if(view && actionData.toInt() == bufferViewConfigId) {
       removeAction(action);
-      Client::bufferViewOverlay()->removeView(view->config()->bufferViewId() );
+      Client::bufferViewOverlay()->removeView(view->view()->config()->bufferViewId() );
       _bufferViews.removeAll(view);
 
       if(view->isActive()) {
-        view->setActive(false);
-        _activeBufferViewIndex = -1;
+        setActiveBufferView(-1);
         nextBufferView();
       }
 
@@ -632,7 +624,7 @@ void MainWin::bufferViewToggled(bool enabled) {
   }
   QAction *action = qobject_cast<QAction *>(sender());
   Q_ASSERT(action);
-  MobileBufferView *view = qobject_cast<MobileBufferView *>(action->parent());
+  MobileBufferViewWindow *view = qobject_cast<MobileBufferViewWindow *>(action->parent());
   Q_ASSERT(view);
 
   // Make sure we don't toggle backlog fetch for a view we've already removed
@@ -640,51 +632,74 @@ void MainWin::bufferViewToggled(bool enabled) {
     return;
 
   if(enabled)
-    Client::bufferViewOverlay()->addView(view->config()->bufferViewId());
+    Client::bufferViewOverlay()->addView(view->view()->config()->bufferViewId());
   else
-    Client::bufferViewOverlay()->removeView(view->config()->bufferViewId());
+    Client::bufferViewOverlay()->removeView(view->view()->config()->bufferViewId());
 }
 
-MobileBufferView *MainWin::allBuffersView() const {
+MobileBufferViewWindow *MainWin::allBuffersView() const {
   // "All Buffers" is always the first buffer created
   if(_bufferViews.count() > 0)
     return _bufferViews[0];
   return 0;
 }
 
-MobileBufferView *MainWin::activeBufferView() const {
+MobileBufferViewWindow *MainWin::activeBufferView() const {
   if(_activeBufferViewIndex < 0 || _activeBufferViewIndex >= _bufferViews.count())
     return 0;
-  MobileBufferView *view = _bufferViews.at(_activeBufferViewIndex);
+  MobileBufferViewWindow *view = _bufferViews.at(_activeBufferViewIndex);
   return view->isActive() ? view : 0;
+}
+
+bool MainWin::setActiveBufferView(int bufferViewId)
+{
+  MobileBufferViewWindow *current = activeBufferView();
+  if(current) {
+    current->setActive(false);
+    _activeBufferViewIndex = -1;
+
+    // qml disconnect
+    _qmlContextObject->setAllBuffersModel(0);
+    disconnect(current->view()->selectionModel(), 0, _qmlContextObject, 0);
+    disconnect(_qmlContextObject, 0, current->view()->selectionModel(), 0);
+  }
+
+  if(bufferViewId < 0)
+    return false;
+
+  for(int i = 0; i < _bufferViews.count(); i++) {
+    MobileBufferViewWindow *view = _bufferViews.at(i);
+    if(view->view()->config()->bufferViewId() == bufferViewId/* && !view->isHidden()*/) {
+      _activeBufferViewIndex = i;
+      view->setActive(true);
+
+      // qml connect
+      _qmlContextObject->setAllBuffersModel(view->view()->model());
+      connect(view->view()->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+              _qmlContextObject, SLOT(setCurrentBufferModelIndex(QModelIndex)));
+      connect(_qmlContextObject, SIGNAL(currentBufferModelIndexChanged(QModelIndex, QItemSelectionModel::SelectionFlags)),
+              view->view()->selectionModel(), SLOT(setCurrentIndex(QModelIndex,QItemSelectionModel::SelectionFlags)));
+
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void MainWin::changeActiveBufferView(int bufferViewId) {
   if(bufferViewId < 0)
     return;
 
-  MobileBufferView *current = activeBufferView();
-  if(current) {
-    current->setActive(false);
-    _activeBufferViewIndex = -1;
+  if(!setActiveBufferView(bufferViewId)) {
+    nextBufferView(); // fallback
   }
-
-  for(int i = 0; i < _bufferViews.count(); i++) {
-    MobileBufferView *view = _bufferViews.at(i);
-    if(view->config()->bufferViewId() == bufferViewId && !view->isHidden()) {
-      _activeBufferViewIndex = i;
-      view->setActive(true);
-      return;
-    }
-  }
-
-  nextBufferView(); // fallback
 }
 
 void MainWin::changeActiveBufferView(bool backwards) {
-  MobileBufferView *current = activeBufferView();
-  if(current)
-    current->setActive(false);
+  int curIndex = _activeBufferViewIndex;
+
+  setActiveBufferView(-1);
 
   if(!_bufferViews.count())
     return;
@@ -692,20 +707,16 @@ void MainWin::changeActiveBufferView(bool backwards) {
   int c = _bufferViews.count();
   while(c--) { // yes, this will reactivate the current active one if all others fail
     if(backwards) {
-      if(--_activeBufferViewIndex < 0)
-        _activeBufferViewIndex = _bufferViews.count()-1;
+      if(--curIndex < 0)
+        curIndex = _bufferViews.count()-1;
     } else {
-      if(++_activeBufferViewIndex >= _bufferViews.count())
-        _activeBufferViewIndex = 0;
+      if(++curIndex >= _bufferViews.count())
+        curIndex = 0;
     }
 
-    MobileBufferView *view = _bufferViews.at(_activeBufferViewIndex);
-
-    view->setActive(true);
-    return;
+    if(setActiveBufferView(curIndex))
+      return;
   }
-
-  _activeBufferViewIndex = -1;
 }
 
 void MainWin::nextBufferView() {
@@ -717,15 +728,15 @@ void MainWin::previousBufferView() {
 }
 
 void MainWin::nextBuffer() {
-  MobileBufferView *view = activeBufferView();
+  MobileBufferViewWindow *view = activeBufferView();
   if(view)
-    view->nextBuffer();
+    view->view()->nextBuffer();
 }
 
 void MainWin::previousBuffer() {
-  MobileBufferView *view = activeBufferView();
+  MobileBufferViewWindow *view = activeBufferView();
   if(view)
-    view->previousBuffer();
+    view->view()->previousBuffer();
 }
 
 void MainWin::showNotificationsDlg() {
@@ -909,8 +920,8 @@ void MainWin::saveLayout() {
   int accountId = _bufferViews.count()? Client::currentCoreAccount().accountId().toInt() : 0; // only save if we still have a layout!
   if(accountId > 0) {
     s.setValue(QString("MainWinState-%1").arg(accountId) , saveState(accountId));
-    MobileBufferView *view = activeBufferView();
-    s.setValue(QString("ActiveBufferView-%1").arg(accountId), view ? view->config()->bufferViewId() : -1);
+    MobileBufferViewWindow *view = activeBufferView();
+    s.setValue(QString("ActiveBufferView-%1").arg(accountId), view ? view->view()->config()->bufferViewId() : -1);
   }
 }
 
@@ -920,7 +931,7 @@ void MainWin::disconnectedFromCore() {
   _layoutLoaded = false;
 
   QVariant actionData;
-  MobileBufferView *view;
+  MobileBufferViewWindow *view;
   foreach(view, _bufferViews) {
     view->deleteLater();
   }

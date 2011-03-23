@@ -21,7 +21,6 @@
 #ifndef MOBILEBUFFERVIEW_H_
 #define MOBILEBUFFERVIEW_H_
 
-#include <QAction>
 #include <QMenu>
 #include <QDockWidget>
 #include <QModelIndex>
@@ -39,7 +38,6 @@
  *****************************************/
 class MobileBufferView : public QTreeView {
   Q_OBJECT
-    Q_PROPERTY(bool active READ isActive WRITE setActive STORED true)
 
 public:
   enum Direction {
@@ -60,9 +58,6 @@ public:
   void addActionsToMenu(QMenu *menu, const QModelIndex &index);
   void addFilterActions(QMenu *contextMenu, const QModelIndex &index);
 
-  inline bool isActive() const { return _active; }
-
-  QAction *toggleVisibleAction() const;
 
 public slots:
   void setRootIndexForNetworkId(const NetworkId &networkId);
@@ -71,12 +66,11 @@ public slots:
   void nextBuffer();
   void previousBuffer();
 
-  void setActive(bool active = true);
-  void updateTitle();
 
 signals:
   void removeBuffer(const QModelIndex &);
   void removeBufferPermanently(const QModelIndex &);
+  void updateTitle();
 
 protected:
   virtual void keyPressEvent(QKeyEvent *);
@@ -114,9 +108,6 @@ private:
   };
   QHash<NetworkId, short> _expandedState;
 
-  bool _active;
-
-  QAction *_action;
 
   class ItemViewKineticTapSuppressor *_tapSuppressor;
 };

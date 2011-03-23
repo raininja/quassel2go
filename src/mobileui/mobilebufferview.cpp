@@ -55,8 +55,6 @@
 // to be on the safe side: call QTreeView's method aswell
 MobileBufferView::MobileBufferView(QWidget *parent)
   : QTreeView(parent),
-    _active(false),
-    _action(0),
     _tapSuppressor(new ItemViewKineticTapSuppressor(this))
 {
   connect(this, SIGNAL(collapsed(const QModelIndex &)), SLOT(storeExpandedState(const QModelIndex &)));
@@ -69,9 +67,6 @@ MobileBufferView::MobileBufferView(QWidget *parent)
   MobileBufferViewDelegate *tristateDelegate = new MobileBufferViewDelegate(this);
   setItemDelegate(tristateDelegate);
   delete oldDelegate;
-
-  _action = new QAction(tr("BufferView"), this);
-  connect(_action, SIGNAL(triggered()), this, SLOT(show()));
 }
 
 void MobileBufferView::init() {
@@ -188,10 +183,10 @@ void MobileBufferView::setConfig(BufferViewConfig *config) {
     connect(config, SIGNAL(networkIdSet(const NetworkId &)), this, SLOT(setRootIndexForNetworkId(const NetworkId &)));
     setRootIndexForNetworkId(config->networkId());
 
-    _action->setObjectName("BufferViewDock-" + QString::number(config->bufferViewId()));
-    _action->setData(config->bufferViewId());
+//    _action->setObjectName("BufferViewDock-" + QString::number(config->bufferViewId()));
+//    _action->setData(config->bufferViewId());
 
-    connect(config, SIGNAL(bufferViewNameSet(const QString &)), this, SLOT(updateTitle()));
+    connect(config, SIGNAL(bufferViewNameSet(const QString &)), this, SIGNAL(updateTitle()));
 
   } else {
     setIndentation(10);
@@ -505,18 +500,6 @@ QSize MobileBufferView::sizeHint() const {
   return QSize(columnSize, 50);
 }
 
-void MobileBufferView::updateTitle() {
-  QString title = config() ? config()->bufferViewName() : "";
-  if(_active)
-    title.prepend(QString::fromUtf8("• "));
-  setWindowTitle(title);
-  _action->setText(title);
-}
-
-QAction * MobileBufferView::toggleVisibleAction() const
-{
-  return _action;
-}
 
 bool MobileBufferView::viewportEvent( QEvent * event )
 {
@@ -587,13 +570,4 @@ bool MobileBufferViewDelegate::editorEvent(QEvent *event, QAbstractItemModel *mo
     state = Qt::Unchecked;
   model->setData(index, state, Qt::CheckStateRole);
   return true;
-}
-
-void MobileBufferView::setActive(bool active) {
-  if(active != _active) {
-    _active = active;
-    updateTitle();
-    if(active)
-      raise(); // for tabbed docks
-  }
 }

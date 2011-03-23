@@ -35,7 +35,7 @@ class QmlContextObject;
 
 class ActionCollection;
 class BufferHotListFilter;
-class MobileBufferView;
+class MobileBufferViewWindow;
 class BufferViewConfig;
 class ClientBufferViewConfig;
 class CoreAccount;
@@ -70,8 +70,8 @@ class MainWin
     void init();
 
     void addBufferView(ClientBufferViewConfig *config);
-    MobileBufferView *allBuffersView() const;
-    MobileBufferView *activeBufferView() const;
+    MobileBufferViewWindow *allBuffersView() const;
+    MobileBufferViewWindow *activeBufferView() const;
 
     inline BufferWidget *bufferWidget() const { return _bufferWidget; }
     inline SystemTray *systemTray() const { return _systemTray; }
@@ -153,6 +153,7 @@ class MainWin
     void saveLayout();
 
     void bufferViewToggled(bool enabled);
+    bool setActiveBufferView(int index);
     void changeActiveBufferView(bool backwards);
     void changeActiveBufferView(int bufferViewId);
 
@@ -190,7 +191,7 @@ class MainWin
     class QDeclarativeView *_declarativeView;
     QmlContextObject *_qmlContextObject;
 
-    QList<MobileBufferView *> _bufferViews;
+    QList<MobileBufferViewWindow *> _bufferViews;
     BufferWidget *_bufferWidget;
     NickListWidget *_nickListWidget;
     ChatMonitorView *_chatMonitorView;

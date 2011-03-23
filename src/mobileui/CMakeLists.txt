@@ -48,6 +48,7 @@ set(SOURCES
     markerlineitem.cpp
     mobileaction.cpp
     mobilebufferview.cpp
+    mobilebufferviewwindow.cpp
     msgprocessorstatusmodel.cpp
     nicklistwidget.cpp
     qtui.cpp
@@ -110,6 +111,7 @@ set(MOC_HDRS
     markerlineitem.h
     mobileaction.h
     mobilebufferview.h
+    mobilebufferviewwindow.h
     msgprocessorstatusmodel.h
     nicklistwidget.h
     qtui.h
