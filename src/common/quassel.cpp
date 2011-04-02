@@ -182,7 +182,9 @@ void Quassel::setupBuildInfo(const QString &generated, const QString &clientAppN
       _buildInfo.plainVersionString = QString("v%1 (dist-%2)")
                                         .arg(_buildInfo.baseVersion)
                                         .arg(_buildInfo.commitHash.left(7));
-      _buildInfo.fancyVersionString = QString("v%1 (dist-<a href=\"http://git.quassel-irc.org/?p=quassel.git;a=commit;h=%3\">%2</a>)")
+      // TODO change back as soon as we are in quassel-repo
+      // _buildInfo.fancyVersionString = QString("v%1 (dist-<a href=\"http://git.quassel-irc.org/?p=quassel.git;a=commit;h=%3\">%2</a>)")
+      _buildInfo.fancyVersionString = QString("v%1 (dist-<a href=\"http://gitorious.org/~sgiessl/quassel/quassel2go/commits/%3\">%2</a>)")
                                         .arg(_buildInfo.baseVersion)
                                         .arg(_buildInfo.commitHash.left(7))
                                         .arg(_buildInfo.commitHash);
@@ -199,7 +201,9 @@ void Quassel::setupBuildInfo(const QString &generated, const QString &clientAppN
                                         .arg(_buildInfo.baseVersion, distance, rx.cap(3))
                                         .arg(_buildInfo.isSourceDirty ? "*" : "");
       if(!_buildInfo.commitHash.isEmpty()) {
-        _buildInfo.fancyVersionString = QString("v%1 (%2git-<a href=\"http://git.quassel-irc.org/?p=quassel.git;a=commit;h=%5\">%3</a>%4)")
+        // TODO change back as soon as we are in quassel-repo
+        //_buildInfo.fancyVersionString = QString("v%1 (%2git-<a href=\"http://git.quassel-irc.org/?p=quassel.git;a=commit;h=%5\">%3</a>%4)")
+        _buildInfo.fancyVersionString = QString("v%1 (%2git-<a href=\"http://gitorious.org/~sgiessl/quassel/quassel2go/commits/%5\">%3</a>%4)")
                                           .arg(_buildInfo.baseVersion, distance, rx.cap(3))
                                           .arg(_buildInfo.isSourceDirty ? "*" : "")
                                           .arg(_buildInfo.commitHash);
