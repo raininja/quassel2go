@@ -92,11 +92,12 @@ public:
 
 public slots:
   bool connectToCore(AccountId = 0);
+  bool connectToCoreWithAccount(CoreAccount account);
   void reconnectToCore();
   void disconnectFromCore();
 
 signals:
-  void stateChanged(CoreConnection::ConnectionState);
+  void stateChanged(CoreConnection::ConnectionState state);
   void encrypted(bool isEncrypted = true);
   void synchronized();
   void lagUpdated(int msecs);

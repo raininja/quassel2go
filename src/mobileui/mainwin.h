@@ -126,6 +126,7 @@ class MainWin
 
     void handleCoreConnectionError(const QString &errorMsg);
     void userAuthenticationRequired(CoreAccount *, bool *valid, const QString &errorMessage);
+    void userAuthenticationAccepted();
     void handleNoSslInClient(bool *accepted);
     void handleNoSslInCore(bool *accepted);
 #ifdef HAVE_SSL
@@ -200,6 +201,8 @@ class MainWin
     QToolBar *_mainToolBar, *_chatViewToolBar, *_nickToolBar;
 
     QWidget *_awayLog;
+
+    class CoreConnectAuthDlg *_authDlg;
 
     bool _layoutLoaded;
 

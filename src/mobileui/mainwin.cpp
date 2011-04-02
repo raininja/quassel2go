@@ -157,6 +157,7 @@ MainWin::MainWin(QWidget *parent)
     _chatMonitorView(0),
     _topicModel(0),
     _awayLog(0),
+    _authDlg(new CoreConnectAuthDlg(0, this)),
     _layoutLoaded(false),
     _activeBufferViewIndex(-1)
 {
@@ -177,6 +178,8 @@ MainWin::MainWin(QWidget *parent)
   setWindowTitle("Quassel IRC");
   setWindowIconText("Quassel IRC");
   updateIcon();
+
+  connect(_authDlg, SIGNAL(accepted()), this, SLOT(userAuthenticationAccepted()));
 }
 
 void MainWin::init() {
@@ -966,8 +969,23 @@ void MainWin::setDisconnectedState() {
 
 void MainWin::userAuthenticationRequired(CoreAccount *account, bool *valid, const QString &errorMessage) {
   Q_UNUSED(errorMessage)
-  CoreConnectAuthDlg dlg(account, this);
-  *valid = (dlg.exec() == QDialog::Accepted);
+
+  // this is required to be asynchronous to prevent a deadlock
+  // on n900/hildon, when the dialog opens
+  // while the app-menu is open
+
+  // *valid = (dlg.exec() == QDialog::Accepted);
+
+  _authDlg->setAccount(account);
+  _authDlg->show();
+
+  *valid = false;
+}
+
+void MainWin::userAuthenticationAccepted()
+{
+  qDebug() << "CoreConnection::loginToCore" << Client::coreConnection()->currentAccount().user() << Client::coreConnection()->currentAccount().password();
+  Client::coreConnection()->connectToCoreWithAccount(Client::coreConnection()->currentAccount());
 }
 
 void MainWin::handleNoSslInClient(bool *accepted) {

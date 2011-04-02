@@ -50,6 +50,9 @@ public:
 
   void accept();
 
+public slots:
+  void setAccount(CoreAccount *account);
+
 private slots:
   void setButtonStates();
 

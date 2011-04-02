@@ -210,6 +210,15 @@ Rectangle {
                   connectionProgress_Error.text = errorMsg
                   connectionProgress_Error.visible = true
                 }
+
+                onStateChanged: {
+                 // console.log("onStateChanged ")
+                  if(coreConnection.connected) {
+                    //console.log(" prop Connected=true")
+                    connectionProgress_Error.text = ""
+                    connectionProgress_Error.visible = false
+                  }
+                }
               }
             }
 

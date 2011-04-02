@@ -430,8 +430,10 @@ bool CoreConnection::connectToCore(AccountId accId) {
 
   // FIXME: Don't force connection to internal core in mono client
   if(Quassel::runMode() == Quassel::Monolithic) {
-    _account = accountModel()->account(accountModel()->internalAccount());
-    Q_ASSERT(_account.isValid());
+    CoreAccount acc = accountModel()->account(accountModel()->internalAccount());
+    Q_ASSERT(acc.isValid());
+
+    return connectToCoreWithAccount(acc);
   } else {
     if(!accId.isValid()) {
       // check our settings and figure out what to do
@@ -444,17 +446,26 @@ bool CoreConnection::connectToCore(AccountId accId) {
       if(!accId.isValid())
         return false;
     }
-    _account = accountModel()->account(accId);
-    if(!_account.accountId().isValid()) {
+
+
+    s.setLastAccount(accId);
+    return connectToCoreWithAccount(accountModel()->account(accId));
+  }
+}
+
+bool CoreConnection::connectToCoreWithAccount(CoreAccount account)
+{
+  CoreAccountSettings s;
+
+  _account = account;
+  if(!_account.accountId().isValid()) {
+    return false;
+  }
+  if(Quassel::runMode() != Quassel::Monolithic) {
+    if(_account.isInternal())
       return false;
-    }
-    if(Quassel::runMode() != Quassel::Monolithic) {
-      if(_account.isInternal())
-        return false;
-    }
   }
 
-  s.setLastAccount(accId);
   connectToCurrentAccount();
   return true;
 }
@@ -673,11 +684,22 @@ void CoreConnection::loginToCore(const QString &user, const QString &password, b
 
 void CoreConnection::loginToCore(const QString &prevError) {
   emit connectionMsg(tr("Logging in..."));
+
+  qDebug() << "CoreConnection::loginToCore" << currentAccount().user() << currentAccount().password()  << prevError;
+
   if(currentAccount().user().isEmpty() || currentAccount().password().isEmpty() || !prevError.isEmpty()) {
     bool valid = false;
     emit userAuthenticationRequired(&_account, &valid, prevError);  // *must* be a synchronous call
     if(!valid || currentAccount().user().isEmpty() || currentAccount().password().isEmpty()) {
-      disconnectFromCore(tr("Login canceled"), false);
+      // disconnectFromCore(tr("Login canceled"), false);
+
+      // synchronous authentication dialog call is buggy in Maemo5 as it leads
+      // to a deadlock when the application menu is open. this bug is worked around
+      // by implementing asynchronous authentication dialog. so the
+      // userAuthenticationRequired() will always fail and we don't consider it
+      // as a failure
+      disconnectFromCore("", false);
+
       return;
     }
   }

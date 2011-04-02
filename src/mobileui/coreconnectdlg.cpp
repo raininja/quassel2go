@@ -79,28 +79,44 @@ void CoreConnectDlg::accept() {
 
 CoreConnectAuthDlg::CoreConnectAuthDlg(CoreAccount *account, QWidget *parent)
   : QDialog(parent),
-  _account(account)
+    _account(0)
 {
   ui.setupUi(this);
 
   connect(ui.user, SIGNAL(textChanged(QString)), SLOT(setButtonStates()));
   connect(ui.password, SIGNAL(textChanged(QString)), SLOT(setButtonStates()));
 
-  ui.label->setText(tr("Please enter your credentials for %1:").arg(account->accountName()));
-  ui.user->setText(account->user());
-  ui.password->setText(account->password());
-  ui.rememberPasswd->setChecked(account->storePassword());
+  setAccount(account);
+}
 
-  if(ui.user->text().isEmpty())
-    ui.user->setFocus();
-  else
-    ui.password->setFocus();
+void CoreConnectAuthDlg::setAccount(CoreAccount *account)
+{
+  if(_account) {
+    // nothing to de-initialize
+  }
+
+  _account = account;
+
+  if(_account) {
+    ui.label->setText(tr("Please enter your credentials for %1:").arg(account->accountName()));
+
+    ui.user->setText(account->user());
+    ui.password->setText(account->password());
+    ui.rememberPasswd->setChecked(account->storePassword());
+
+    if(ui.user->text().isEmpty())
+      ui.user->setFocus();
+    else
+      ui.password->setFocus();
+  }
 }
 
 void CoreConnectAuthDlg::accept() {
-  _account->setUser(ui.user->text());
-  _account->setPassword(ui.password->text());
-  _account->setStorePassword(ui.rememberPasswd->isChecked());
+  if(_account) {
+    _account->setUser(ui.user->text());
+    _account->setPassword(ui.password->text());
+    _account->setStorePassword(ui.rememberPasswd->isChecked());
+  }
 
   QDialog::accept();
 }
