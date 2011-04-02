@@ -66,7 +66,7 @@ UiStyle::UiStyle(QObject *parent)
   _formatCodes["%DM"] = ModeFlags;
   _formatCodes["%DU"] = Url;
 
-  setTimestampFormatString("[hh:mm:ss]");
+  setTimestampFormatString("[hh:mm]");
 
   // BufferView / NickView settings
   UiStyleSettings s;
