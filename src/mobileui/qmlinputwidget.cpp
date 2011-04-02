@@ -16,7 +16,7 @@ QmlInputWidget::QmlInputWidget(QWidget *parent) :
   setFocus(Qt::OtherFocusReason);
 
   _input = new MultiLineEdit(parent);
-  _input->setAttribute(Qt::WA_NoSystemBackground, true);
+  _input->setObjectName("inputWidget");
   _input->setFocus();
   setWidget(_input);
   _presenter = new InputPresenter(_input, parent);

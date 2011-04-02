@@ -101,6 +101,8 @@ protected:
 protected slots:
   virtual void verticalScrollbarChanged(int);
 
+  void updateBackgroundColor();
+
 private slots:
   void lastLineChanged(QGraphicsItem *chatLine, qreal offset);
   void adjustSceneRect();

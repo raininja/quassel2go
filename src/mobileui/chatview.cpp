@@ -85,9 +85,27 @@ void ChatView::init(MessageFilter *filter) {
 
   connect(Client::networkModel(), SIGNAL(markerLineSet(BufferId,MsgId)), SLOT(markerLineSet(BufferId,MsgId)));
 
+  // notify about background color changes. We do not use the stylesheet-approach from qtclient
+  // in the mobile client because stylesheets
+  // are broken on n900.
+  QtUiStyleSettings s("Colors");
+  s.notify("UseChatViewColors", this, SLOT(updateBackgroundColor()));
+  s.notify("ChatViewBackground", this, SLOT(updateBackgroundColor()));
+  updateBackgroundColor();
+
   // only connect if client is synched with a core
   if(Client::isConnected())
     connect(Client::ignoreListManager(), SIGNAL(ignoreListChanged()), this, SLOT(invalidateFilter()));
+}
+
+void ChatView::updateBackgroundColor() {
+  QtUiStyleSettings s("Colors");
+
+  if(s.value("UseChatViewColors").toBool()) {
+    setBackgroundBrush(s.value("ChatViewBackground").value<QColor>());
+  } else {
+    setBackgroundBrush(QBrush());
+  }
 }
 
 bool ChatView::viewportEvent ( QEvent * event ) {

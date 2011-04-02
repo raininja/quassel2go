@@ -64,7 +64,15 @@ void QtUiStyle::generateSettingsQss() const {
 
         // markerline is special in that it always used to use a gradient, so we keep this behavior even with the new implementation
         << "Palette { marker-line: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 " << color("MarkerLine", s) << ", stop: 0.1 transparent); }\n"
-        << "ChatView { background: " << color("ChatViewBackground", s) << "; }\n\n"
+
+// we don't use stylesheet approach for custom chatview background color because
+// native qt stylesheet are broken in n900 hildon style. still, it should be possible
+// to overwrite these colors in custom .qss stylesheet using the following selectors.
+// note, that it is necessary to style the #inputWidget explicitly when using n900/hildon style.
+//        << "ChatView { background: " << color("ChatViewBackground", s) << "; }\n\n"
+//        << "QTextEdit#inputWidget { background: " << QApplication::palette().base().color().name() << "; color: " << QApplication::palette().text().color().name() << "; }\n\n";
+
+
         << "ChatLine[label=\"highlight\"] {\n"
         << "  foreground: " << color("Highlight",s) << ";\n"
         << "  background: " << color("HighlightBackground", s) << ";\n"
