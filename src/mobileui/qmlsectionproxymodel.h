@@ -47,7 +47,7 @@ private:
   //  QMap<int, QByteArray> m_mappings;
     QModelIndex _root;
 
-    int _countBeforeLayoutChange;
+    int _rowCount;
 
 signals:
 

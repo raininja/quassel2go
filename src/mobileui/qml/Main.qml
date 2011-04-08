@@ -534,7 +534,7 @@ Rectangle {
 
             orientation: "Horizontal"
 
-            currentIndex: ctxt.currentBufferIndex
+            currentIndex: ctxt.activeBufferListIndex
 
             section.property: ""
 
@@ -634,7 +634,7 @@ Rectangle {
                 MouseArea {
                   anchors.fill: parent
                   onClicked: {
-                    ctxt.setCurrentBufferIndex(index)
+                    ctxt.setActiveBufferListIndex(index)
                   }
                 }
               }

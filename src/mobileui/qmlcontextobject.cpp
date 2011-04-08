@@ -13,11 +13,10 @@ QmlContextObject::QmlContextObject(QObject *parent) :
     QObject(parent),
   //_bufferContainer(0),
   _fullScreen(false),
-  _allBuffersModel(new QmlSectionProxyModel(this)),
-  _channelUsersModel(new QmlSectionProxyModel(this)),
+  _activeBufferListModel(new QmlSectionProxyModel(this)),
+//  _channelUsersModel(new QmlSectionProxyModel(this)),
   _firstColumn(0),
   _secondColumn(0),
-  _currentBufferIndex(-1),
   _bufferWidget(0)
 {
 }
@@ -52,55 +51,67 @@ void QmlContextObject::setFullScreen(bool fullScreen)
   emit fullScreenChanged(fullScreen);
 }
 
-void QmlContextObject::setAllBuffersModel(QAbstractItemModel *model)
+void QmlContextObject::setActiveBufferListModel(QAbstractItemModel *model)
 {
-//  if(_allBuffersModel->sourceModel() == model)
+  _activeBufferListModel->setSourceModel(model);
+  emit activeBufferListModelChanged();
+}
+
+void QmlContextObject::setActiveBufferListSelectionModel(QItemSelectionModel *model)
+{
+  if(_activeBufferListSelectionModel) {
+    disconnect(_activeBufferListSelectionModel, 0, this, 0);
+  }
+  _activeBufferListSelectionModel = model;
+  if(_activeBufferListSelectionModel) {
+    connect(_activeBufferListSelectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+            this, SIGNAL(activeBufferListIndexChanged()));
+  }
+  emit activeBufferListIndexChanged();
+}
+
+//void QmlContextObject::setChannelUsersModel(QAbstractItemModel *model)
+//{
+//  if(_channelUsersModel->sourceModel() == model)
 //    return;
 
-  _allBuffersModel->setSourceModel(model);
-  emit allBuffersModelChanged();
+//  _channelUsersModel->setSourceModel(model);
+//  emit channelUsersModelChanged();
+//}
+
+//void QmlContextObject::setChannelUsersRootIndex(const QModelIndex &index)
+//{
+//  if(_channelUsersRootIndex == index)
+//    return;
+
+//  _channelUsersModel->setSourceRootIndex(index);
+
+//  _channelUsersRootIndex= index;
+//  emit channelUsersRootIndexChanged();
+//}
+
+int QmlContextObject::activeBufferListIndex() const
+{
+  if(_activeBufferListModel && _activeBufferListSelectionModel)
+  {
+    return _activeBufferListModel->mapFromSource(_activeBufferListSelectionModel->currentIndex()).row();
+  }
+
+  return -1;
 }
 
-void QmlContextObject::setChannelUsersModel(QAbstractItemModel *model)
+void QmlContextObject::setActiveBufferListIndex(int index)
 {
-  if(_channelUsersModel->sourceModel() == model)
-    return;
-
-  _channelUsersModel->setSourceModel(model);
-  emit channelUsersModelChanged();
-}
-
-void QmlContextObject::setChannelUsersRootIndex(const QModelIndex &index)
-{
-  if(_channelUsersRootIndex == index)
-    return;
-
-  _channelUsersModel->setSourceRootIndex(index);
-
-  _channelUsersRootIndex= index;
-  emit channelUsersRootIndexChanged();
-}
-
-int QmlContextObject::currentBufferIndex() const
-{
-  return _currentBufferIndex;
-}
-
-void QmlContextObject::setCurrentBufferIndex(int index)
-{
-  if(_currentBufferIndex == index)
-    return;
-
-  _currentBufferIndex = index;
-
-  emit currentBufferModelIndexChanged(_allBuffersModel->mapToSource(_allBuffersModel->index(index, 0)),
-                                      QItemSelectionModel::Clear);
-  emit currentBufferIndexChanged();
+  if(_activeBufferListModel && _activeBufferListSelectionModel)
+  {
+    _activeBufferListSelectionModel->setCurrentIndex(_activeBufferListModel->mapToSource(_activeBufferListModel->index(index, 0)),
+                                                     QItemSelectionModel::Clear);
+  }
 }
 
 void QmlContextObject::setCurrentBufferModelIndex(const QModelIndex &index)
 {
-  setCurrentBufferIndex(_allBuffersModel->mapFromSource(index).row());
+  setActiveBufferListIndex(_activeBufferListModel->mapFromSource(index).row());
 }
 
 void QmlContextObject::zoomIn()

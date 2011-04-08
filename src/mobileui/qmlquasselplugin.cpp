@@ -128,11 +128,10 @@ void QmlQuasselPlugin::initializeEngine(QDeclarativeEngine * engine, const char 
 
   qDebug() << "imgProvider test..." << (imgProvider->requestPixmap("irc-channel-active", 0, QSize(16,16)).size());
 
-  _qmlContextObject->setAllBuffersModel(_bufferModel);
+  _qmlContextObject->setActiveBufferListModel(_bufferModel);
   QTimer::singleShot(800, this, SLOT(timeout()));
 
-  _qmlContextObject->setCurrentBufferIndex(0);
-  qDebug() << "_qmlContextObject allBufMdl" << _qmlContextObject->allBuffersModel() << " idx:" << _qmlContextObject->currentBufferIndex();
+  _qmlContextObject->setActiveBufferListIndex(0);
   engine->rootContext()->setContextObject(_qmlContextObject);
   engine->rootContext()->setContextProperty("ctxt", _qmlContextObject);
   engine->rootContext()->setContextProperty("topicModel", new TopicModel(this) /*_topicModel*/);

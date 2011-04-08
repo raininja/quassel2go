@@ -247,10 +247,10 @@ void MainWin::init() {
   setCentralWidget(_declarativeView);
 
   connect(_qmlContextObject, SIGNAL(fullScreenChanged(bool)), this, SLOT(setFullscreen(bool)));
-  connect(_nickListWidget, SIGNAL(currentNickModelChanged(QAbstractItemModel*)),
-          _qmlContextObject, SLOT(setChannelUsersModel(QAbstractItemModel*)));
-  connect(_nickListWidget, SIGNAL(currentNickRootIndexChanged(QModelIndex)),
-          _qmlContextObject, SLOT(setChannelUsersRootIndex(QModelIndex)));
+//  connect(_nickListWidget, SIGNAL(currentNickModelChanged(QAbstractItemModel*)),
+//          _qmlContextObject, SLOT(setChannelUsersModel(QAbstractItemModel*)));
+//  connect(_nickListWidget, SIGNAL(currentNickRootIndexChanged(QModelIndex)),
+//          _qmlContextObject, SLOT(setChannelUsersRootIndex(QModelIndex)));
 
   connect(_qmlContextObject, SIGNAL(requestZoomIn()),
           _bufferWidget, SLOT(zoomIn()));
@@ -662,9 +662,10 @@ bool MainWin::setActiveBufferView(int bufferViewId)
     _activeBufferViewIndex = -1;
 
     // qml disconnect
-    _qmlContextObject->setAllBuffersModel(0);
-    disconnect(current->view()->selectionModel(), 0, _qmlContextObject, 0);
-    disconnect(_qmlContextObject, 0, current->view()->selectionModel(), 0);
+    _qmlContextObject->setActiveBufferListModel(0);
+    _qmlContextObject->setActiveBufferListSelectionModel(0);
+//    disconnect(current->view()->selectionModel(), 0, _qmlContextObject, 0);
+//    disconnect(_qmlContextObject, 0, current->view()->selectionModel(), 0);
   }
 
   if(bufferViewId < 0)
@@ -677,11 +678,12 @@ bool MainWin::setActiveBufferView(int bufferViewId)
       view->setActive(true);
 
       // qml connect
-      _qmlContextObject->setAllBuffersModel(view->view()->model());
-      connect(view->view()->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-              _qmlContextObject, SLOT(setCurrentBufferModelIndex(QModelIndex)));
-      connect(_qmlContextObject, SIGNAL(currentBufferModelIndexChanged(QModelIndex, QItemSelectionModel::SelectionFlags)),
-              view->view()->selectionModel(), SLOT(setCurrentIndex(QModelIndex,QItemSelectionModel::SelectionFlags)));
+      _qmlContextObject->setActiveBufferListModel(view->view()->model());
+      _qmlContextObject->setActiveBufferListSelectionModel(view->view()->selectionModel());
+//      connect(view->view()->selectionModel(), SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+//              _qmlContextObject, SLOT(setCurrentBufferModelIndex(QModelIndex)));
+//      connect(_qmlContextObject, SIGNAL(currentBufferModelIndexChanged(QModelIndex, QItemSelectionModel::SelectionFlags)),
+//              view->view()->selectionModel(), SLOT(setCurrentIndex(QModelIndex,QItemSelectionModel::SelectionFlags)));
 
       return true;
     }
@@ -984,7 +986,6 @@ void MainWin::userAuthenticationRequired(CoreAccount *account, bool *valid, cons
 
 void MainWin::userAuthenticationAccepted()
 {
-  qDebug() << "CoreConnection::loginToCore" << Client::coreConnection()->currentAccount().user() << Client::coreConnection()->currentAccount().password();
   Client::coreConnection()->connectToCoreWithAccount(Client::coreConnection()->currentAccount());
 }
 

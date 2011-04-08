@@ -6,7 +6,7 @@
 
 QmlSectionProxyModel::QmlSectionProxyModel(QObject *parent) :
     QAbstractProxyModel(parent),
-    _countBeforeLayoutChange(0)
+    _rowCount(0)
 {
 }
 
@@ -136,13 +136,17 @@ void QmlSectionProxyModel::setSourceModel ( QAbstractItemModel * sourceModel )
   _root = QModelIndex();
 
   reset();
+  _rowCount = rowCount(QModelIndex());
 
   endResetModel();
 }
 
 void QmlSectionProxyModel::_mdlReset()
 {
+  beginResetModel();
   reset();
+  _rowCount = rowCount(QModelIndex());
+  endResetModel();
 }
 
 QVariant QmlSectionProxyModel::data(const QModelIndex &proxyIndex, int role) const
@@ -201,27 +205,32 @@ void QmlSectionProxyModel::setSourceRootIndex(const QModelIndex &root)
 void QmlSectionProxyModel::srcLayoutAboutToBeChanged()
 {
   emit layoutAboutToBeChanged();
+
 //  beginRemoveRows(QModelIndex(), 0, rowCount(QModelIndex()));
 //  endRemoveRows();
-
-  _countBeforeLayoutChange = rowCount(QModelIndex());
 }
 
 void QmlSectionProxyModel::srcLayoutChanged()
 {
   int newCnt = rowCount(QModelIndex());
-  if(newCnt > _countBeforeLayoutChange) {
-    emit dataChanged(index(0,0), index(_countBeforeLayoutChange-1,0));
-    beginInsertRows(QModelIndex(), _countBeforeLayoutChange, newCnt-1);
+  if(newCnt > _rowCount) {
+    if(_rowCount > 0) {
+      emit dataChanged(index(0,0), index(_rowCount-1,0));
+    }
+    beginInsertRows(QModelIndex(), _rowCount, newCnt-1);
     endInsertRows();
-  } else if(newCnt < _countBeforeLayoutChange) {
-    emit dataChanged(index(0,0), index(newCnt-1,0));
-    beginInsertRows(QModelIndex(), newCnt, _countBeforeLayoutChange-1);
-    endInsertRows();
+  } else if(newCnt < _rowCount) {
+    if(newCnt > 0) {
+      emit dataChanged(index(0,0), index(newCnt-1,0));
+    }
+    beginRemoveRows(QModelIndex(), newCnt, _rowCount-1);
+    endRemoveRows();
   } else {
-    emit dataChanged(index(0,0), index(_countBeforeLayoutChange-1,0));
+    if(_rowCount > 0) {
+      emit dataChanged(index(0,0), index(_rowCount-1,0));
+    }
   }
-  _countBeforeLayoutChange = 0;
+  _rowCount = newCnt;
 
   emit layoutChanged();
 }
@@ -285,6 +294,7 @@ void QmlSectionProxyModel::srcDataChanged ( const QModelIndex & topLeft, const Q
   if(topLeft.parent() == bottomRight.parent()) {
     QModelIndex tl = mapFromSource(topLeft);
     QModelIndex br = mapFromSource(bottomRight);
+    emit dataChanged(tl,br);
   } else {
     qWarning() << "Handling unexpected case in QmlSectionProxyModel::srcDataChanged!!";
     _mdlReset();
