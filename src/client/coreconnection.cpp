@@ -685,8 +685,6 @@ void CoreConnection::loginToCore(const QString &user, const QString &password, b
 void CoreConnection::loginToCore(const QString &prevError) {
   emit connectionMsg(tr("Logging in..."));
 
-  qDebug() << "CoreConnection::loginToCore" << currentAccount().user() << currentAccount().password()  << prevError;
-
   if(currentAccount().user().isEmpty() || currentAccount().password().isEmpty() || !prevError.isEmpty()) {
     bool valid = false;
     emit userAuthenticationRequired(&_account, &valid, prevError);  // *must* be a synchronous call
