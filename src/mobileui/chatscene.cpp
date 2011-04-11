@@ -846,6 +846,19 @@ void ChatScene::clickTimeout() {
     handleClick(Qt::LeftButton, _clickPos);
 }
 
+void ChatScene::simulateClick(Qt::MouseButton button, const QPointF &scenePos) {
+  // this is the same as ChatScene::handleClick except that _clickMode is simulated and _clickHandled is left as is.
+  if(button == Qt::LeftButton) {
+    clearSelection();
+
+    // Now send click down to items
+    ChatItem *chatItem = chatItemAt(scenePos);
+    if(chatItem) {
+      chatItem->handleClick(chatItem->mapFromScene(scenePos), SingleClick);
+    }
+  }
+}
+
 void ChatScene::handleClick(Qt::MouseButton button, const QPointF &scenePos) {
   if(button == Qt::LeftButton) {
     clearSelection();

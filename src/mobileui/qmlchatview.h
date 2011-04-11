@@ -25,6 +25,8 @@ public slots:
   void requestBacklog();
   void setWidgetFocus(bool focus);
 
+  void simulateLeftClick(int x, int y);
+
 signals:
   void widgetChanged();
 

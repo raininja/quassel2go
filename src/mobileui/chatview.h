@@ -89,6 +89,8 @@ public slots:
   void setMarkerLine(MsgId msgId);
   void jumpToMarkerLine(bool requestBacklog);
 
+  void simulateLeftClick(const QPoint &viewPos);
+
 protected:
   virtual bool event(QEvent *event);
   virtual void resizeEvent(QResizeEvent *event);

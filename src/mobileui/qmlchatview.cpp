@@ -79,6 +79,12 @@ void QmlChatView::setWidgetFocus(bool focus)
   }
 }
 
+void QmlChatView::simulateLeftClick(int x, int y)
+{
+  if(_currentView)
+    _currentView->simulateLeftClick(QPoint(x,y));
+}
+
 void QmlChatView::focusInEvent ( QFocusEvent * event )
 {
   emit widgetFocusChanged();

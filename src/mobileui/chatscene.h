@@ -148,6 +148,9 @@ public:
   void clearWebPreview(ChatItem *parentItem = 0);
 #endif
 
+  virtual void simulateClick(Qt::MouseButton button, const QPointF &scenePos);
+  virtual void handleClick(Qt::MouseButton button, const QPointF &scenePos);
+
 signals:
   void lastLineChanged(QGraphicsItem *item, qreal offset);
   void layoutChanged(); // indicates changes to the scenerect due to resizing of the contentsitems
@@ -159,7 +162,6 @@ protected:
   virtual void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
   virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
   virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *mouseEvent);
-  virtual void handleClick(Qt::MouseButton button, const QPointF &scenePos);
 
 protected slots:
   void rowsInserted(const QModelIndex &, int, int);

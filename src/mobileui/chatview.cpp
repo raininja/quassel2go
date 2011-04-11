@@ -108,10 +108,16 @@ void ChatView::updateBackgroundColor() {
   }
 }
 
+void ChatView::simulateLeftClick(const QPoint &viewPos)
+{
+  scene()->simulateClick(Qt::LeftButton, mapToScene(viewPos));
+}
+
+
 bool ChatView::viewportEvent ( QEvent * event ) {
-  // prevent text selection and image dragging
-  if (event->type() == QEvent::MouseMove)
-    return true;
+//  // prevent text selection and image dragging
+//  if (event->type() == QEvent::MouseMove)
+//    return true;
 
   return QGraphicsView::viewportEvent(event);
 }

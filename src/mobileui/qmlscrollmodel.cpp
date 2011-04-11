@@ -44,6 +44,7 @@ void QmlScrollModel::setScrollArea(QAbstractScrollArea *scrollArea)
   emit viewportSizeChanged();
   emit horizontalPositionChanged();
   emit verticalPositionChanged();
+  emit viewportPositionChanged();
 }
 
 int QmlScrollModel::scrollRangeX() const

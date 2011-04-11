@@ -41,10 +41,7 @@ Rectangle {
 
         QuasselChatView {
             id: chatview_view
-            anchors.left: parent.left
-            anchors.right:parent.right
-            anchors.top: parent.top
-            anchors.bottom:parent.bottom
+            anchors.fill: parent
 
             scrollModel.verticalPosition: chatview_flickable.contentY
             scrollModel.onVerticalPositionChanged: { if(!chatview_flickable.flicking && !chatview_flickable.moving) { chatview_flickable.contentY = scrollModel.verticalPosition } }
@@ -58,6 +55,7 @@ Rectangle {
           id: chatview_flickable
           x: chatview_view.scrollModel.viewportPosition.x
           y: chatview_view.scrollModel.viewportPosition.y
+          visible:  true
           //anchors.left: parent.left
          // anchors.top: parent.top
           //anchors.bottom: parent.bottom
@@ -66,6 +64,12 @@ Rectangle {
           contentHeight: height + (chatview_view.scrollModel.contentsSize.height <= 0 ? 1 : chatview_view.scrollModel.contentsSize.height)
           contentWidth: width
           // boundsBehavior: "DragOverBounds"
+
+          function simulateClick(x, y) {
+            var sx = (x-chatview_flickable.contentX) //-chatview_flickable.x)
+            var sy = (y-chatview_flickable.contentY) //-chatview_flickable.y)
+            chatview_view.simulateLeftClick(sx,sy)
+          }
 
           MouseArea {
             id: chatview_tap
@@ -76,6 +80,7 @@ Rectangle {
             onClicked: {
               pressed = true
               pressed = false
+              chatview_flickable.simulateClick(mouse.x, mouse.y)
             }
           }
         }
@@ -238,77 +243,77 @@ Rectangle {
         Item {
           id: menuWidget
           anchors.bottom: chatview_flickable.bottom
-          anchors.right: fullscreenMenuWidget.left
+          anchors.right: fullscreenMenuWidget.left // selectionMenuWidget.left
           anchors.margins: 5
           width: menuWidget_row.width + 10
           height: menuWidget_row.height + 10
           opacity: 0.00
 
-        Rectangle {
-          anchors.fill: parent
-          color: "#000000"
-          opacity: 0.5
-          radius: 10
-          border.width: 1
-          border.color: "#ffffff"
-        }
-
-        Row {
-          id: menuWidget_row
-          anchors.centerIn: parent
-          spacing: 5
-
-          ToolButton {
-            id: searchButton
-            // text: "+"
-            width: 60
-            height: 60
-            onClicked: {
-              ctxt.search()
-            }
-
-            icon: "image://quassel/general_search"
+          Rectangle {
+            anchors.fill: parent
+            color: "#000000"
+            opacity: 0.5
+            radius: 10
+            border.width: 1
+            border.color: "#ffffff"
           }
 
-          ToolButton {
-            id: zoomInButton
-            // text: "+"
-            width: 60
-            height: 60
-            onClicked: {
-              ctxt.zoomIn()
+          Row {
+            id: menuWidget_row
+            anchors.centerIn: parent
+            spacing: 5
+
+            ToolButton {
+              id: searchButton
+              // text: "+"
+              width: 60
+              height: 60
+              onClicked: {
+                ctxt.search()
+              }
+
+              icon: "image://quassel/general_search"
             }
 
-            icon: "image://quassel/pdf_zoomin"
-          }
-          ToolButton {
-            id: zoomOutButton
-            // text: "-"
-            width: 60
-            height: 60
-            onClicked: {
-              ctxt.zoomOut()
+            ToolButton {
+              id: zoomInButton
+              // text: "+"
+              width: 60
+              height: 60
+              onClicked: {
+                ctxt.zoomIn()
+              }
+
+              icon: "image://quassel/pdf_zoomin"
             }
+            ToolButton {
+              id: zoomOutButton
+              // text: "-"
+              width: 60
+              height: 60
+              onClicked: {
+                ctxt.zoomOut()
+              }
 
               icon: "image://quassel/pdf_zoomout"
+            }
           }
-        }
 
 
-        states: State {
+          states: State {
             name: "visible"
             when: chatview_tap.pressed || columnWidget.pressed || columnWidget2.pressed
             PropertyChanges { target: menuWidget; opacity: 1.0 }
-        }
+          }
 
-        transitions: Transition {
+          transitions: Transition {
             from: "visible"; to: ""
             SequentialAnimation {
               PauseAnimation { duration: 1500 }
               NumberAnimation { properties: "opacity"; duration: 600 }
             }
+          }
         }
-      }
 
         Item {
           id: columnWidget
@@ -431,6 +436,55 @@ Rectangle {
           }
 
         }
+
+        // selectionMenuWidget actually works, however, text selection of the chatView text does not work with touchscreen
+//        Item {
+//          id: selectionMenuWidget
+//          anchors.bottom: chatview_flickable.bottom
+//          anchors.right: fullscreenMenuWidget.left
+//          anchors.margins: 5
+//          width: selectionMenuWidget_row.width + 10
+//          height: selectionMenuWidget_row.height + 10
+//          // visible: chatview_tap.tap_on // chatview_flickable_scroll.visible
+//          opacity: 0.0
+
+//          Rectangle {
+//            anchors.fill: parent
+//            color: "#000000"
+//            opacity: 0.5
+//            radius: 10
+//            border.width: 1
+//            border.color: "#ffffff"
+//          }
+
+//          Row {
+//            id: selectionMenuWidget_row
+//            anchors.centerIn: parent
+//            spacing: 5
+
+//              ToolButton {
+//                id: selectionButton
+//                width: 60
+//                height: 60
+//                icon: (!chatview_flickable.visible) ? "image://quassel/browser_panning_mode_on" : "image://quassel/browser_panning_mode_off"
+//                onClicked: { chatview_flickable.visible = !chatview_flickable.visible; }
+//              }
+//          }
+
+//          states: State {
+//              name: "visible"
+//              when: chatview_tap.pressed || !chatview_flickable.visible
+//              PropertyChanges { target: selectionMenuWidget; opacity: 1.0 }
+//          }
+
+//          transitions: Transition {
+//              from: "visible"; to: ""
+//              SequentialAnimation {
+//                PauseAnimation { duration: 1500 }
+//                NumberAnimation { properties: "opacity"; duration: 600 }
+//              }
+//          }
+//        }
 
         Item {
           id: fullscreenMenuWidget
